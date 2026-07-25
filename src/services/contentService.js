@@ -82,19 +82,32 @@ export const DEFAULT_CONTENT = {
   },
 };
 
+const mergeContent = (dbData) => {
+  if (!dbData || typeof dbData !== "object") return DEFAULT_CONTENT;
+  return {
+    header: { ...DEFAULT_CONTENT.header, ...(dbData.header || {}) },
+    hero: { ...DEFAULT_CONTENT.hero, ...(dbData.hero || {}) },
+    trustBadges: Array.isArray(dbData.trustBadges) && dbData.trustBadges.length > 0 ? dbData.trustBadges : DEFAULT_CONTENT.trustBadges,
+    mission: { ...DEFAULT_CONTENT.mission, ...(dbData.mission || {}) },
+    testimonials: Array.isArray(dbData.testimonials) && dbData.testimonials.length > 0 ? dbData.testimonials : DEFAULT_CONTENT.testimonials,
+    distributorCta: { ...DEFAULT_CONTENT.distributorCta, ...(dbData.distributorCta || {}) },
+    footer: { ...DEFAULT_CONTENT.footer, ...(dbData.footer || {}) },
+  };
+};
+
 /**
- * Get the current dynamic content.
- * Reads from backend first; falls back to localStorage, then DEFAULT_CONTENT.
+ * Get the current dynamic content from backend
  */
 export const getContent = async () => {
   try {
     const res = await axiosInstance.get("site-settings");
-    if (res.data && typeof res.data === "object") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(res.data));
-      return res.data;
+    if (res.data) {
+      const merged = mergeContent(res.data);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      return merged;
     }
-  } catch {
-    // Backend not available — use localStorage
+  } catch (err) {
+    console.error("Backend fetch error for site settings:", err);
   }
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -106,28 +119,32 @@ export const getContent = async () => {
 };
 
 /**
- * Save updated content.
- * Persists to localStorage immediately and attempts backend sync.
+ * Save updated content to backend & localStorage
  */
 export const saveContent = async (newContent) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(newContent));
   try {
-    await axiosInstance.post("site-settings", newContent);
-  } catch {
-    // Backend optional; local save is primary
+    const res = await axiosInstance.post("site-settings", newContent);
+    const merged = mergeContent(res.data || newContent);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+    return merged;
+  } catch (err) {
+    console.error("Error saving site settings to backend:", err);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newContent));
+    return newContent;
   }
-  return newContent;
 };
 
 /**
- * Reset to factory defaults.
+ * Reset to factory defaults in backend & localStorage
  */
 export const resetContentToDefaults = async () => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_CONTENT));
   try {
-    await axiosInstance.post("site-settings", DEFAULT_CONTENT);
-  } catch {
-    // ignore
+    const res = await axiosInstance.post("site-settings", DEFAULT_CONTENT);
+    const merged = mergeContent(res.data || DEFAULT_CONTENT);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+    return merged;
+  } catch (err) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_CONTENT));
+    return DEFAULT_CONTENT;
   }
-  return DEFAULT_CONTENT;
 };
