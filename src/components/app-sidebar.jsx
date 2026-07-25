@@ -60,7 +60,7 @@ export function AppSidebar({ ...props }) {
     },
     navMain: [
       { title: "Dashboard", url: "/dashboard", icon: DashboardIcon },
-      { title: "Health Dashboard", url: "/health-dashboard", icon: HeartPulse },
+      // { title: "Health Dashboard", url: "/health-dashboard", icon: HeartPulse },
       {
         title: "Frontend CMS",
         url: "/frontend-cms",
@@ -77,9 +77,9 @@ export function AppSidebar({ ...props }) {
           { title: "Contact & Social", url: "/frontend-cms/contact", icon: PhoneCall },
         ],
       },
-      { title: "Client Management", url: "/clients", icon: User2Icon },
-      { title: "Report Entry", url: "/report-entry", icon: FileText },
-      { title: "PDF Designer", url: "/report-designer", icon: Activity },
+      // { title: "Client Management", url: "/clients", icon: User2Icon },
+      // { title: "Report Entry", url: "/report-entry", icon: FileText },
+      // { title: "PDF Designer", url: "/report-designer", icon: Activity },
       { title: "User", url: "/user", icon: User2Icon },
     ],
   };
