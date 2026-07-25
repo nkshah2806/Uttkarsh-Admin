@@ -1,0 +1,140 @@
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Quote, Plus, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
+import { Field, CMSInput, CMSTextarea, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
+
+export default function TestimonialsCMS() {
+  const [data, setData] = useState(DEFAULT_CONTENT);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    getContent().then((d) => { setData(d); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
+  const updateItem = (idx, field, value) => {
+    setData((prev) => {
+      const arr = [...(prev.testimonials || [])];
+      arr[idx] = { ...arr[idx], [field]: value };
+      return { ...prev, testimonials: arr };
+    });
+  };
+
+  const addReview = () => {
+    setData((prev) => ({
+      ...prev,
+      testimonials: [
+        ...(prev.testimonials || []),
+        { id: Date.now(), name: "Customer Name, City", body: "Great product!", stars: 5 },
+      ],
+    }));
+  };
+
+  const removeReview = (idx) => {
+    setData((prev) => ({
+      ...prev,
+      testimonials: prev.testimonials.filter((_, i) => i !== idx),
+    }));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await saveContent(data);
+      toast.success("✅ Testimonials updated live!");
+    } catch {
+      toast.error("Failed to save. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
+    const d = await resetContentToDefaults();
+    setData(d);
+    toast.success("Content reset to defaults.");
+  };
+
+  if (loading) return <CMSLoader label="Loading Testimonials content…" />;
+
+  return (
+    <div className="space-y-6">
+      <CMSPageHeader
+        icon={Quote}
+        title="Customer Testimonials"
+        description="Reviews displayed on the Home page. Add, edit or remove testimonials."
+        onSave={handleSave}
+        onReset={handleReset}
+        saving={saving}
+      />
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Quote className="h-5 w-5 text-violet-500" /> Customer Testimonials
+              </CardTitle>
+              <CardDescription>Each card shows a star rating, customer name and their review text.</CardDescription>
+            </div>
+            <Button size="sm" variant="outline" className="gap-1.5 text-xs shrink-0" onClick={addReview}>
+              <Plus className="h-3.5 w-3.5" /> Add Review
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {(data.testimonials || []).length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No testimonials yet.</p>
+          ) : (
+            <div className="grid gap-5 md:grid-cols-3">
+              {(data.testimonials || []).map((t, idx) => (
+                <div key={t.id || idx} className="rounded-2xl border border-border bg-muted/40 p-5 space-y-3 relative">
+                  <button
+                    onClick={() => removeReview(idx)}
+                    className="absolute top-3 right-3 p-1 rounded-full text-destructive hover:bg-destructive/10 transition"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                  <Field label="Customer Name & City">
+                    <CMSInput
+                      value={t.name}
+                      onChange={(e) => updateItem(idx, "name", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Review Text">
+                    <CMSTextarea
+                      rows={3}
+                      value={t.body}
+                      onChange={(e) => updateItem(idx, "body", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Star Rating (1–5)">
+                    <input
+                      type="number"
+                      min={1}
+                      max={5}
+                      value={t.stars}
+                      onChange={(e) =>
+                        updateItem(idx, "stars", Math.min(5, Math.max(1, parseInt(e.target.value) || 5)))
+                      }
+                      className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition"
+                    />
+                  </Field>
+                  <div className="text-[#C5A059] text-lg">
+                    {"★".repeat(t.stars || 5)}{"☆".repeat(5 - (t.stars || 5))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <StickyBar onSave={handleSave} saving={saving} />
+    </div>
+  );
+}

@@ -11,6 +11,15 @@ import UserEdit from "./pages/User/create";
 import UserDetails from "./pages/User/UserDetails";
 import { DashboardOverview, ClientManagement, ReportEntry, ReportDesigner } from "./pages/HealthAnalysis";
 import FrontendCMS from "./pages/FrontendCMS";
+import HeroCMS from "./pages/FrontendCMS/HeroCMS";
+import CategoriesCMS from "./pages/FrontendCMS/CategoriesCMS";
+import ProductsCMS from "./pages/FrontendCMS/ProductsCMS";
+import TrustBadgesCMS from "./pages/FrontendCMS/TrustBadgesCMS";
+import MissionCMS from "./pages/FrontendCMS/MissionCMS";
+import TestimonialsCMS from "./pages/FrontendCMS/TestimonialsCMS";
+import DistributorCMS from "./pages/FrontendCMS/DistributorCMS";
+import HeaderFooterCMS from "./pages/FrontendCMS/HeaderFooterCMS";
+import ContactCMS from "./pages/FrontendCMS/ContactCMS";
 
 function App() {
   return (
@@ -29,7 +38,19 @@ function App() {
             <Route path="/clients" element={<ClientManagement />} />
             <Route path="/report-entry" element={<ReportEntry />} />
             <Route path="/report-designer" element={<ReportDesigner />} />
+
+            {/* Frontend CMS — hub + individual section pages */}
             <Route path="/frontend-cms" element={<FrontendCMS />} />
+            <Route path="/frontend-cms/hero" element={<HeroCMS />} />
+            <Route path="/frontend-cms/categories" element={<CategoriesCMS />} />
+            <Route path="/frontend-cms/products" element={<ProductsCMS />} />
+            <Route path="/frontend-cms/trust-badges" element={<TrustBadgesCMS />} />
+            <Route path="/frontend-cms/mission" element={<MissionCMS />} />
+            <Route path="/frontend-cms/testimonials" element={<TestimonialsCMS />} />
+            <Route path="/frontend-cms/distributor-banner" element={<DistributorCMS />} />
+            <Route path="/frontend-cms/header-footer" element={<HeaderFooterCMS />} />
+            <Route path="/frontend-cms/contact" element={<ContactCMS />} />
+
             <Route path="/user">
               <Route index element={<User />} />
               <Route path="edit/:id" element={<UserEdit />} />
@@ -44,3 +65,5 @@ function App() {
 }
 
 export default App;
+
+

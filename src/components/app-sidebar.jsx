@@ -1,5 +1,20 @@
 import * as React from "react";
-import { Activity, FileText, HeartPulse, User2Icon, LayoutTemplate } from "lucide-react";
+import {
+  Activity,
+  FileText,
+  HeartPulse,
+  User2Icon,
+  LayoutTemplate,
+  ImageIcon,
+  Grid,
+  ShoppingBag,
+  Shield,
+  BarChart3,
+  Quote,
+  Tag,
+  Megaphone,
+  PhoneCall,
+} from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
@@ -46,7 +61,22 @@ export function AppSidebar({ ...props }) {
     navMain: [
       { title: "Dashboard", url: "/dashboard", icon: DashboardIcon },
       { title: "Health Dashboard", url: "/health-dashboard", icon: HeartPulse },
-      { title: "Frontend CMS", url: "/frontend-cms", icon: LayoutTemplate },
+      {
+        title: "Frontend CMS",
+        url: "/frontend-cms",
+        icon: LayoutTemplate,
+        items: [
+          { title: "Hero Banner", url: "/frontend-cms/hero", icon: ImageIcon },
+          { title: "Shop Categories", url: "/frontend-cms/categories", icon: Grid },
+          { title: "Shop Products", url: "/frontend-cms/products", icon: ShoppingBag },
+          { title: "Trust Badges", url: "/frontend-cms/trust-badges", icon: Shield },
+          { title: "Mission & Stats", url: "/frontend-cms/mission", icon: BarChart3 },
+          { title: "Testimonials", url: "/frontend-cms/testimonials", icon: Quote },
+          { title: "Distributor Banner", url: "/frontend-cms/distributor-banner", icon: Tag },
+          { title: "Header & Footer", url: "/frontend-cms/header-footer", icon: Megaphone },
+          { title: "Contact & Social", url: "/frontend-cms/contact", icon: PhoneCall },
+        ],
+      },
       { title: "Client Management", url: "/clients", icon: User2Icon },
       { title: "Report Entry", url: "/report-entry", icon: FileText },
       { title: "PDF Designer", url: "/report-designer", icon: Activity },
@@ -69,3 +99,5 @@ export function AppSidebar({ ...props }) {
     </Sidebar>
   );
 }
+
+
