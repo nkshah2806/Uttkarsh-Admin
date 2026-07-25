@@ -10,6 +10,7 @@ import User from "./pages/User";
 import UserEdit from "./pages/User/create";
 import UserDetails from "./pages/User/UserDetails";
 import { DashboardOverview, ClientManagement, ReportEntry, ReportDesigner } from "./pages/HealthAnalysis";
+import FrontendCMS from "./pages/FrontendCMS";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
             <Route path="/clients" element={<ClientManagement />} />
             <Route path="/report-entry" element={<ReportEntry />} />
             <Route path="/report-designer" element={<ReportDesigner />} />
+            <Route path="/frontend-cms" element={<FrontendCMS />} />
             <Route path="/user">
               <Route index element={<User />} />
               <Route path="edit/:id" element={<UserEdit />} />
