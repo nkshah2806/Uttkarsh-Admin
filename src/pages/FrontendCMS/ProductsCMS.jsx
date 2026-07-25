@@ -310,10 +310,10 @@ export default function ProductsCMS() {
                     </div>
                   </div>
                   <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-                    <Button size="xs" variant="outline" onClick={() => startEditProduct(prod)} className="gap-1">
+                    <Button variant="outline" onClick={() => startEditProduct(prod)} className="gap-1">
                       <Edit2 className="h-3 w-3" /> Edit
                     </Button>
-                    <Button size="xs" variant="destructive" onClick={() => handleDeleteProduct(prod.id)} className="gap-1">
+                    <Button variant="destructive" onClick={() => handleDeleteProduct(prod.id)} className="gap-1">
                       <Trash2 className="h-3 w-3" /> Delete
                     </Button>
                   </div>
