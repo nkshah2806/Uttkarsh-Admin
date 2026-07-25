@@ -26,6 +26,11 @@ import {
   Shield,
   PhoneCall,
   Tag,
+  Grid,
+  ShoppingBag,
+  Edit2,
+  Check,
+  X,
 } from "lucide-react";
 import {
   getContent,
@@ -33,6 +38,8 @@ import {
   resetContentToDefaults,
   DEFAULT_CONTENT,
 } from "@/services/contentService";
+import { categoriesService } from "@/services/categoriesService";
+import { productsService } from "@/services/productsService";
 
 /* ─────────────────────────────────────────
    Tiny reusable field components
@@ -48,9 +55,10 @@ function Field({ label, children }) {
   );
 }
 
-function Input({ value, onChange, placeholder }) {
+function Input({ value, onChange, placeholder, type = "text" }) {
   return (
     <input
+      type={type}
       value={value ?? ""}
       onChange={onChange}
       placeholder={placeholder}
@@ -79,11 +87,47 @@ export default function FrontendCMS() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Dynamic Categories and Products States
+  const [categories, setCategories] = useState([]);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [categoryForm, setCategoryForm] = useState({ name: "", slug: "", image: "", description: "", order: 0 });
+
+  const [products, setProducts] = useState([]);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [productForm, setProductForm] = useState({
+    name: "",
+    slug: "",
+    category_slug: "",
+    price: 0,
+    mrp: 0,
+    short_description: "",
+    description: "",
+    images: [""],
+    is_bestseller: false,
+    is_featured: false,
+    stock: 100,
+    ailment: "",
+  });
+
   /* Load on mount */
   useEffect(() => {
-    getContent()
-      .then((d) => setData(d))
-      .finally(() => setLoading(false));
+    const loadAll = async () => {
+      try {
+        const [contentData, catsData, prodsData] = await Promise.all([
+          getContent(),
+          categoriesService.getCategories(),
+          productsService.getProducts(),
+        ]);
+        setData(contentData);
+        setCategories(catsData || []);
+        setProducts(prodsData || []);
+      } catch (err) {
+        console.error("Error loading CMS data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadAll();
   }, []);
 
   /* Helpers */
@@ -105,7 +149,7 @@ export default function FrontendCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success("✅ Live content updated on the website!");
+      toast.success("✅ Live site content updated!");
     } catch {
       toast.error("Failed to save content. Please try again.");
     } finally {
@@ -150,10 +194,121 @@ export default function FrontendCMS() {
     set("mission.stats", stats);
   };
 
+  // Category Actions
+  const handleSaveCategory = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingCategory) {
+        const updated = await categoriesService.updateCategory(editingCategory.id, categoryForm);
+        setCategories((prev) => prev.map((c) => (c.id === editingCategory.id ? updated : c)));
+        toast.success("Category updated successfully!");
+      } else {
+        const created = await categoriesService.createCategory(categoryForm);
+        setCategories((prev) => [...prev, created]);
+        toast.success("Category created successfully!");
+      }
+      setEditingCategory(null);
+      setCategoryForm({ name: "", slug: "", image: "", description: "", order: 0 });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message || "Failed to save category");
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this category?")) return;
+    try {
+      await categoriesService.deleteCategory(id);
+      setCategories((prev) => prev.filter((c) => c.id !== id));
+      toast.success("Category deleted.");
+    } catch (err) {
+      toast.error("Failed to delete category.");
+    }
+  };
+
+  const startEditCategory = (cat) => {
+    setEditingCategory(cat);
+    setCategoryForm({
+      name: cat.name,
+      slug: cat.slug,
+      image: cat.image || "",
+      description: cat.description || "",
+      order: cat.order || 0,
+    });
+  };
+
+  // Product Actions
+  const handleSaveProduct = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        ...productForm,
+        price: Number(productForm.price),
+        mrp: Number(productForm.mrp),
+        stock: Number(productForm.stock),
+        images: Array.isArray(productForm.images) ? productForm.images : [productForm.images],
+      };
+      if (editingProduct) {
+        const updated = await productsService.updateProduct(editingProduct.id, payload);
+        setProducts((prev) => prev.map((p) => (p.id === editingProduct.id ? updated : p)));
+        toast.success("Product updated successfully!");
+      } else {
+        const created = await productsService.createProduct(payload);
+        setProducts((prev) => [...prev, created]);
+        toast.success("Product created successfully!");
+      }
+      setEditingProduct(null);
+      setProductForm({
+        name: "",
+        slug: "",
+        category_slug: "",
+        price: 0,
+        mrp: 0,
+        short_description: "",
+        description: "",
+        images: [""],
+        is_bestseller: false,
+        is_featured: false,
+        stock: 100,
+        ailment: "",
+      });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message || "Failed to save product");
+    }
+  };
+
+  const handleDeleteProduct = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    try {
+      await productsService.deleteProduct(id);
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      toast.success("Product deleted.");
+    } catch (err) {
+      toast.error("Failed to delete product.");
+    }
+  };
+
+  const startEditProduct = (prod) => {
+    setEditingProduct(prod);
+    setProductForm({
+      name: prod.name,
+      slug: prod.slug,
+      category_slug: prod.category_slug || "",
+      price: prod.price || 0,
+      mrp: prod.mrp || 0,
+      short_description: prod.short_description || "",
+      description: prod.description || "",
+      images: prod.images || [""],
+      is_bestseller: prod.is_bestseller || false,
+      is_featured: prod.is_featured || false,
+      stock: prod.stock || 100,
+      ailment: prod.ailment || "",
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center text-muted-foreground">
-        Loading current frontend content…
+        Loading current frontend CMS & dynamic store content…
       </div>
     );
   }
@@ -163,9 +318,9 @@ export default function FrontendCMS() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Frontend CMS</h1>
+          <h1 className="text-2xl font-semibold">Frontend CMS & Shop Manager</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Edit and publish content that appears live on the Utkarsh Corporation website.
+            Manage live website banners, categories, products, and dynamic shop collection.
           </p>
         </div>
         <div className="flex gap-3 shrink-0">
@@ -183,6 +338,8 @@ export default function FrontendCMS() {
       <Tabs defaultValue="hero" className="space-y-6">
         <TabsList className="flex flex-wrap gap-1 h-auto p-1">
           <TabsTrigger value="hero" className="gap-1.5 text-xs"><ImageIcon className="h-3.5 w-3.5" />Hero Banner</TabsTrigger>
+          <TabsTrigger value="categories" className="gap-1.5 text-xs"><Grid className="h-3.5 w-3.5" />Categories</TabsTrigger>
+          <TabsTrigger value="products" className="gap-1.5 text-xs"><ShoppingBag className="h-3.5 w-3.5" />Shop Products</TabsTrigger>
           <TabsTrigger value="badges" className="gap-1.5 text-xs"><Shield className="h-3.5 w-3.5" />Trust Badges</TabsTrigger>
           <TabsTrigger value="mission" className="gap-1.5 text-xs"><BarChart3 className="h-3.5 w-3.5" />Mission & Stats</TabsTrigger>
           <TabsTrigger value="testimonials" className="gap-1.5 text-xs"><Quote className="h-3.5 w-3.5" />Testimonials</TabsTrigger>
@@ -233,6 +390,341 @@ export default function FrontendCMS() {
               <Field label="Secondary Button Link">
                 <Input value={data.hero?.secondaryCtaLink} onChange={(e) => set("hero.secondaryCtaLink", e.target.value)} placeholder="/about" />
               </Field>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ─── DYNAMIC CATEGORIES ─── */}
+        <TabsContent value="categories">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2"><Grid className="h-5 w-5 text-violet-500" /> Dynamic Shop Categories</CardTitle>
+                  <CardDescription>Manage Ayurveda categories displayed on the Home Bento grid and Shop page sidebar filter.</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Category Add/Edit Form */}
+              <form onSubmit={handleSaveCategory} className="rounded-2xl border border-violet-500/30 bg-violet-50/50 p-5 space-y-4">
+                <h3 className="font-semibold text-sm flex items-center gap-2 text-violet-900">
+                  {editingCategory ? <Edit2 className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  {editingCategory ? `Edit Category: ${editingCategory.name}` : "Add New Category"}
+                </h3>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <Field label="Category Name">
+                    <Input
+                      value={categoryForm.name}
+                      onChange={(e) => {
+                        const name = e.target.value;
+                        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+                        setCategoryForm((f) => ({ ...f, name, slug: editingCategory ? f.slug : slug }));
+                      }}
+                      placeholder="e.g. Immunity Boosters"
+                    />
+                  </Field>
+                  <Field label="Category Slug">
+                    <Input
+                      value={categoryForm.slug}
+                      onChange={(e) => setCategoryForm((f) => ({ ...f, slug: e.target.value }))}
+                      placeholder="immunity-boosters"
+                    />
+                  </Field>
+                  <Field label="Display Order">
+                    <Input
+                      type="number"
+                      value={categoryForm.order}
+                      onChange={(e) => setCategoryForm((f) => ({ ...f, order: Number(e.target.value) }))}
+                    />
+                  </Field>
+                  <div className="sm:col-span-2 lg:col-span-3">
+                    <Field label="Image URL">
+                      <Input
+                        value={categoryForm.image}
+                        onChange={(e) => setCategoryForm((f) => ({ ...f, image: e.target.value }))}
+                        placeholder="https://..."
+                      />
+                    </Field>
+                  </div>
+                  <div className="sm:col-span-2 lg:col-span-3">
+                    <Field label="Description">
+                      <Textarea
+                        rows={2}
+                        value={categoryForm.description}
+                        onChange={(e) => setCategoryForm((f) => ({ ...f, description: e.target.value }))}
+                        placeholder="Brief description of products in this category..."
+                      />
+                    </Field>
+                  </div>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  {editingCategory && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditingCategory(null);
+                        setCategoryForm({ name: "", slug: "", image: "", description: "", order: 0 });
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                  <Button type="submit" size="sm" className="bg-violet-600 hover:bg-violet-700 text-white gap-1.5">
+                    <Check className="h-4 w-4" /> {editingCategory ? "Update Category" : "Add Category"}
+                  </Button>
+                </div>
+              </form>
+
+              {/* Categories Grid List */}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {categories.map((cat) => (
+                  <div key={cat.id} className="rounded-2xl border border-border bg-background p-4 flex flex-col justify-between space-y-3 relative group">
+                    <div className="space-y-2">
+                      {cat.image && (
+                        <div className="aspect-video rounded-xl overflow-hidden bg-muted">
+                          <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-bold text-base">{cat.name}</h4>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 font-mono">
+                          Order: {cat.order || 0}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground font-mono">slug: {cat.slug}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{cat.description}</p>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+                      <Button size="xs" variant="outline" onClick={() => startEditCategory(cat)} className="gap-1">
+                        <Edit2 className="h-3 w-3" /> Edit
+                      </Button>
+                      <Button size="xs" variant="destructive" onClick={() => handleDeleteCategory(cat.id)} className="gap-1">
+                        <Trash2 className="h-3 w-3" /> Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ─── DYNAMIC SHOP PRODUCTS ─── */}
+        <TabsContent value="products">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2"><ShoppingBag className="h-5 w-5 text-violet-500" /> Dynamic Shop Products</CardTitle>
+                  <CardDescription>Add, edit or delete Ayurvedic products shown on the Shop and Home pages.</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Product Add/Edit Form */}
+              <form onSubmit={handleSaveProduct} className="rounded-2xl border border-violet-500/30 bg-violet-50/50 p-5 space-y-4">
+                <h3 className="font-semibold text-sm flex items-center gap-2 text-violet-900">
+                  {editingProduct ? <Edit2 className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  {editingProduct ? `Edit Product: ${editingProduct.name}` : "Add New Product"}
+                </h3>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <Field label="Product Name">
+                    <Input
+                      value={productForm.name}
+                      onChange={(e) => {
+                        const name = e.target.value;
+                        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+                        setProductForm((f) => ({ ...f, name, slug: editingProduct ? f.slug : slug }));
+                      }}
+                      placeholder="e.g. Special Chyawanprash"
+                    />
+                  </Field>
+                  <Field label="Product Slug">
+                    <Input
+                      value={productForm.slug}
+                      onChange={(e) => setProductForm((f) => ({ ...f, slug: e.target.value }))}
+                      placeholder="special-chyawanprash"
+                    />
+                  </Field>
+                  <Field label="Category Slug">
+                    <select
+                      value={productForm.category_slug}
+                      onChange={(e) => setProductForm((f) => ({ ...f, category_slug: e.target.value }))}
+                      className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition"
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((c) => (
+                        <option key={c.id || c.slug} value={c.slug}>
+                          {c.name} ({c.slug})
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+
+                  <Field label="Selling Price (₹)">
+                    <Input
+                      type="number"
+                      value={productForm.price}
+                      onChange={(e) => setProductForm((f) => ({ ...f, price: e.target.value }))}
+                    />
+                  </Field>
+                  <Field label="MRP (₹)">
+                    <Input
+                      type="number"
+                      value={productForm.mrp}
+                      onChange={(e) => setProductForm((f) => ({ ...f, mrp: e.target.value }))}
+                    />
+                  </Field>
+                  <Field label="Stock Quantity">
+                    <Input
+                      type="number"
+                      value={productForm.stock}
+                      onChange={(e) => setProductForm((f) => ({ ...f, stock: e.target.value }))}
+                    />
+                  </Field>
+
+                  <div className="sm:col-span-2 lg:col-span-3">
+                    <Field label="Image URL">
+                      <Input
+                        value={Array.isArray(productForm.images) ? productForm.images[0] : productForm.images}
+                        onChange={(e) => setProductForm((f) => ({ ...f, images: [e.target.value] }))}
+                        placeholder="https://images.unsplash.com/..."
+                      />
+                    </Field>
+                  </div>
+
+                  <Field label="Ailment / Concern Tag">
+                    <Input
+                      value={productForm.ailment}
+                      onChange={(e) => setProductForm((f) => ({ ...f, ailment: e.target.value }))}
+                      placeholder="e.g. Immunity & Cold Protection"
+                    />
+                  </Field>
+
+                  <div className="flex items-center gap-6 pt-6">
+                    <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={productForm.is_bestseller}
+                        onChange={(e) => setProductForm((f) => ({ ...f, is_bestseller: e.target.checked }))}
+                        className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                      />
+                      Bestseller Product
+                    </label>
+                    <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={productForm.is_featured}
+                        onChange={(e) => setProductForm((f) => ({ ...f, is_featured: e.target.checked }))}
+                        className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                      />
+                      Featured Seasonal
+                    </label>
+                  </div>
+
+                  <div className="sm:col-span-2 lg:col-span-3">
+                    <Field label="Short Description">
+                      <Input
+                        value={productForm.short_description}
+                        onChange={(e) => setProductForm((f) => ({ ...f, short_description: e.target.value }))}
+                        placeholder="One line quick benefit summary..."
+                      />
+                    </Field>
+                  </div>
+
+                  <div className="sm:col-span-2 lg:col-span-3">
+                    <Field label="Full Description">
+                      <Textarea
+                        rows={3}
+                        value={productForm.description}
+                        onChange={(e) => setProductForm((f) => ({ ...f, description: e.target.value }))}
+                        placeholder="Detailed formulation, ingredients and usage instructions..."
+                      />
+                    </Field>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 justify-end">
+                  {editingProduct && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditingProduct(null);
+                        setProductForm({
+                          name: "",
+                          slug: "",
+                          category_slug: "",
+                          price: 0,
+                          mrp: 0,
+                          short_description: "",
+                          description: "",
+                          images: [""],
+                          is_bestseller: false,
+                          is_featured: false,
+                          stock: 100,
+                          ailment: "",
+                        });
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                  <Button type="submit" size="sm" className="bg-violet-600 hover:bg-violet-700 text-white gap-1.5">
+                    <Check className="h-4 w-4" /> {editingProduct ? "Update Product" : "Add Product"}
+                  </Button>
+                </div>
+              </form>
+
+              {/* Products List Grid */}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {products.map((prod) => (
+                  <div key={prod.id} className="rounded-2xl border border-border bg-background p-4 flex flex-col justify-between space-y-3 relative group">
+                    <div className="space-y-2">
+                      {prod.images?.[0] && (
+                        <div className="aspect-square rounded-xl overflow-hidden bg-muted">
+                          <img src={prod.images[0]} alt={prod.name} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {prod.is_bestseller && (
+                          <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">
+                            Bestseller
+                          </span>
+                        )}
+                        {prod.is_featured && (
+                          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                            Featured
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="font-bold text-base">{prod.name}</h4>
+                      <p className="text-xs text-muted-foreground font-mono">Category: {prod.category_slug}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{prod.short_description}</p>
+                      <div className="flex items-baseline gap-2 pt-1">
+                        <span className="text-base font-bold text-violet-900">₹{prod.price}</span>
+                        {prod.mrp > prod.price && (
+                          <span className="text-xs text-muted-foreground line-through">₹{prod.mrp}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+                      <Button size="xs" variant="outline" onClick={() => startEditProduct(prod)} className="gap-1">
+                        <Edit2 className="h-3 w-3" /> Edit
+                      </Button>
+                      <Button size="xs" variant="destructive" onClick={() => handleDeleteProduct(prod.id)} className="gap-1">
+                        <Trash2 className="h-3 w-3" /> Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
