@@ -49,7 +49,7 @@ export default function User() {
       filterable: true,
     },
     { key: "email", label: "Email", filterable: true },
-    { key: "phone", label: "Phone Number", filterable: true },
+    { key: "phoneNumber", label: "Phone Number", filterable: true },
     {
       key: "role",
       label: "Admin/User",
