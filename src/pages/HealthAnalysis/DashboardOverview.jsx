@@ -53,7 +53,7 @@ export default function DashboardOverview() {
           const Icon = item.icon;
           return (
             <Card key={item.title} className="border-0 shadow-sm">
-              <CardContent className="p-5">
+              <CardContent className="p-5 flex-col">
                 <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${item.accent} text-white`}>
                   <Icon className="h-6 w-6" />
                 </div>

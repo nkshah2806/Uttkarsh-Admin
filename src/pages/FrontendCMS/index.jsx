@@ -113,19 +113,21 @@ export default function FrontendCMS() {
           return (
             <Link key={section.href} to={section.href} className="group block">
               <Card className="h-full transition-all duration-200 hover:shadow-lg hover:border-violet-500/30 hover:-translate-y-0.5 cursor-pointer">
-                <CardContent className="p-5 flex flex-col gap-4">
-                  <div className={`w-fit p-3 rounded-xl bg-gradient-to-br ${section.color}`}>
-                    <Icon className={`h-6 w-6 ${section.iconColor}`} />
+                <CardContent className="flex flex-col gap-4">
+                  <div className="flex items-start justify-start gap-4">
+                    <div className={`w-fit p-3 rounded-xl bg-gradient-to-br ${section.color}`}>
+                      <Icon className={`h-6 w-6 ${section.iconColor}`} />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-base group-hover:text-violet-600 transition-colors">
+                        {section.title}
+                      </h3>
+                      <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                        {section.description}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-base group-hover:text-violet-600 transition-colors">
-                      {section.title}
-                    </h3>
-                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-                      {section.description}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs font-medium text-violet-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute bottom-5 right-5 flex items-center justify-end gap-1 text-xs font-medium text-violet-600 opacity-0 group-hover:opacity-100 transition-opacity">
                     Open editor <ArrowRight className="h-3.5 w-3.5" />
                   </div>
                 </CardContent>
