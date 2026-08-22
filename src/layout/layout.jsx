@@ -5,8 +5,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Bell, Moon, Sun } from "lucide-react";
+import { Bell, Moon, Sun, Globe, Shield } from "lucide-react";
 import { useTheme } from "@/components/theme-context";
+import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import MenuItem from "@mui/material/MenuItem";
@@ -15,6 +16,7 @@ import ClickAwayListener from "@mui/material/ClickAwayListener";
 
 export default function Layout(props) {
   const { theme, toggleTheme } = useTheme();
+  const { lang, toggleLanguage } = useLanguage();
   const [notificationUserWise, setNotificationUserWise] = useState();
   const [notificationList, setNotificationList] = useState([]);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -73,10 +75,15 @@ export default function Layout(props) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="flex flex-col min-h-screen">
+        <div className="h-1 w-full bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-800 shrink-0" />
         <header className="px-4 bg-sidebar border-b flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-extrabold bg-indigo-100/90 text-indigo-900 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 rounded-full shadow-2xs">
+              <Shield className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+              ADMIN CONTROL PANEL
+            </span>
           </div>
 
           <div className="relative ml-auto">
@@ -168,13 +175,22 @@ export default function Layout(props) {
 
           <Button
             variant={theme === "dark" ? "default" : "secondary"}
+            size="sm"
+            onClick={toggleLanguage}
+            className="flex items-center gap-1 font-bold text-xs px-3"
+          >
+            <Globe className="h-4 w-4" /> {lang === "en" ? "EN | हिंदी" : "हिंदी | EN"}
+          </Button>
+
+          <Button
+            variant={theme === "dark" ? "default" : "secondary"}
             size="icon"
             onClick={toggleTheme}
           >
             {theme === "dark" ? <Sun /> : <Moon />}
           </Button>
         </header>
-        <div className="p-4 bg-[#FAF6FF] dark:bg-[#1A1A1A] h-full">
+        <div className="p-4 bg-slate-100/70 dark:bg-[#090d16] flex-1">
           {props.children}
         </div>
       </SidebarInset>

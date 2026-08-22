@@ -9,7 +9,12 @@ import PrivateRoute from "./routes/private-route";
 import User from "./pages/User";
 import UserEdit from "./pages/User/create";
 import UserDetails from "./pages/User/UserDetails";
-import { DashboardOverview, ClientManagement, ReportEntry, ReportDesigner } from "./pages/HealthAnalysis";
+import { DashboardOverview } from "./pages/HealthAnalysis";
+import MasterDataManagement from "./pages/HealthAnalysis/MasterDataManagement";
+import PatientRegistration from "./pages/HealthAnalysis/PatientRegistration";
+import QuantumDataEntry from "./pages/HealthAnalysis/QuantumDataEntry";
+import ReportReviewOverride from "./pages/HealthAnalysis/ReportReviewOverride";
+import PDFReportViewer from "./pages/HealthAnalysis/PDFReportViewer";
 import FrontendCMS from "./pages/FrontendCMS";
 import HeroCMS from "./pages/FrontendCMS/HeroCMS";
 import CategoriesCMS from "./pages/FrontendCMS/CategoriesCMS";
@@ -20,11 +25,11 @@ import TestimonialsCMS from "./pages/FrontendCMS/TestimonialsCMS";
 import DistributorCMS from "./pages/FrontendCMS/DistributorCMS";
 import HeaderFooterCMS from "./pages/FrontendCMS/HeaderFooterCMS";
 import ContactCMS from "./pages/FrontendCMS/ContactCMS";
+import { LanguageProvider } from "./context/LanguageContext";
 
 function App() {
   return (
-    <>
-      {/* <FCMToken /> */}
+    <LanguageProvider>
       <Toaster position="top-right" />
       <BrowserRouter>
         <Routes>
@@ -35,11 +40,15 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<DashboardOverview />} />
             <Route path="/health-dashboard" element={<DashboardOverview />} />
-            <Route path="/clients" element={<ClientManagement />} />
-            <Route path="/report-entry" element={<ReportEntry />} />
-            <Route path="/report-designer" element={<ReportDesigner />} />
 
-            {/* Frontend CMS — hub + individual section pages */}
+            {/* Quantum Machine Health Analysis Module Routes */}
+            <Route path="/quantum/master-data" element={<MasterDataManagement />} />
+            <Route path="/quantum/patients" element={<PatientRegistration />} />
+            <Route path="/quantum-scan/:visitId" element={<QuantumDataEntry />} />
+            <Route path="/report-review/:visitId" element={<ReportReviewOverride />} />
+            <Route path="/report-pdf/:visitId" element={<PDFReportViewer />} />
+
+            {/* Frontend CMS */}
             <Route path="/frontend-cms" element={<FrontendCMS />} />
             <Route path="/frontend-cms/hero" element={<HeroCMS />} />
             <Route path="/frontend-cms/categories" element={<CategoriesCMS />} />
@@ -60,10 +69,8 @@ function App() {
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>
       </BrowserRouter>
-    </>
+    </LanguageProvider>
   );
 }
 
 export default App;
-
-

@@ -14,6 +14,10 @@ import {
   Tag,
   Megaphone,
   PhoneCall,
+  Building2,
+  Users,
+  Database,
+  Stethoscope,
 } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -34,14 +38,13 @@ export function AppSidebar({ ...props }) {
     return data ? JSON.parse(data) : null;
   });
 
-  // Optional: Automatically re-check for updates in localStorage every few seconds
   React.useEffect(() => {
     const interval = setInterval(() => {
       const data = JSON.parse(localStorage.getItem("UserDetails"));
       setUserDetails((prev) =>
-        JSON.stringify(prev) !== JSON.stringify(data) ? data : prev,
+        JSON.stringify(prev) !== JSON.stringify(data) ? data : prev
       );
-    }, 1000); // Check every 1 second
+    }, 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -60,7 +63,15 @@ export function AppSidebar({ ...props }) {
     },
     navMain: [
       { title: "Dashboard", url: "/dashboard", icon: DashboardIcon },
-      // { title: "Health Dashboard", url: "/health-dashboard", icon: HeartPulse },
+      {
+        title: "Quantum Health Analysis",
+        url: "/quantum/patients",
+        icon: Stethoscope,
+        items: [
+          { title: "Patient Directory", url: "/quantum/patients", icon: Users },
+          { title: "Master Data Library", url: "/quantum/master-data", icon: Database },
+        ],
+      },
       {
         title: "Frontend CMS",
         url: "/frontend-cms",
@@ -77,10 +88,7 @@ export function AppSidebar({ ...props }) {
           { title: "Contact & Social", url: "/frontend-cms/contact", icon: PhoneCall },
         ],
       },
-      // { title: "Client Management", url: "/clients", icon: User2Icon },
-      // { title: "Report Entry", url: "/report-entry", icon: FileText },
-      // { title: "PDF Designer", url: "/report-designer", icon: Activity },
-      { title: "User", url: "/user", icon: User2Icon },
+      { title: "User Management", url: "/user", icon: User2Icon },
     ],
   };
 
@@ -99,5 +107,3 @@ export function AppSidebar({ ...props }) {
     </Sidebar>
   );
 }
-
-
