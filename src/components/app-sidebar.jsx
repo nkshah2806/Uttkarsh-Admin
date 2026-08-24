@@ -70,6 +70,7 @@ export function AppSidebar({ ...props }) {
         items: [
           { title: "Patient Directory", url: "/quantum/patients", icon: Users },
           { title: "Master Data Library", url: "/quantum/master-data", icon: Database },
+          { title: "Disclaimer Content", url: "/quantum/disclaimers", icon: FileText },
         ],
       },
       {

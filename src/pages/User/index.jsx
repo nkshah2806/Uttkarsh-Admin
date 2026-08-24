@@ -146,6 +146,7 @@ export default function User() {
           onSelectionChange={handleSelectionChange}
           DateRange={true}
           Search={true}
+          statusFilter={true}
         />
       </CardContent>
     </Card>

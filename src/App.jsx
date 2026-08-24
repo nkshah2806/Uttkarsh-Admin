@@ -12,6 +12,7 @@ import UserDetails from "./pages/User/UserDetails";
 import { DashboardOverview } from "./pages/HealthAnalysis";
 import MasterDataManagement from "./pages/HealthAnalysis/MasterDataManagement";
 import PatientRegistration from "./pages/HealthAnalysis/PatientRegistration";
+import PatientDetails from "./pages/HealthAnalysis/PatientDetails";
 import QuantumDataEntry from "./pages/HealthAnalysis/QuantumDataEntry";
 import ReportReviewOverride from "./pages/HealthAnalysis/ReportReviewOverride";
 import PDFReportViewer from "./pages/HealthAnalysis/PDFReportViewer";
@@ -25,6 +26,7 @@ import TestimonialsCMS from "./pages/FrontendCMS/TestimonialsCMS";
 import DistributorCMS from "./pages/FrontendCMS/DistributorCMS";
 import HeaderFooterCMS from "./pages/FrontendCMS/HeaderFooterCMS";
 import ContactCMS from "./pages/FrontendCMS/ContactCMS";
+import DisclaimerManagement from "./pages/HealthAnalysis/DisclaimerManagement";
 import { LanguageProvider } from "./context/LanguageContext";
 
 function App() {
@@ -44,9 +46,11 @@ function App() {
             {/* Quantum Machine Health Analysis Module Routes */}
             <Route path="/quantum/master-data" element={<MasterDataManagement />} />
             <Route path="/quantum/patients" element={<PatientRegistration />} />
+            <Route path="/quantum/patients/:patientId" element={<PatientDetails />} />
             <Route path="/quantum-scan/:visitId" element={<QuantumDataEntry />} />
             <Route path="/report-review/:visitId" element={<ReportReviewOverride />} />
             <Route path="/report-pdf/:visitId" element={<PDFReportViewer />} />
+            <Route path="/quantum/disclaimers" element={<DisclaimerManagement />} />
 
             {/* Frontend CMS */}
             <Route path="/frontend-cms" element={<FrontendCMS />} />

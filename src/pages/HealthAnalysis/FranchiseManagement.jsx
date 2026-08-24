@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axiosInstance from "@/lib/axios";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import ReusableTable from "@/components/ReusableTable";
 
 export default function FranchiseManagement() {
   const [franchises, setFranchises] = useState([]);
@@ -61,62 +62,94 @@ export default function FranchiseManagement() {
     }
   };
 
+  const headers = [
+    {
+      key: "franchise_code",
+      label: "Code",
+      render: (row) => (
+        <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+          {row.franchise_code}
+        </span>
+      ),
+    },
+    {
+      key: "name",
+      label: "Branch Name",
+      render: (row) => <span className="font-medium">{row.name}</span>,
+    },
+    { key: "owner_name", label: "Owner" },
+    {
+      key: "phone",
+      label: "Contact",
+      filterable: false,
+      render: (row) => (
+        <span>
+          {row.phone}
+          {row.email ? ` / ${row.email}` : ""}
+        </span>
+      ),
+    },
+    {
+      key: "royalty_percent",
+      label: "Royalty",
+      render: (row) => <span className="font-semibold">{row.royalty_percent}%</span>,
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (row) => (
+        <span
+          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+            row.status === "ACTIVE"
+              ? "bg-emerald-100 text-emerald-700"
+              : "bg-rose-100 text-rose-700"
+          }`}
+        >
+          {row.status}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      label: "Action",
+      filterable: false,
+      render: (row) => (
+        <Button
+          size="sm"
+          variant={row.status === "ACTIVE" ? "destructive" : "default"}
+          onClick={() => toggleStatus(row._id, row.status)}
+        >
+          {row.status === "ACTIVE" ? "Suspend" : "Activate"}
+        </Button>
+      ),
+    },
+  ];
+
+  const AddFranchiseButton = () => (
+    <Button onClick={() => setShowModal(true)} className="bg-indigo-600 hover:bg-indigo-700">
+      <Plus className="mr-2 h-4 w-4" /> Add Franchise Branch
+    </Button>
+  );
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Franchise Branch Management</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage Head Office and regional franchise branches, plans & commission rates.
-          </p>
-        </div>
-        <Button onClick={() => setShowModal(true)} className="bg-indigo-600 hover:bg-indigo-700">
-          <Plus className="mr-2 h-4 w-4" /> Add Franchise Branch
-        </Button>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Franchise Branch Management</h1>
+        <p className="text-sm text-muted-foreground">
+          Manage Head Office and regional franchise branches, plans & commission rates.
+        </p>
       </div>
 
       <Card className="border-0 shadow-sm">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-slate-100 dark:bg-slate-800 text-xs uppercase font-semibold text-slate-600 dark:text-slate-300">
-                <tr>
-                  <th className="px-4 py-3">Code</th>
-                  <th className="px-4 py-3">Branch Name</th>
-                  <th className="px-4 py-3">Owner</th>
-                  <th className="px-4 py-3">Contact</th>
-                  <th className="px-4 py-3">Royalty</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                {franchises.map((f) => (
-                  <tr key={f._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td className="px-4 py-3 font-mono font-bold text-indigo-600">{f.franchise_code}</td>
-                    <td className="px-4 py-3 font-medium">{f.name}</td>
-                    <td className="px-4 py-3">{f.owner_name}</td>
-                    <td className="px-4 py-3">{f.phone} / {f.email}</td>
-                    <td className="px-4 py-3 font-semibold">{f.royalty_percent}%</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${f.status === "ACTIVE" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
-                        {f.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Button
-                        size="sm"
-                        variant={f.status === "ACTIVE" ? "destructive" : "default"}
-                        onClick={() => toggleStatus(f._id, f.status)}
-                      >
-                        {f.status === "ACTIVE" ? "Suspend" : "Activate"}
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <CardContent className="p-6">
+          <ReusableTable
+            headers={headers}
+            data={franchises}
+            loading={loading}
+            Search="Search franchise code, name, owner..."
+            CreateExportRender={AddFranchiseButton}
+            pagination={true}
+          />
         </CardContent>
       </Card>
 
@@ -199,8 +232,12 @@ export default function FranchiseManagement() {
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">Create Branch</Button>
+                <Button type="button" variant="outline" onClick={() => setShowModal(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">
+                  Create Branch
+                </Button>
               </div>
             </form>
           </div>

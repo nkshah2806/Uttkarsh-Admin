@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/lib/axios";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/context/LanguageContext";
-import { Search, Users, ShieldAlert, Filter, Calendar, MapPin, Scale, Ruler } from "lucide-react";
+import { Users, Calendar, Eye, CheckCircle2, FileText, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import ReusableTable from "@/components/ReusableTable";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function PatientRegistration() {
   const { lang } = useLanguage();
+  const navigate = useNavigate();
 
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedMember, setSelectedMember] = useState("");
   const [memberOptions, setMemberOptions] = useState([]);
 
@@ -44,15 +54,147 @@ export default function PatientRegistration() {
     }
   };
 
-  const filteredPatients = patients.filter((p) => {
-    const query = searchQuery.toLowerCase();
-    const nameMatch = p.name?.toLowerCase().includes(query);
-    const codeMatch = p.patient_code?.toLowerCase().includes(query);
-    const mobileMatch = p.mobile?.includes(query);
-    const addressMatch = p.address?.toLowerCase().includes(query);
-    const registeredByMatch = p.registered_by?.fullName?.toLowerCase().includes(query);
-    return nameMatch || codeMatch || mobileMatch || addressMatch || registeredByMatch;
-  });
+  // Clean, focused table columns
+  const headers = [
+    {
+      key: "patient_code",
+      label: "Patient ID",
+      render: (row) => (
+        <span className="font-mono font-bold text-xs bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 px-2 py-1 rounded-md border border-indigo-200/60 dark:border-indigo-800">
+          {row.patient_code}
+        </span>
+      ),
+    },
+    {
+      key: "name",
+      label: "Patient Name",
+      render: (row) => (
+        <button
+          onClick={() => navigate(`/quantum/patients/${row._id}`)}
+          className="text-left font-semibold text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline transition-colors"
+        >
+          {row.name}
+        </button>
+      ),
+    },
+    {
+      key: "age",
+      label: "Age / Gender",
+      render: (row) => (
+        <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+          {row.age} Yrs / {row.gender}
+        </span>
+      ),
+    },
+    {
+      key: "mobile",
+      label: "Mobile Number",
+      render: (row) => (
+        <span className="text-xs font-mono text-slate-700 dark:text-slate-300 font-medium">
+          {row.mobile}
+        </span>
+      ),
+    },
+    {
+      key: "createdAt",
+      label: "Registration Date",
+      render: (row) => (
+        <span className="flex items-center gap-1.5 text-xs text-slate-500">
+          <Calendar className="h-3.5 w-3.5 text-slate-400" />
+          {new Date(row.createdAt).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })}
+        </span>
+      ),
+    },
+    {
+      key: "registered_by",
+      label: "Consultant / Member",
+      render: (row) => (
+        <div className="flex flex-col text-xs">
+          <span className="font-semibold text-slate-800 dark:text-slate-200">
+            {row.registered_by?.fullName || row.registered_by?.username || "Franchise Member"}
+          </span>
+          <span className="text-slate-400 text-[11px]">
+            {row.registered_by?.email || row.registered_by?.role || "Member"}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "latest_status",
+      label: "Status",
+      render: (row) => {
+        const st = row.latest_status;
+        if (st === "SHARED") {
+          return (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+              <CheckCircle2 className="h-3 w-3" /> Report Shared
+            </span>
+          );
+        }
+        if (st === "REPORT_READY") {
+          return (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+              <FileText className="h-3 w-3" /> Report Ready
+            </span>
+          );
+        }
+        if (st === "DATA_ENTRY") {
+          return (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+              <Clock className="h-3 w-3" /> In Progress
+            </span>
+          );
+        }
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            Registered
+          </span>
+        );
+      },
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      filterable: false,
+      render: (row) => (
+        <div className="flex items-center justify-end gap-1.5">
+          {/* Eye / View Details Button */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => navigate(`/quantum/patients/${row._id}`)}
+            className="h-8 px-2.5 text-xs font-semibold text-indigo-600 border-indigo-200 hover:bg-indigo-50 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-950"
+            title="View Complete Patient Profile & History"
+          >
+            <Eye className="h-3.5 w-3.5 mr-1" /> View Details
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const MemberFilterRender = () => (
+    <Select
+      value={selectedMember}
+      onValueChange={(val) => setSelectedMember(val === "all" ? "" : val)}
+    >
+      <SelectTrigger className="max-w-max min-w-[200px]">
+        <SelectValue placeholder={`All Members (${memberOptions.length})`} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">All Franchise Members ({memberOptions.length})</SelectItem>
+        {memberOptions.map((m) => (
+          <SelectItem key={m._id} value={m._id}>
+            {m.fullName} ({m.email || m.username || "Member"})
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
 
   return (
     <div className="space-y-6">
@@ -69,138 +211,24 @@ export default function PatientRegistration() {
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl">
               {lang === "hi"
-                ? "सभी पंजीकृत रोगियों की संपूर्ण जानकारी (वजन, ऊंचाई, पता और पंजीकृत सदस्य) देखें।"
-                : "View full patient records registered across all franchise members."}
+                ? "सभी पंजीकृत रोगियों की सूची। संपूर्ण रोगी इतिहास, प्रोफाइल एवं पूर्व रिपोर्ट देखने के लिए विवरण बटन पर क्लिक करें।"
+                : "Clean directory of patients registered across all franchise members. Click View Details on any patient to see their complete profile and report history."}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Filters and Search Bar */}
+      {/* Table Card */}
       <Card className="shadow-sm border-0">
-        <CardContent className="p-4 flex flex-col sm:flex-row items-center gap-4 justify-between">
-          <div className="relative w-full sm:w-80">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search by name, code, mobile, address..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Filter className="h-4 w-4 text-slate-500 shrink-0" />
-            <select
-              value={selectedMember}
-              onChange={(e) => setSelectedMember(e.target.value)}
-              className="w-full sm:w-64 rounded-lg border border-slate-200 px-3 py-2 text-sm bg-white dark:bg-slate-900 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">All Franchise Members ({memberOptions.length})</option>
-              {memberOptions.map((m) => (
-                <option key={m._id} value={m._id}>
-                  {m.fullName} ({m.email || m.username || "Member"})
-                </option>
-              ))}
-            </select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Patients Table Card */}
-      <Card className="shadow-sm border-0">
-        <CardHeader className="py-4 px-6 border-b border-slate-100 dark:border-slate-800">
-          <CardTitle className="text-base font-bold flex items-center justify-between">
-            <span>Registered Patients List ({filteredPatients.length})</span>
-            {loading && <span className="text-xs text-indigo-600 animate-pulse">Loading directory...</span>}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-slate-50 dark:bg-slate-800 text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">
-                <tr>
-                  <th className="px-4 py-3">Patient Code</th>
-                  <th className="px-4 py-3">Patient Name</th>
-                  <th className="px-4 py-3">Age / Gender</th>
-                  <th className="px-4 py-3">Mobile</th>
-                  <th className="px-4 py-3">Weight & Height</th>
-                  <th className="px-4 py-3">Address</th>
-                  <th className="px-4 py-3">Registered By</th>
-                  <th className="px-4 py-3">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filteredPatients.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="px-4 py-12 text-center text-slate-400 text-sm">
-                      {loading ? "Loading patient records..." : "No patients found matching your search."}
-                    </td>
-                  </tr>
-                ) : (
-                  filteredPatients.map((p) => (
-                    <tr key={p._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                      <td className="px-4 py-3 font-mono font-bold text-indigo-600 dark:text-indigo-400 text-xs">
-                        {p.patient_code}
-                      </td>
-                      <td className="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100">
-                        {p.name}
-                      </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
-                        {p.age} Yrs / {p.gender}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">
-                        {p.mobile}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
-                        <div className="flex items-center gap-2">
-                          <span className="flex items-center gap-1 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
-                            <Scale className="h-3 w-3 text-indigo-500" />
-                            {p.weight ? `${p.weight} ${p.weight_unit || "kg"}` : "N/A"}
-                          </span>
-                          <span className="flex items-center gap-1 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
-                            <Ruler className="h-3 w-3 text-violet-500" />
-                            {p.height ? `${p.height} ${p.height_unit || "cm"}` : "N/A"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-slate-500 max-w-xs" title={p.address}>
-                        {p.address ? (
-                          <span className="flex items-center gap-1 whitespace-pre-line">
-                            <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
-                            {p.address}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 text-xs">-</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-xs">
-                        {p.registered_by ? (
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-indigo-900 dark:text-indigo-300">
-                              {p.registered_by.fullName || p.registered_by.username}
-                            </span>
-                            <span className="text-slate-400 text-[11px]">
-                              {p.registered_by.email || p.registered_by.role || "Member"}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400">-</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-slate-500">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3 text-slate-400" />
-                          {new Date(p.createdAt).toLocaleDateString("en-IN")}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+        <CardContent className="p-6">
+          <ReusableTable
+            headers={headers}
+            data={patients}
+            loading={loading}
+            Search="Search by Patient ID, Name, Mobile, Email..."
+            CreateExportRender={MemberFilterRender}
+            pagination={true}
+          />
         </CardContent>
       </Card>
     </div>
