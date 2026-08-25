@@ -99,7 +99,7 @@ export default function PDFReportViewer() {
           Compiling multi-language PDF layout...
         </div>
       ) : (
-        <div className="bg-white p-2 rounded-xl shadow-lg border max-w-4xl mx-auto overflow-hidden">
+        <div className="bg-white p-4 rounded-xl shadow-lg border max-w-4xl mx-auto overflow-hidden">
           <iframe
             title="PDF Preview"
             srcDoc={reportHtml}

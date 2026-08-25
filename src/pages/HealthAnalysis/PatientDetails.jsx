@@ -300,10 +300,10 @@ export default function PatientDetails() {
                 <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
                   {patientData.dob
                     ? new Date(patientData.dob).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })
                     : "—"}
                 </p>
               </div>
@@ -397,8 +397,8 @@ export default function PatientDetails() {
                       ? visits[0].status === "SHARED"
                         ? "Report Shared"
                         : visits[0].status === "REPORT_READY"
-                        ? "Report Ready"
-                        : "In Progress"
+                          ? "Report Ready"
+                          : "In Progress"
                       : "Registered"}
                   </p>
                   <p className="text-[11px] text-slate-500 mt-0.5">Current state</p>
@@ -446,11 +446,10 @@ export default function PatientDetails() {
         </CardHeader>
         <CardContent className="p-5">
           <ReusableTable
-            columns={[
+            headers={[
               {
                 key: "_id",
-                header: "Visit ID",
-                sortable: true,
+                label: "Visit ID",
                 render: (v) => (
                   <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/50 px-2 py-1 rounded">
                     #{v._id.slice(-6).toUpperCase()}
@@ -459,8 +458,7 @@ export default function PatientDetails() {
               },
               {
                 key: "visit_date",
-                header: "Visit Date",
-                sortable: true,
+                label: "Visit Date",
                 render: (v) => (
                   <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
                     <Calendar className="h-3.5 w-3.5 text-slate-400" />
@@ -474,8 +472,7 @@ export default function PatientDetails() {
               },
               {
                 key: "next_visit_date",
-                header: "Next Visit",
-                sortable: true,
+                label: "Next Visit",
                 render: (v) =>
                   v.next_visit_date ? (
                     <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
@@ -491,17 +488,8 @@ export default function PatientDetails() {
                   ),
               },
               {
-                key: "report_type",
-                header: "Report Type",
-                render: (v) => (
-                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                    {v.report_type || "Quantum Health Resonance Analysis"}
-                  </span>
-                ),
-              },
-              {
                 key: "consultant",
-                header: "Consultant",
+                label: "Consultant",
                 render: (v) => (
                   <span className="text-xs text-slate-600 dark:text-slate-400">
                     {v.consultant?.fullName || v.consultant?.username || "Franchise Consultant"}
@@ -510,8 +498,7 @@ export default function PatientDetails() {
               },
               {
                 key: "status",
-                header: "Status",
-                sortable: true,
+                label: "Status",
                 render: (v) =>
                   v.status === "SHARED" ? (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
@@ -529,7 +516,7 @@ export default function PatientDetails() {
               },
               {
                 key: "parameters",
-                header: "Parameters",
+                label: "Parameters",
                 render: (v) => (
                   <div className="flex items-center gap-1.5 text-xs">
                     <span className="font-bold text-slate-800 dark:text-slate-200">{v.total_parameters}</span>
@@ -547,58 +534,52 @@ export default function PatientDetails() {
                 ),
               },
               {
-                key: "selected_content_count",
-                header: "Selected Content",
+                key: "actions",
+                label: "Actions",
                 render: (v) => (
-                  <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-full border border-indigo-100 dark:border-indigo-900/50">
-                    {v.selected_content_count} Points
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openReportModal(v._id)}
+                      className="h-8 px-2.5 text-xs font-semibold text-indigo-600 border-indigo-200 hover:bg-indigo-50 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-950"
+                      title="View Full Report Breakdown"
+                    >
+                      <Eye className="h-3.5 w-3.5 mr-1" /> View Report
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => navigate(`/report-pdf/${v._id}`)}
+                      className="h-8 w-8 p-0 text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+                      title="Open PDF Document Preview"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDownloadReport(v._id)}
+                      className="h-8 w-8 p-0 text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
+                      title="Download Report File"
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handlePrintReport(v._id)}
+                      className="h-8 w-8 p-0 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                      title="Print Report"
+                    >
+                      <Printer className="h-4 w-4" />
+                    </Button>
+                  </div>
                 ),
               },
             ]}
             data={visits}
-            keyField="_id"
             emptyMessage={`No scan sessions or clinical reports have been generated for ${patientData?.name ?? "this patient"} yet.`}
-            renderActions={(v) => (
-              <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => openReportModal(v._id)}
-                  className="h-8 px-2.5 text-xs font-semibold text-indigo-600 border-indigo-200 hover:bg-indigo-50 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-950"
-                  title="View Full Report Breakdown"
-                >
-                  <Eye className="h-3.5 w-3.5 mr-1" /> View Report
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => navigate(`/report-pdf/${v._id}`)}
-                  className="h-8 w-8 p-0 text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
-                  title="Open PDF Document Preview"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleDownloadReport(v._id)}
-                  className="h-8 w-8 p-0 text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
-                  title="Download Report File"
-                >
-                  <Download className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handlePrintReport(v._id)}
-                  className="h-8 w-8 p-0 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-                  title="Print Report"
-                >
-                  <Printer className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
           />
         </CardContent>
       </Card>
@@ -635,21 +616,19 @@ export default function PatientDetails() {
                 <div className="flex items-center rounded-lg border bg-white dark:bg-slate-800 p-0.5 text-xs">
                   <button
                     onClick={() => setReportLang("en")}
-                    className={`px-2.5 py-1 rounded font-semibold transition-all ${
-                      reportLang === "en"
+                    className={`px-2.5 py-1 rounded font-semibold transition-all ${reportLang === "en"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-500 hover:text-slate-700"
-                    }`}
+                      }`}
                   >
                     English
                   </button>
                   <button
                     onClick={() => setReportLang("hi")}
-                    className={`px-2.5 py-1 rounded font-semibold transition-all ${
-                      reportLang === "hi"
+                    className={`px-2.5 py-1 rounded font-semibold transition-all ${reportLang === "hi"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-500 hover:text-slate-700"
-                    }`}
+                      }`}
                   >
                     हिंदी
                   </button>
@@ -749,31 +728,28 @@ export default function PatientDetails() {
                         <div className="flex items-center rounded-lg border bg-slate-100 dark:bg-slate-800 p-0.5 text-xs">
                           <button
                             onClick={() => setParamFilter("all")}
-                            className={`px-2.5 py-1 rounded font-semibold transition-all ${
-                              paramFilter === "all"
+                            className={`px-2.5 py-1 rounded font-semibold transition-all ${paramFilter === "all"
                                 ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs"
                                 : "text-slate-500"
-                            }`}
+                              }`}
                           >
                             All ({detailedReport.parameters?.length || 0})
                           </button>
                           <button
                             onClick={() => setParamFilter("abnormal")}
-                            className={`px-2.5 py-1 rounded font-semibold transition-all ${
-                              paramFilter === "abnormal"
+                            className={`px-2.5 py-1 rounded font-semibold transition-all ${paramFilter === "abnormal"
                                 ? "bg-white dark:bg-slate-700 text-rose-600 shadow-xs"
                                 : "text-slate-500"
-                            }`}
+                              }`}
                           >
                             Abnormal ({detailedReport.summary?.abnormal || 0})
                           </button>
                           <button
                             onClick={() => setParamFilter("normal")}
-                            className={`px-2.5 py-1 rounded font-semibold transition-all ${
-                              paramFilter === "normal"
+                            className={`px-2.5 py-1 rounded font-semibold transition-all ${paramFilter === "normal"
                                 ? "bg-white dark:bg-slate-700 text-emerald-600 shadow-xs"
                                 : "text-slate-500"
-                            }`}
+                              }`}
                           >
                             Normal ({detailedReport.summary?.normal || 0})
                           </button>
@@ -907,11 +883,10 @@ export default function PatientDetails() {
                                   </h5>
                                 </div>
                                 <span
-                                  className={`text-xs font-bold px-2 py-0.5 rounded ${
-                                    item.result_type === "HIGH"
+                                  className={`text-xs font-bold px-2 py-0.5 rounded ${item.result_type === "HIGH"
                                       ? "bg-rose-100 text-rose-700"
                                       : "bg-amber-100 text-amber-700"
-                                  }`}
+                                    }`}
                                 >
                                   {item.result_type}: {item.raw_value} {p.unit || ""} (Range: {p.normal_min}–{p.normal_max})
                                 </span>
