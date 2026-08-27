@@ -12,7 +12,7 @@ import {
 
 export default function PDFReportViewer() {
   const { visitId } = useParams();
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
 
   const [reportLang, setReportLang] = useState(lang);
   const [reportHtml, setReportHtml] = useState("");
@@ -43,7 +43,7 @@ export default function PDFReportViewer() {
         setReportId(res.data.report_id);
       } catch (err) {
         if (isMountedRef.current) {
-          toast.error("Failed to compile PDF report");
+          toast.error(t("failedCompilePdf"));
         }
       } finally {
         if (isMountedRef.current) {
@@ -78,23 +78,19 @@ export default function PDFReportViewer() {
   const handleDownloadPdf = async () => {
     if (pdfBusy) return; // prevent duplicate clicks while generating
     if (loading || !reportHtml) {
-      toast.error("Report is not ready yet. Please wait for it to compile.");
+      toast.error(t("reportNotReady"));
       return;
     }
     setPdfBusy(true);
     try {
       const win = openReportForPdfSave(reportHtml, reportTitle);
       if (!win) {
-        toast.error(
-          "Could not open the print window. Please allow pop-ups for this site and try again."
-        );
+        toast.error(t("printBlocked"));
       } else {
-        toast.success(
-          "Choose \u201CSave as PDF\u201D as the destination to download the report."
-        );
+        toast.success(t("saveAsPdfHint"));
       }
     } catch (err) {
-      toast.error("Failed to open PDF download. Please try again.");
+      toast.error(t("failedOpenPdf"));
     } finally {
       setPdfBusy(false);
     }
@@ -104,7 +100,7 @@ export default function PDFReportViewer() {
   const handleWhatsAppShare = async () => {
     if (pdfBusy) return; // prevent duplicate clicks while generating
     if (loading || !reportId || !reportHtml) {
-      toast.error("Report is not ready yet. Please wait for it to compile.");
+      toast.error(t("reportNotReady"));
       return;
     }
     setPdfBusy(true);
@@ -120,16 +116,12 @@ export default function PDFReportViewer() {
         },
       });
       if (started) {
-        toast.success(
-          "PDF generated. Save it, attach it to the WhatsApp chat, and send it with the message."
-        );
+        toast.success(t("pdfGeneratedWhatsApp"));
       } else {
-        toast.error(
-          "Could not open WhatsApp. Please allow pop-ups for this site and try again."
-        );
+        toast.error(t("printBlocked"));
       }
     } catch (err) {
-      toast.error("Failed to generate WhatsApp share link");
+      toast.error(t("failedWhatsAppShare"));
     } finally {
       setPdfBusy(false);
     }
@@ -140,7 +132,7 @@ export default function PDFReportViewer() {
       {/* Top Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border shadow-sm sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <span className="font-bold text-slate-800 dark:text-white">PDF Report Document</span>
+          <span className="font-bold text-slate-800 dark:text-white">{t("pdfReportDocument")}</span>
           <div className="flex items-center rounded-lg border p-1 bg-slate-100 dark:bg-slate-800 text-xs">
             <button
               onClick={() => setReportLang("en")}
@@ -161,7 +153,7 @@ export default function PDFReportViewer() {
 
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={handlePrint}>
-            <Printer className="mr-2 h-4 w-4" /> Print Report
+            <Printer className="mr-2 h-4 w-4" /> {t("printReport")}
           </Button>
           <Button
             variant="outline"
@@ -173,7 +165,7 @@ export default function PDFReportViewer() {
             ) : (
               <Download className="mr-2 h-4 w-4" />
             )}
-            Download PDF
+            {t("downloadPDF")}
           </Button>
           <Button
             onClick={handleWhatsAppShare}
@@ -185,7 +177,7 @@ export default function PDFReportViewer() {
             ) : (
               <Share2 className="mr-2 h-4 w-4" />
             )}
-            Share on WhatsApp
+            {t("shareWhatsApp")}
           </Button>
         </div>
       </div>
@@ -193,12 +185,12 @@ export default function PDFReportViewer() {
       {/* HTML Report Document Viewer Container */}
       {loading ? (
         <div className="p-12 text-center text-muted-foreground bg-white rounded-xl shadow">
-          Compiling multi-language PDF layout...
+          {t("compilingMultiLangPdf")}
         </div>
       ) : (
         <div className="bg-white p-4 rounded-xl shadow-lg border max-w-4xl mx-auto overflow-hidden">
           <iframe
-            title="PDF Preview"
+            title={t("pdfPreview")}
             srcDoc={reportHtml}
             className="w-full h-[850px] border-0 rounded-lg"
           />

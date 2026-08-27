@@ -7,7 +7,6 @@ import { Toaster } from "sonner";
 import ResetPassword from "./pages/ResetPassword/reset-password";
 import PrivateRoute from "./routes/private-route";
 import User from "./pages/User";
-import UserEdit from "./pages/User/create";
 import UserDetails from "./pages/User/UserDetails";
 import { DashboardOverview } from "./pages/HealthAnalysis";
 import MasterDataManagement from "./pages/HealthAnalysis/MasterDataManagement";
@@ -66,7 +65,6 @@ function App() {
 
             <Route path="/user">
               <Route index element={<User />} />
-              <Route path="edit/:id" element={<UserEdit />} />
             </Route>
             <Route path="/user/:id" element={<UserDetails />} />
           </Route>

@@ -4,8 +4,10 @@ import { Tag } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function DistributorCMS() {
+  const { t } = useLanguage();
   const [data, setData] = useState(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,29 +34,29 @@ export default function DistributorCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success("✅ Distributor Banner updated live!");
+      toast.success(t("cmsDistributorUpdated"));
     } catch {
-      toast.error("Failed to save. Please try again.");
+      toast.error(t("cmsSaveFailed"));
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
+    if (!window.confirm(t("cmsResetConfirm"))) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success("Content reset to defaults.");
+    toast.success(t("cmsResetDone"));
   };
 
-  if (loading) return <CMSLoader label="Loading Distributor content…" />;
+  if (loading) return <CMSLoader label="cmsLoadingDistributor" />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={Tag}
-        title="Distributor Banner"
-        description="The brown call-to-action banner at the bottom of the Home page and Distributor page."
+        title="distributorBanner"
+        description="cmsDistributorDescription"
         onSave={handleSave}
         onReset={handleReset}
         saving={saving}
@@ -63,29 +65,29 @@ export default function DistributorCMS() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Tag className="h-5 w-5 text-violet-500" /> Distributor CTA Banner
+            <Tag className="h-5 w-5 text-violet-500" /> {t("cmsDistributorCardTitle")}
           </CardTitle>
           <CardDescription>
-            Edit the banner's eyebrow label, headline, description paragraph, and action button.
+            {t("cmsDistributorCardDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5 md:grid-cols-2">
-          <Field label="Badge / Eyebrow Label">
+          <Field label="cmsBadgeEyebrowLabel">
             <CMSInput
               value={data.distributorCta?.badge}
               onChange={(e) => set("distributorCta.badge", e.target.value)}
-              placeholder="Business Opportunity"
+              placeholder="cmsBusinessOpportunityPlaceholder"
             />
           </Field>
-          <Field label="Heading Title">
+          <Field label="cmsHeadingTitle">
             <CMSInput
               value={data.distributorCta?.title}
               onChange={(e) => set("distributorCta.title", e.target.value)}
-              placeholder="Grow with us. Become a distributor."
+              placeholder="cmsGrowWithUsPlaceholder"
             />
           </Field>
           <div className="md:col-span-2">
-            <Field label="Description Text">
+            <Field label="cmsDescriptionText">
               <CMSTextarea
                 rows={2}
                 value={data.distributorCta?.description}
@@ -93,18 +95,18 @@ export default function DistributorCMS() {
               />
             </Field>
           </div>
-          <Field label="CTA Button Text">
+          <Field label="cmsCtaButtonText">
             <CMSInput
               value={data.distributorCta?.ctaText}
               onChange={(e) => set("distributorCta.ctaText", e.target.value)}
-              placeholder="Apply now"
+              placeholder="cmsApplyNowPlaceholder"
             />
           </Field>
-          <Field label="CTA Button Link">
+          <Field label="cmsCtaButtonLink">
             <CMSInput
               value={data.distributorCta?.ctaLink}
               onChange={(e) => set("distributorCta.ctaLink", e.target.value)}
-              placeholder="/distributor"
+              placeholder="cmsDistributorLinkPlaceholder"
             />
           </Field>
         </CardContent>

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 
 export default function PatientRegistration() {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const [patients, setPatients] = useState([]);
@@ -48,7 +48,7 @@ export default function PatientRegistration() {
       });
       setMemberOptions(Array.from(membersMap.values()));
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to load patients");
+      toast.error(err.response?.data?.message || t("failedLoadPatients"));
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,7 @@ export default function PatientRegistration() {
   const headers = [
     {
       key: "patient_code",
-      label: "Patient ID",
+      label: t("patientCode"),
       render: (row) => (
         <span className="font-mono font-bold text-xs bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 px-2 py-1 rounded-md border border-indigo-200/60 dark:border-indigo-800">
           {row.patient_code}
@@ -67,7 +67,7 @@ export default function PatientRegistration() {
     },
     {
       key: "name",
-      label: "Patient Name",
+      label: t("patientName"),
       render: (row) => (
         <button
           onClick={() => navigate(`/quantum/patients/${row._id}`)}
@@ -79,16 +79,16 @@ export default function PatientRegistration() {
     },
     {
       key: "age",
-      label: "Age / Gender",
+      label: t("ageGender"),
       render: (row) => (
         <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-          {row.age} Yrs / {row.gender}
+          {t("ageYrs").replace("{age}", row.age).replace("{gender}", row.gender)}
         </span>
       ),
     },
     {
       key: "mobile",
-      label: "Mobile Number",
+      label: t("mobile"),
       render: (row) => (
         <span className="text-xs font-mono text-slate-700 dark:text-slate-300 font-medium">
           {row.mobile}
@@ -97,7 +97,7 @@ export default function PatientRegistration() {
     },
     {
       key: "createdAt",
-      label: "Registration Date",
+      label: t("registrationDate"),
       render: (row) => (
         <span className="flex items-center gap-1.5 text-xs text-slate-500">
           <Calendar className="h-3.5 w-3.5 text-slate-400" />
@@ -111,54 +111,54 @@ export default function PatientRegistration() {
     },
     {
       key: "registered_by",
-      label: "Consultant / Member",
+      label: t("consultantMember"),
       render: (row) => (
         <div className="flex flex-col text-xs">
           <span className="font-semibold text-slate-800 dark:text-slate-200">
-            {row.registered_by?.fullName || row.registered_by?.username || "Franchise Member"}
+            {row.registered_by?.fullName || row.registered_by?.username || t("franchiseMember")}
           </span>
           <span className="text-slate-400 text-[11px]">
-            {row.registered_by?.email || row.registered_by?.role || "Member"}
+            {row.registered_by?.email || row.registered_by?.role || t("member")}
           </span>
         </div>
       ),
     },
     {
       key: "latest_status",
-      label: "Status",
+      label: t("status"),
       render: (row) => {
         const st = row.latest_status;
         if (st === "SHARED") {
           return (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-              <CheckCircle2 className="h-3 w-3" /> Report Shared
+              <CheckCircle2 className="h-3 w-3" /> {t("reportShared")}
             </span>
           );
         }
         if (st === "REPORT_READY") {
           return (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-              <FileText className="h-3 w-3" /> Report Ready
+              <FileText className="h-3 w-3" /> {t("reportReady")}
             </span>
           );
         }
         if (st === "DATA_ENTRY") {
           return (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-              <Clock className="h-3 w-3" /> In Progress
+              <Clock className="h-3 w-3" /> {t("inProgress")}
             </span>
           );
         }
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-            Registered
+            {t("registered")}
           </span>
         );
       },
     },
     {
       key: "actions",
-      label: "Actions",
+      label: t("actions"),
       filterable: false,
       render: (row) => (
         <div className="flex items-center justify-end gap-1.5">
@@ -168,9 +168,9 @@ export default function PatientRegistration() {
             variant="outline"
             onClick={() => navigate(`/quantum/patients/${row._id}`)}
             className="h-8 px-2.5 text-xs font-semibold text-indigo-600 border-indigo-200 hover:bg-indigo-50 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-950"
-            title="View Complete Patient Profile & History"
+            title={t("viewPatientProfile")}
           >
-            <Eye className="h-3.5 w-3.5 mr-1" /> View Details
+            <Eye className="h-3.5 w-3.5 mr-1" /> {t("viewDetails")}
           </Button>
         </div>
       ),
@@ -183,13 +183,13 @@ export default function PatientRegistration() {
       onValueChange={(val) => setSelectedMember(val === "all" ? "" : val)}
     >
       <SelectTrigger className="max-w-max min-w-[200px]">
-        <SelectValue placeholder={`All Members (${memberOptions.length})`} />
+        <SelectValue placeholder={t("allMembers").replace("{count}", memberOptions.length)} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">All Franchise Members ({memberOptions.length})</SelectItem>
+        <SelectItem value="all">{t("allFranchiseMembers").replace("{count}", memberOptions.length)}</SelectItem>
         {memberOptions.map((m) => (
           <SelectItem key={m._id} value={m._id}>
-            {m.fullName} ({m.email || m.username || "Member"})
+            {m.fullName} ({m.email || m.username || t("member")})
           </SelectItem>
         ))}
       </SelectContent>
@@ -204,15 +204,13 @@ export default function PatientRegistration() {
           <div>
             <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-indigo-300 font-bold mb-1">
               <Users className="h-4 w-4 text-indigo-400" />
-              Admin Patient Directory
+              {t("adminPatientDirectory")}
             </div>
             <h1 className="text-2xl font-bold tracking-tight">
-              {lang === "hi" ? "पंजीकृत रोगी डायरेक्टरी" : "Patient Directory"}
+              {t("patientDirectoryTitle")}
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl">
-              {lang === "hi"
-                ? "सभी पंजीकृत रोगियों की सूची। संपूर्ण रोगी इतिहास, प्रोफाइल एवं पूर्व रिपोर्ट देखने के लिए विवरण बटन पर क्लिक करें।"
-                : "Clean directory of patients registered across all franchise members. Click View Details on any patient to see their complete profile and report history."}
+              {t("patientDirectorySubtitle")}
             </p>
           </div>
         </div>
@@ -225,7 +223,7 @@ export default function PatientRegistration() {
             headers={headers}
             data={patients}
             loading={loading}
-            Search="Search by Patient ID, Name, Mobile, Email..."
+            Search={t("searchPatientPlaceholder")}
             CreateExportRender={MemberFilterRender}
             pagination={true}
           />

@@ -4,8 +4,10 @@ import { PhoneCall } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function ContactCMS() {
+  const { t } = useLanguage();
   const [data, setData] = useState(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,29 +34,29 @@ export default function ContactCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success("✅ Contact & Social info updated live!");
+      toast.success(t("cmsContactUpdated"));
     } catch {
-      toast.error("Failed to save. Please try again.");
+      toast.error(t("cmsSaveFailed"));
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
+    if (!window.confirm(t("cmsResetConfirm"))) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success("Content reset to defaults.");
+    toast.success(t("cmsResetDone"));
   };
 
-  if (loading) return <CMSLoader label="Loading Contact content…" />;
+  if (loading) return <CMSLoader label="cmsLoadingContact" />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={PhoneCall}
-        title="Contact & Social Links"
-        description="Details shown in the website footer and Contact page. Social URLs power the icons in the footer."
+        title="cmsContactTitle"
+        description="cmsContactDescription"
         onSave={handleSave}
         onReset={handleReset}
         saving={saving}
@@ -63,62 +65,62 @@ export default function ContactCMS() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <PhoneCall className="h-5 w-5 text-violet-500" /> Contact Info & Social Links
+            <PhoneCall className="h-5 w-5 text-violet-500" /> {t("cmsContactCardTitle")}
           </CardTitle>
           <CardDescription>
-            Update the phone number, email address, office address and social media profile URLs.
+            {t("cmsContactCardDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5 md:grid-cols-2">
-          <Field label="Customer Care Phone">
+          <Field label="cmsCustomerCarePhone">
             <CMSInput
               value={data.footer?.phone}
               onChange={(e) => set("footer.phone", e.target.value)}
-              placeholder="+91 99999 99999"
+              placeholder=""
             />
           </Field>
-          <Field label="Support Email">
+          <Field label="cmsSupportEmail">
             <CMSInput
               value={data.footer?.email}
               onChange={(e) => set("footer.email", e.target.value)}
-              placeholder="care@utkarshcorp.com"
+              placeholder=""
             />
           </Field>
           <div className="md:col-span-2">
-            <Field label="Office / HQ Address">
+            <Field label="cmsOfficeAddress">
               <CMSInput
                 value={data.footer?.address}
                 onChange={(e) => set("footer.address", e.target.value)}
-                placeholder="Nashik, Maharashtra, India"
+                placeholder=""
               />
             </Field>
           </div>
-          <Field label="Instagram URL">
+          <Field label="cmsInstagramUrl">
             <CMSInput
               value={data.footer?.instagramUrl}
               onChange={(e) => set("footer.instagramUrl", e.target.value)}
-              placeholder="https://instagram.com/..."
+              placeholder="cmsInstagramPlaceholder"
             />
           </Field>
-          <Field label="Facebook URL">
+          <Field label="cmsFacebookUrl">
             <CMSInput
               value={data.footer?.facebookUrl}
               onChange={(e) => set("footer.facebookUrl", e.target.value)}
-              placeholder="https://facebook.com/..."
+              placeholder="cmsFacebookPlaceholder"
             />
           </Field>
-          <Field label="YouTube URL">
+          <Field label="cmsYoutubeUrl">
             <CMSInput
               value={data.footer?.youtubeUrl}
               onChange={(e) => set("footer.youtubeUrl", e.target.value)}
-              placeholder="https://youtube.com/..."
+              placeholder="cmsYoutubePlaceholder"
             />
           </Field>
-          <Field label="Copyright Notice">
+          <Field label="cmsCopyrightNotice">
             <CMSInput
               value={data.footer?.copyrightText}
               onChange={(e) => set("footer.copyrightText", e.target.value)}
-              placeholder="Utkarsh Corporation. All rights reserved."
+              placeholder="cmsCopyrightPlaceholder"
             />
           </Field>
         </CardContent>

@@ -14,75 +14,76 @@ import {
   LayoutTemplate,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useLanguage } from "@/context/LanguageContext";
 
 const CMS_SECTIONS = [
   {
-    title: "Hero Banner",
-    description: "Edit the main headline, background image and CTA buttons.",
+    titleKey: "heroBanner",
+    descKey: "cmsHeroDesc",
     icon: ImageIcon,
     href: "/frontend-cms/hero",
     color: "from-violet-500/10 to-violet-600/5",
     iconColor: "text-violet-500",
   },
   {
-    title: "Shop Categories",
-    description: "Add, edit or delete product categories and their images.",
+    titleKey: "shopCategories",
+    descKey: "cmsCategoriesDesc",
     icon: Grid,
     href: "/frontend-cms/categories",
     color: "from-blue-500/10 to-blue-600/5",
     iconColor: "text-blue-500",
   },
   {
-    title: "Shop Products",
-    description: "Manage products: pricing, stock, images and bestseller flags.",
+    titleKey: "shopProducts",
+    descKey: "cmsProductsDesc",
     icon: ShoppingBag,
     href: "/frontend-cms/products",
     color: "from-emerald-500/10 to-emerald-600/5",
     iconColor: "text-emerald-500",
   },
   {
-    title: "Trust Badges",
-    description: "Edit the 4 trust badge labels shown below the hero section.",
+    titleKey: "trustBadges",
+    descKey: "cmsTrustBadgesDesc",
     icon: Shield,
     href: "/frontend-cms/trust-badges",
     color: "from-amber-500/10 to-amber-600/5",
     iconColor: "text-amber-500",
   },
   {
-    title: "Mission & Stats",
-    description: "Update the mission story, image and impact counter metrics.",
+    titleKey: "missionStats",
+    descKey: "cmsMissionDesc",
     icon: BarChart3,
     href: "/frontend-cms/mission",
     color: "from-teal-500/10 to-teal-600/5",
     iconColor: "text-teal-500",
   },
   {
-    title: "Testimonials",
-    description: "Add or remove customer reviews shown on the Home page.",
+    titleKey: "testimonials",
+    descKey: "cmsTestimonialsDesc",
     icon: Quote,
     href: "/frontend-cms/testimonials",
     color: "from-pink-500/10 to-pink-600/5",
     iconColor: "text-pink-500",
   },
   {
-    title: "Distributor Banner",
-    description: "Edit the distributor CTA banner headline and action button.",
+    titleKey: "distributorBanner",
+    descKey: "cmsDistributorDesc",
     icon: Tag,
     href: "/frontend-cms/distributor-banner",
     color: "from-orange-500/10 to-orange-600/5",
     iconColor: "text-orange-500",
   },
   {
-    title: "Header & Footer",
-    description: "Update the announcement bar text and footer brand description.",
+    titleKey: "headerFooter",
+    descKey: "cmsHeaderFooterDesc",
     icon: Megaphone,
     href: "/frontend-cms/header-footer",
     color: "from-indigo-500/10 to-indigo-600/5",
     iconColor: "text-indigo-500",
   },
   {
-    title: "Contact & Social",
-    description: "Edit phone, email, address and social media profile URLs.",
+    titleKey: "contactSocial",
+    descKey: "cmsContactDesc",
     icon: PhoneCall,
     href: "/frontend-cms/contact",
     color: "from-rose-500/10 to-rose-600/5",
@@ -91,6 +92,7 @@ const CMS_SECTIONS = [
 ];
 
 export default function FrontendCMS() {
+  const { t } = useLanguage();
   return (
     <div className="space-y-8">
       {/* Page Header */}
@@ -99,9 +101,9 @@ export default function FrontendCMS() {
           <LayoutTemplate className="h-7 w-7 text-violet-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-semibold">Frontend CMS</h1>
+          <h1 className="text-2xl font-semibold">{t("frontendCms")}</h1>
           <p className="mt-1 text-sm text-muted-foreground max-w-xl">
-            Manage every section of the live website. Click a card below to open the dedicated editor for that section.
+            {t("frontendCmsDescription")}
           </p>
         </div>
       </div>
@@ -120,15 +122,15 @@ export default function FrontendCMS() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-base group-hover:text-violet-600 transition-colors">
-                        {section.title}
+                        {t(section.titleKey)}
                       </h3>
                       <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-                        {section.description}
+                        {t(section.descKey)}
                       </p>
                     </div>
                   </div>
                   <div className="absolute bottom-5 right-5 flex items-center justify-end gap-1 text-xs font-medium text-violet-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Open editor <ArrowRight className="h-3.5 w-3.5" />
+                    {t("openEditor")} <ArrowRight className="h-3.5 w-3.5" />
                   </div>
                 </CardContent>
               </Card>
@@ -139,4 +141,3 @@ export default function FrontendCMS() {
     </div>
   );
 }
-

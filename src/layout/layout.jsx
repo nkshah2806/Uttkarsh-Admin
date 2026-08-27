@@ -1,11 +1,12 @@
 import { AppSidebar } from "@/components/app-sidebar";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Bell, Moon, Sun, Globe, Shield } from "lucide-react";
+import { Bell, Moon, Sun, Shield } from "lucide-react";
 import { useTheme } from "@/components/theme-context";
 import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
@@ -16,7 +17,7 @@ import ClickAwayListener from "@mui/material/ClickAwayListener";
 
 export default function Layout(props) {
   const { theme, toggleTheme } = useTheme();
-  const { lang, toggleLanguage } = useLanguage();
+  const { t } = useLanguage();
   const [notificationUserWise, setNotificationUserWise] = useState();
   const [notificationList, setNotificationList] = useState([]);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -82,7 +83,7 @@ export default function Layout(props) {
             <SidebarTrigger className="-ml-1" />
             <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-extrabold bg-indigo-100/90 text-indigo-900 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 rounded-full shadow-2xs">
               <Shield className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-              ADMIN CONTROL PANEL
+              {t("adminPanel")}
             </span>
           </div>
 
@@ -108,7 +109,7 @@ export default function Layout(props) {
                 >
                   <div className="flex-1 overflow-y-auto">
                     {notificationList.length === 0 ? (
-                      <div className="p-4 text-center">No notifications</div>
+                      <div className="p-4 text-center">{t("noNotifications")}</div>
                     ) : (
                       <>
                         {notificationList.map((notifi, i) => (
@@ -120,15 +121,15 @@ export default function Layout(props) {
                             sx={
                               !notifi.isRead
                                 ? {
+                                  backgroundColor:
+                                    theme === "dark" ? "#3730a3" : "#eef2ff", // indigo-900/dark, indigo-50/light
+                                  "&:hover": {
                                     backgroundColor:
-                                      theme === "dark" ? "#3730a3" : "#eef2ff", // indigo-900/dark, indigo-50/light
-                                    "&:hover": {
-                                      backgroundColor:
-                                        theme === "dark"
-                                          ? "#312e81"
-                                          : "#e0e7ff", // darker on hover
-                                    },
-                                  }
+                                      theme === "dark"
+                                        ? "#312e81"
+                                        : "#e0e7ff", // darker on hover
+                                  },
+                                }
                                 : {}
                             }
                           >
@@ -164,7 +165,7 @@ export default function Layout(props) {
                         className="dark:text-white font-semibold"
                         underline="hover"
                       >
-                        Mark all as read
+                        {t("markAllAsRead")}
                       </Link>
                     </div>
                   )}
@@ -173,14 +174,7 @@ export default function Layout(props) {
             )}
           </div>
 
-          <Button
-            variant={theme === "dark" ? "default" : "secondary"}
-            size="sm"
-            onClick={toggleLanguage}
-            className="flex items-center gap-1 font-bold text-xs px-3"
-          >
-            <Globe className="h-4 w-4" /> {lang === "en" ? "EN | हिंदी" : "हिंदी | EN"}
-          </Button>
+          <LanguageSwitcher />
 
           <Button
             variant={theme === "dark" ? "default" : "secondary"}

@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function TestimonialsCMS() {
+  const { t } = useLanguage();
   const [data, setData] = useState(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -28,7 +30,7 @@ export default function TestimonialsCMS() {
       ...prev,
       testimonials: [
         ...(prev.testimonials || []),
-        { id: Date.now(), name: "Customer Name, City", body: "Great product!", stars: 5 },
+        { id: Date.now(), name: t("cmsCustomerNameCityDefault"), body: t("cmsGreatProductDefault"), stars: 5 },
       ],
     }));
   };
@@ -44,29 +46,29 @@ export default function TestimonialsCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success("✅ Testimonials updated live!");
+      toast.success(t("cmsTestimonialsUpdated"));
     } catch {
-      toast.error("Failed to save. Please try again.");
+      toast.error(t("cmsSaveFailed"));
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
+    if (!window.confirm(t("cmsResetConfirm"))) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success("Content reset to defaults.");
+    toast.success(t("cmsResetDone"));
   };
 
-  if (loading) return <CMSLoader label="Loading Testimonials content…" />;
+  if (loading) return <CMSLoader label="cmsLoadingTestimonials" />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={Quote}
-        title="Customer Testimonials"
-        description="Reviews displayed on the Home page. Add, edit or remove testimonials."
+        title="cmsTestimonialsTitle"
+        description="cmsTestimonialsDescription"
         onSave={handleSave}
         onReset={handleReset}
         saving={saving}
@@ -77,47 +79,47 @@ export default function TestimonialsCMS() {
           <div className="flex items-start justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Quote className="h-5 w-5 text-violet-500" /> Customer Testimonials
+                <Quote className="h-5 w-5 text-violet-500" /> {t("cmsTestimonialsCardTitle")}
               </CardTitle>
-              <CardDescription>Each card shows a star rating, customer name and their review text.</CardDescription>
+              <CardDescription>{t("cmsTestimonialsCardDescription")}</CardDescription>
             </div>
             <Button size="sm" variant="outline" className="gap-1.5 text-xs shrink-0" onClick={addReview}>
-              <Plus className="h-3.5 w-3.5" /> Add Review
+              <Plus className="h-3.5 w-3.5" /> {t("cmsAddReview")}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {(data.testimonials || []).length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">No testimonials yet.</p>
+            <p className="text-sm text-muted-foreground text-center py-8">{t("cmsNoTestimonials")}</p>
           ) : (
             <div className="grid gap-5 md:grid-cols-3">
-              {(data.testimonials || []).map((t, idx) => (
-                <div key={t.id || idx} className="rounded-2xl border border-border bg-muted/40 p-5 space-y-3 relative">
+              {(data.testimonials || []).map((review, idx) => (
+                <div key={review.id || idx} className="rounded-2xl border border-border bg-muted/40 p-5 space-y-3 relative">
                   <button
                     onClick={() => removeReview(idx)}
                     className="absolute top-3 right-3 p-1 rounded-full text-destructive hover:bg-destructive/10 transition"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
-                  <Field label="Customer Name & City">
+                  <Field label="cmsCustomerNameCity">
                     <CMSInput
-                      value={t.name}
+                      value={review.name}
                       onChange={(e) => updateItem(idx, "name", e.target.value)}
                     />
                   </Field>
-                  <Field label="Review Text">
+                  <Field label="cmsReviewText">
                     <CMSTextarea
                       rows={3}
-                      value={t.body}
+                      value={review.body}
                       onChange={(e) => updateItem(idx, "body", e.target.value)}
                     />
                   </Field>
-                  <Field label="Star Rating (1–5)">
+                  <Field label="cmsStarRating">
                     <input
                       type="number"
                       min={1}
                       max={5}
-                      value={t.stars}
+                      value={review.stars}
                       onChange={(e) =>
                         updateItem(idx, "stars", Math.min(5, Math.max(1, parseInt(e.target.value) || 5)))
                       }
@@ -125,7 +127,7 @@ export default function TestimonialsCMS() {
                     />
                   </Field>
                   <div className="text-[#C5A059] text-lg">
-                    {"★".repeat(t.stars || 5)}{"☆".repeat(5 - (t.stars || 5))}
+                    {"★".repeat(review.stars || 5)}{"☆".repeat(5 - (review.stars || 5))}
                   </div>
                 </div>
               ))}

@@ -4,8 +4,10 @@ import { Megaphone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function HeaderFooterCMS() {
+  const { t } = useLanguage();
   const [data, setData] = useState(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,29 +34,29 @@ export default function HeaderFooterCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success("✅ Header & Footer updated live!");
+      toast.success(t("cmsHeaderFooterUpdated"));
     } catch {
-      toast.error("Failed to save. Please try again.");
+      toast.error(t("cmsSaveFailed"));
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
+    if (!window.confirm(t("cmsResetConfirm"))) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success("Content reset to defaults.");
+    toast.success(t("cmsResetDone"));
   };
 
-  if (loading) return <CMSLoader label="Loading Header & Footer content…" />;
+  if (loading) return <CMSLoader label="cmsLoadingHeaderFooter" />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={Megaphone}
-        title="Header & Footer"
-        description="Manage the announcement bar shown across all pages, and the footer brand description."
+        title="headerFooter"
+        description="cmsHeaderFooterDescription"
         onSave={handleSave}
         onReset={handleReset}
         saving={saving}
@@ -64,27 +66,27 @@ export default function HeaderFooterCMS() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Megaphone className="h-5 w-5 text-violet-500" /> Header Announcement Bar
+            <Megaphone className="h-5 w-5 text-violet-500" /> {t("cmsAnnouncementCardTitle")}
           </CardTitle>
           <CardDescription>
-            The dark green strip at the very top of every page on the website.
+            {t("cmsAnnouncementCardDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5 md:grid-cols-2">
           <div className="md:col-span-2">
-            <Field label="Announcement Text">
+            <Field label="cmsAnnouncementText">
               <CMSInput
                 value={data.header?.announcement}
                 onChange={(e) => set("header.announcement", e.target.value)}
-                placeholder="Free Shipping on Orders Over ₹499 · 100% Natural"
+                placeholder="cmsAnnouncementTextPlaceholder"
               />
             </Field>
           </div>
-          <Field label="Search Bar Placeholder">
+          <Field label="cmsSearchBarPlaceholder">
             <CMSInput
               value={data.header?.searchPlaceholder}
               onChange={(e) => set("header.searchPlaceholder", e.target.value)}
-              placeholder="Search herbs, remedies..."
+              placeholder="cmsSearchPlaceholderText"
             />
           </Field>
         </CardContent>
@@ -93,11 +95,11 @@ export default function HeaderFooterCMS() {
       {/* Footer Brand Description */}
       <Card>
         <CardHeader>
-          <CardTitle>Footer Brand Description</CardTitle>
-          <CardDescription>The description shown in the footer under the company logo.</CardDescription>
+          <CardTitle>{t("cmsFooterCardTitle")}</CardTitle>
+          <CardDescription>{t("cmsFooterCardDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Field label="Brand Description">
+          <Field label="cmsBrandDescription">
             <CMSTextarea
               rows={3}
               value={data.footer?.brandDescription}

@@ -31,8 +31,10 @@ import {
 } from "@/components/ui/sidebar";
 import { DashboardIcon } from "@radix-ui/react-icons";
 import { Config } from "@/lib/Config";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function AppSidebar({ ...props }) {
+  const { t } = useLanguage();
   const [userDetails, setUserDetails] = React.useState(() => {
     const data = localStorage.getItem("UserDetails");
     return data ? JSON.parse(data) : null;
@@ -62,34 +64,34 @@ export function AppSidebar({ ...props }) {
       initials: initials,
     },
     navMain: [
-      { title: "Dashboard", url: "/dashboard", icon: DashboardIcon },
+      { title: t("dashboard"), url: "/dashboard", icon: DashboardIcon },
       {
-        title: "Quantum Health Analysis",
+        title: t("quantumModule"),
         url: "/quantum/patients",
         icon: Stethoscope,
         items: [
-          { title: "Patient Directory", url: "/quantum/patients", icon: Users },
-          { title: "Master Data Library", url: "/quantum/master-data", icon: Database },
-          { title: "Disclaimer Content", url: "/quantum/disclaimers", icon: FileText },
+          { title: t("patientDirectory"), url: "/quantum/patients", icon: Users },
+          { title: t("masterDataLibrary"), url: "/quantum/master-data", icon: Database },
+          { title: t("disclaimerContent"), url: "/quantum/disclaimers", icon: FileText },
         ],
       },
       {
-        title: "Frontend CMS",
+        title: t("frontendCMS"),
         url: "/frontend-cms",
         icon: LayoutTemplate,
         items: [
-          { title: "Hero Banner", url: "/frontend-cms/hero", icon: ImageIcon },
-          { title: "Shop Categories", url: "/frontend-cms/categories", icon: Grid },
-          { title: "Shop Products", url: "/frontend-cms/products", icon: ShoppingBag },
-          { title: "Trust Badges", url: "/frontend-cms/trust-badges", icon: Shield },
-          { title: "Mission & Stats", url: "/frontend-cms/mission", icon: BarChart3 },
-          { title: "Testimonials", url: "/frontend-cms/testimonials", icon: Quote },
-          { title: "Distributor Banner", url: "/frontend-cms/distributor-banner", icon: Tag },
-          { title: "Header & Footer", url: "/frontend-cms/header-footer", icon: Megaphone },
-          { title: "Contact & Social", url: "/frontend-cms/contact", icon: PhoneCall },
+          { title: t("heroBanner"), url: "/frontend-cms/hero", icon: ImageIcon },
+          { title: t("shopCategories"), url: "/frontend-cms/categories", icon: Grid },
+          { title: t("shopProducts"), url: "/frontend-cms/products", icon: ShoppingBag },
+          { title: t("trustBadges"), url: "/frontend-cms/trust-badges", icon: Shield },
+          { title: t("missionStats"), url: "/frontend-cms/mission", icon: BarChart3 },
+          { title: t("testimonials"), url: "/frontend-cms/testimonials", icon: Quote },
+          { title: t("distributorBanner"), url: "/frontend-cms/distributor-banner", icon: Tag },
+          { title: t("headerFooter"), url: "/frontend-cms/header-footer", icon: Megaphone },
+          { title: t("contactSocial"), url: "/frontend-cms/contact", icon: PhoneCall },
         ],
       },
-      { title: "User Management", url: "/user", icon: User2Icon },
+      { title: t("userManagement"), url: "/user", icon: User2Icon },
     ],
   };
 

@@ -22,13 +22,12 @@ export const getAllUsers = async ({
       ...(endDate && { endDate }),
       page,
       limit,
-      // ...(isActive !== undefined && { isActive }),
       "sort[key]": sort.key,
       "sort[direction]": sort.direction,
     };
 
     const response = await axiosInstance.get(`${ENDPOINT}`, {
-      // params,
+      params,
     });
     return {
       data: response.data.data.map((user, index) => {
@@ -37,7 +36,12 @@ export const getAllUsers = async ({
           ...user,
           sNo: serialNumber,
           id: user._id,
-          fullName: `${user.firstname} ${user.lastname}`,
+          fullName:
+            user.fullName ||
+            [user.firstname, user.lastname].filter(Boolean).join(" ") ||
+            user.email,
+          approval_status: user.approval_status || (user.isAdmin ? "approved" : "pending"),
+          isAdmin: Boolean(user.isAdmin),
           // joinedOn: new Date(user.createdAt).toLocaleString(),
           isActive: user.isActive,
           profileUrl: user.image
@@ -48,7 +52,7 @@ export const getAllUsers = async ({
             : "N/A",
         };
       }),
-      total: response.data.data.count,
+      total: response.data.total,
     };
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -56,9 +60,12 @@ export const getAllUsers = async ({
   }
 };
 
-// TOGGLE ACTIVE STATUS (soft delete)
+// TOGGLE ACTIVE STATUS (soft delete) - updates the user's isActive via PUT /user/:id
 export const toggleUserStatus = (id, body) =>
-  axiosInstance.put(`${ENDPOINT}/deleteUser`, body);
+  axiosInstance.put(`${ENDPOINT}/${id}`, { userId: id, ...body });
+
+// APPROVE PENDING MEMBER - PATCH /user/:id/approve
+export const approveUser = (id) => axiosInstance.patch(`${ENDPOINT}/${id}/approve`);
 
 // GET USER BY ID
 export const getUserById = async (id) => {

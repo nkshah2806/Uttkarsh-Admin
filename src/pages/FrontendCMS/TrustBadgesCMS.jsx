@@ -4,8 +4,10 @@ import { Shield } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function TrustBadgesCMS() {
+  const { t } = useLanguage();
   const [data, setData] = useState(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -26,29 +28,29 @@ export default function TrustBadgesCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success("✅ Trust Badges updated live!");
+      toast.success(t("cmsTrustBadgesUpdated"));
     } catch {
-      toast.error("Failed to save. Please try again.");
+      toast.error(t("cmsSaveFailed"));
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
+    if (!window.confirm(t("cmsResetConfirm"))) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success("Content reset to defaults.");
+    toast.success(t("cmsResetDone"));
   };
 
-  if (loading) return <CMSLoader label="Loading Trust Badges content…" />;
+  if (loading) return <CMSLoader label="cmsLoadingTrustBadges" />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={Shield}
-        title="Trust Badges"
-        description="The 4 trust badges shown in the strip at the bottom of the hero banner."
+        title="trustBadges"
+        description="cmsTrustBadgesDescription"
         onSave={handleSave}
         onReset={handleReset}
         saving={saving}
@@ -57,27 +59,27 @@ export default function TrustBadgesCMS() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-violet-500" /> Trust Badges Strip
+            <Shield className="h-5 w-5 text-violet-500" /> {t("cmsTrustBadgesCardTitle")}
           </CardTitle>
           <CardDescription>
-            Edit badge text and icon names (use Lucide icon names e.g. ShieldCheck, Leaf, Truck).
+            {t("cmsTrustBadgesCardDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {(data.trustBadges || []).map((badge, idx) => (
             <div key={badge.id || idx} className="rounded-2xl border border-border bg-muted/40 p-4 space-y-3">
-              <p className="text-xs font-bold text-muted-foreground uppercase">Badge #{idx + 1}</p>
-              <Field label="Badge Text">
+              <p className="text-xs font-bold text-muted-foreground uppercase">{t("cmsBadgeNumber").replace("{number}", idx + 1)}</p>
+              <Field label="cmsBadgeText">
                 <CMSInput
                   value={badge.text}
                   onChange={(e) => updateBadge(idx, "text", e.target.value)}
                 />
               </Field>
-              <Field label="Icon Name">
+              <Field label="cmsIconName">
                 <CMSInput
                   value={badge.icon}
                   onChange={(e) => updateBadge(idx, "icon", e.target.value)}
-                  placeholder="ShieldCheck / Leaf / Truck / HeartHandshake"
+                  placeholder="cmsIconNamePlaceholder"
                 />
               </Field>
             </div>

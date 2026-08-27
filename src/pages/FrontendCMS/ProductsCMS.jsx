@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { categoriesService } from "@/services/categoriesService";
 import { productsService } from "@/services/productsService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, CMSLoader } from "./CMSShared";
+import { useLanguage } from "@/context/LanguageContext";
 
 const EMPTY_PRODUCT = {
   name: "",
@@ -23,6 +24,7 @@ const EMPTY_PRODUCT = {
 };
 
 export default function ProductsCMS() {
+  const { t } = useLanguage();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,27 +55,27 @@ export default function ProductsCMS() {
       if (editingProduct) {
         const updated = await productsService.updateProduct(editingProduct.id, payload);
         setProducts((prev) => prev.map((p) => (p.id === editingProduct.id ? updated : p)));
-        toast.success("Product updated successfully!");
+        toast.success(t("cmsProductUpdated"));
       } else {
         const created = await productsService.createProduct(payload);
         setProducts((prev) => [...prev, created]);
-        toast.success("Product created successfully!");
+        toast.success(t("cmsProductCreated"));
       }
       setEditingProduct(null);
       setProductForm(EMPTY_PRODUCT);
     } catch (err) {
-      toast.error(err?.response?.data?.message || err.message || "Failed to save product");
+      toast.error(err?.response?.data?.message || err.message || t("cmsProductSaveFailed"));
     }
   };
 
   const handleDeleteProduct = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    if (!window.confirm(t("cmsDeleteProductConfirm"))) return;
     try {
       await productsService.deleteProduct(id);
       setProducts((prev) => prev.filter((p) => p.id !== id));
-      toast.success("Product deleted.");
+      toast.success(t("cmsProductDeleted"));
     } catch {
-      toast.error("Failed to delete product.");
+      toast.error(t("cmsProductDeleteFailed"));
     }
   };
 
@@ -100,23 +102,23 @@ export default function ProductsCMS() {
     setProductForm(EMPTY_PRODUCT);
   };
 
-  if (loading) return <CMSLoader label="Loading products…" />;
+  if (loading) return <CMSLoader label="cmsLoadingProducts" />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={ShoppingBag}
-        title="Shop Products"
-        description="Add, edit or delete Ayurvedic products shown on the Shop and Home pages."
+        title="shopProducts"
+        description="cmsProductsDescription"
       />
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5 text-violet-500" /> Dynamic Shop Products
+            <ShoppingBag className="h-5 w-5 text-violet-500" /> {t("cmsProductsCardTitle")}
           </CardTitle>
           <CardDescription>
-            Manage your product catalogue. All changes are immediately reflected on the frontend.
+            {t("cmsProductsCardDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -127,10 +129,10 @@ export default function ProductsCMS() {
           >
             <h3 className="font-semibold text-sm flex items-center gap-2 text-violet-900 dark:text-violet-300">
               {editingProduct ? <Edit2 className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-              {editingProduct ? `Edit Product: ${editingProduct.name}` : "Add New Product"}
+              {editingProduct ? t("cmsEditProduct").replace("{name}", editingProduct.name) : t("cmsAddNewProduct")}
             </h3>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <Field label="Product Name">
+              <Field label="cmsProductName">
                 <CMSInput
                   value={productForm.name}
                   onChange={(e) => {
@@ -138,23 +140,23 @@ export default function ProductsCMS() {
                     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
                     setProductForm((f) => ({ ...f, name, slug: editingProduct ? f.slug : slug }));
                   }}
-                  placeholder="e.g. Special Chyawanprash"
+                  placeholder="cmsProductNamePlaceholder"
                 />
               </Field>
-              <Field label="Product Slug">
+              <Field label="cmsProductSlug">
                 <CMSInput
                   value={productForm.slug}
                   onChange={(e) => setProductForm((f) => ({ ...f, slug: e.target.value }))}
-                  placeholder="special-chyawanprash"
+                  placeholder="cmsProductSlugPlaceholder"
                 />
               </Field>
-              <Field label="Category">
+              <Field label="cmsCategory">
                 <select
                   value={productForm.category_slug}
                   onChange={(e) => setProductForm((f) => ({ ...f, category_slug: e.target.value }))}
                   className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition"
                 >
-                  <option value="">Select Category</option>
+                  <option value="">{t("cmsSelectCategory")}</option>
                   {categories.map((c) => (
                     <option key={c.id || c.slug} value={c.slug}>
                       {c.name} ({c.slug})
@@ -163,21 +165,21 @@ export default function ProductsCMS() {
                 </select>
               </Field>
 
-              <Field label="Selling Price (₹)">
+              <Field label="cmsSellingPrice">
                 <CMSInput
                   type="number"
                   value={productForm.price}
                   onChange={(e) => setProductForm((f) => ({ ...f, price: e.target.value }))}
                 />
               </Field>
-              <Field label="MRP (₹)">
+              <Field label="cmsMrp">
                 <CMSInput
                   type="number"
                   value={productForm.mrp}
                   onChange={(e) => setProductForm((f) => ({ ...f, mrp: e.target.value }))}
                 />
               </Field>
-              <Field label="Stock Quantity">
+              <Field label="cmsStockQuantity">
                 <CMSInput
                   type="number"
                   value={productForm.stock}
@@ -186,11 +188,11 @@ export default function ProductsCMS() {
               </Field>
 
               <div className="sm:col-span-2 lg:col-span-3">
-                <Field label="Product Image URL">
+                <Field label="cmsProductImageUrl">
                   <CMSInput
                     value={Array.isArray(productForm.images) ? productForm.images[0] : productForm.images}
                     onChange={(e) => setProductForm((f) => ({ ...f, images: [e.target.value] }))}
-                    placeholder="https://images.unsplash.com/..."
+                    placeholder=""
                   />
                 </Field>
               </div>
@@ -199,17 +201,17 @@ export default function ProductsCMS() {
                 <div className="sm:col-span-2 lg:col-span-3 rounded-xl overflow-hidden h-40 border border-border">
                   <img
                     src={Array.isArray(productForm.images) ? productForm.images[0] : productForm.images}
-                    alt="Product Preview"
+                    alt={t("cmsProductPreviewAlt")}
                     className="w-full h-full object-cover"
                   />
                 </div>
               )}
 
-              <Field label="Ailment / Concern Tag">
+              <Field label="cmsAilmentTag">
                 <CMSInput
                   value={productForm.ailment}
                   onChange={(e) => setProductForm((f) => ({ ...f, ailment: e.target.value }))}
-                  placeholder="e.g. Immunity & Cold Protection"
+                  placeholder="cmsAilmentPlaceholder"
                 />
               </Field>
 
@@ -221,7 +223,7 @@ export default function ProductsCMS() {
                     onChange={(e) => setProductForm((f) => ({ ...f, is_bestseller: e.target.checked }))}
                     className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
                   />
-                  Bestseller Product
+                  {t("cmsBestsellerProduct")}
                 </label>
                 <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
                   <input
@@ -230,27 +232,27 @@ export default function ProductsCMS() {
                     onChange={(e) => setProductForm((f) => ({ ...f, is_featured: e.target.checked }))}
                     className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
                   />
-                  Featured Seasonal
+                  {t("cmsFeaturedSeasonal")}
                 </label>
               </div>
 
               <div className="sm:col-span-2 lg:col-span-3">
-                <Field label="Short Description">
+                <Field label="cmsShortDescription">
                   <CMSInput
                     value={productForm.short_description}
                     onChange={(e) => setProductForm((f) => ({ ...f, short_description: e.target.value }))}
-                    placeholder="One line quick benefit summary..."
+                    placeholder="cmsShortDescriptionPlaceholder"
                   />
                 </Field>
               </div>
 
               <div className="sm:col-span-2 lg:col-span-3">
-                <Field label="Full Description">
+                <Field label="cmsFullDescription">
                   <CMSTextarea
                     rows={3}
                     value={productForm.description}
                     onChange={(e) => setProductForm((f) => ({ ...f, description: e.target.value }))}
-                    placeholder="Detailed formulation, ingredients and usage instructions..."
+                    placeholder="cmsFullDescriptionPlaceholder"
                   />
                 </Field>
               </div>
@@ -259,12 +261,12 @@ export default function ProductsCMS() {
             <div className="flex gap-2 justify-end">
               {editingProduct && (
                 <Button type="button" variant="ghost" size="sm" onClick={cancelEdit}>
-                  Cancel
+                  {t("cancel")}
                 </Button>
               )}
               <Button type="submit" size="sm" className="bg-violet-600 hover:bg-violet-700 text-white gap-1.5">
                 <Check className="h-4 w-4" />
-                {editingProduct ? "Update Product" : "Add Product"}
+                {editingProduct ? t("cmsUpdateProduct") : t("cmsAddProduct")}
               </Button>
             </div>
           </form>
@@ -272,7 +274,7 @@ export default function ProductsCMS() {
           {/* Products List Grid */}
           {products.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
-              No products yet. Add your first product above.
+              {t("cmsNoProducts")}
             </p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -290,17 +292,17 @@ export default function ProductsCMS() {
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {prod.is_bestseller && (
                         <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">
-                          Bestseller
+                          {t("cmsBestsellerBadge")}
                         </span>
                       )}
                       {prod.is_featured && (
                         <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
-                          Featured
+                          {t("cmsFeaturedBadge")}
                         </span>
                       )}
                     </div>
                     <h4 className="font-bold text-base">{prod.name}</h4>
-                    <p className="text-xs text-muted-foreground font-mono">Category: {prod.category_slug}</p>
+                    <p className="text-xs text-muted-foreground font-mono">{t("cmsCategoryLabel").replace("{slug}", prod.category_slug)}</p>
                     <p className="text-xs text-muted-foreground line-clamp-2">{prod.short_description}</p>
                     <div className="flex items-baseline gap-2 pt-1">
                       <span className="text-base font-bold text-violet-900">₹{prod.price}</span>
@@ -311,10 +313,10 @@ export default function ProductsCMS() {
                   </div>
                   <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
                     <Button variant="outline" onClick={() => startEditProduct(prod)} className="gap-1">
-                      <Edit2 className="h-3 w-3" /> Edit
+                      <Edit2 className="h-3 w-3" /> {t("edit")}
                     </Button>
                     <Button variant="destructive" onClick={() => handleDeleteProduct(prod.id)} className="gap-1">
-                      <Trash2 className="h-3 w-3" /> Delete
+                      <Trash2 className="h-3 w-3" /> {t("delete")}
                     </Button>
                   </div>
                 </div>
