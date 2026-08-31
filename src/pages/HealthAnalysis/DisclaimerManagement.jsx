@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import ReusableTable from "@/components/ReusableTable";
 
 export default function DisclaimerManagement() {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   const [disclaimers, setDisclaimers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -174,8 +174,8 @@ export default function DisclaimerManagement() {
           <button
             onClick={() => handleToggleStatus(row)}
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-colors ${row.is_active
-                ? "bg-emerald-500 text-white hover:bg-emerald-600 shadow-xs"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+              ? "bg-emerald-500 text-white hover:bg-emerald-600 shadow-xs"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
               }`}
             title="Click to toggle active status"
           >
@@ -410,7 +410,7 @@ export default function DisclaimerManagement() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Standard Clinical & Wellness Analysis Disclaimer"
+                  placeholder="e.g. Standard Wellness Assessment Disclaimer"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -532,8 +532,8 @@ export default function DisclaimerManagement() {
 
                 <div className="pt-6 border-t border-dashed flex items-end justify-between text-[11px] text-slate-400">
                   <div>
-                    <p className="font-semibold text-slate-600 dark:text-slate-300">Authorized Healthcare Center</p>
-                    <p>Utkarsh Quantum Health Analysis System</p>
+                    <p className="font-semibold text-slate-600 dark:text-slate-300">Wellness Assessment Center</p>
+                    <p>Utkarsh Quantum Wellness Assessment System</p>
                   </div>
                   <div className="text-center border-t border-slate-400 pt-1 w-40">
                     Authorized Signatory / Seal

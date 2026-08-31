@@ -12,9 +12,8 @@ import {
 
 export default function PDFReportViewer() {
   const { visitId } = useParams();
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
 
-  const [reportLang, setReportLang] = useState(lang);
   const [reportHtml, setReportHtml] = useState("");
   const [reportId, setReportId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,13 +28,13 @@ export default function PDFReportViewer() {
   }, []);
 
   const generateReport = useCallback(
-    async (selectedLang) => {
+    async () => {
       try {
         setLoading(true);
         const res = await axiosInstance.post(
           `v1/visits/${visitId}/generate-pdf`,
           {
-            lang: selectedLang,
+            lang: "en",
           }
         );
         if (!isMountedRef.current) return;
@@ -55,8 +54,8 @@ export default function PDFReportViewer() {
   );
 
   useEffect(() => {
-    generateReport(reportLang);
-  }, [generateReport, reportLang]);
+    generateReport();
+  }, [generateReport]);
 
   const handlePrint = () => {
     if (!reportHtml) return;
@@ -133,22 +132,6 @@ export default function PDFReportViewer() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border shadow-sm sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <span className="font-bold text-slate-800 dark:text-white">{t("pdfReportDocument")}</span>
-          <div className="flex items-center rounded-lg border p-1 bg-slate-100 dark:bg-slate-800 text-xs">
-            <button
-              onClick={() => setReportLang("en")}
-              className={`px-3 py-1 rounded font-semibold transition-colors ${reportLang === "en" ? "bg-white text-indigo-600 shadow dark:bg-indigo-600 dark:text-white" : "text-slate-500"
-                }`}
-            >
-              English
-            </button>
-            <button
-              onClick={() => setReportLang("hi")}
-              className={`px-3 py-1 rounded font-semibold transition-colors ${reportLang === "hi" ? "bg-white text-indigo-600 shadow dark:bg-indigo-600 dark:text-white" : "text-slate-500"
-                }`}
-            >
-              हिंदी (Hindi)
-            </button>
-          </div>
         </div>
 
         <div className="flex items-center gap-2">

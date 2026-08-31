@@ -16,6 +16,8 @@ const EMPTY_PRODUCT = {
   mrp: 0,
   short_description: "",
   description: "",
+  ingredients: "",
+  usage: "",
   images: [""],
   is_bestseller: false,
   is_featured: false,
@@ -89,6 +91,8 @@ export default function ProductsCMS() {
       mrp: prod.mrp || 0,
       short_description: prod.short_description || "",
       description: prod.description || "",
+      ingredients: prod.ingredients || "",
+      usage: prod.usage || "",
       images: prod.images || [""],
       is_bestseller: prod.is_bestseller || false,
       is_featured: prod.is_featured || false,
@@ -253,6 +257,28 @@ export default function ProductsCMS() {
                     value={productForm.description}
                     onChange={(e) => setProductForm((f) => ({ ...f, description: e.target.value }))}
                     placeholder="cmsFullDescriptionPlaceholder"
+                  />
+                </Field>
+              </div>
+
+              <div className="sm:col-span-2 lg:col-span-3">
+                <Field label="cmsIngredients">
+                  <CMSTextarea
+                    rows={4}
+                    value={productForm.ingredients}
+                    onChange={(e) => setProductForm((f) => ({ ...f, ingredients: e.target.value }))}
+                    placeholder="cmsIngredientsPlaceholder"
+                  />
+                </Field>
+              </div>
+
+              <div className="sm:col-span-2 lg:col-span-3">
+                <Field label="cmsHowToUse">
+                  <CMSTextarea
+                    rows={4}
+                    value={productForm.usage}
+                    onChange={(e) => setProductForm((f) => ({ ...f, usage: e.target.value }))}
+                    placeholder="cmsHowToUsePlaceholder"
                   />
                 </Field>
               </div>

@@ -9,3 +9,4 @@ export { default as QuantumDataEntry } from "./QuantumDataEntry";
 export { default as ReportReviewOverride } from "./ReportReviewOverride";
 export { default as PDFReportViewer } from "./PDFReportViewer";
 export { default as DisclaimerManagement } from "./DisclaimerManagement";
+export { default as CategoryManagement } from "./CategoryManagement";

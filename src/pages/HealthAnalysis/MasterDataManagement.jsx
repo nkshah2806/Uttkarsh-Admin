@@ -29,22 +29,10 @@ import { toast } from "sonner";
 import ReusableTable from "@/components/ReusableTable";
 import { parseContent, validateContent, NODE_TYPES } from "@/lib/contentParser";
 
-const PRESET_CATEGORIES = [
-  "Cardiovascular System",
-  "Digestive System",
-  "Hepatobiliary System",
-  "Skeletal System",
-  "Endocrine System",
-  "Nervous System",
-  "Respiratory System",
-  "Renal & Urinary System",
-  "Immune & Lymphatic",
-  "General",
-];
-
 export default function MasterDataManagement() {
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
   const [parameters, setParameters] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
@@ -63,7 +51,7 @@ export default function MasterDataManagement() {
     unit: "",
     normal_min: "",
     normal_max: "",
-    category: "Cardiovascular System",
+    category: "General",
     description: "",
     raw_content_en: "",
     status: "PUBLISHED",
@@ -73,6 +61,7 @@ export default function MasterDataManagement() {
 
   useEffect(() => {
     fetchParameters();
+    fetchCategories();
   }, []);
 
   const fetchParameters = async () => {
@@ -86,6 +75,31 @@ export default function MasterDataManagement() {
       setLoading(false);
     }
   };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await axiosInstance.get("v1/admin/parameter-categories");
+      setCategories(res.data.data || []);
+    } catch (err) {
+      // Non-blocking — the dropdown/table can fall back to in-use categories
+      console.error("Failed to load parameter categories", err);
+    }
+  };
+
+  // Categories shown in the "Create Quantum Parameter" dropdown:
+  // only admin-added categories appear in the list (active first, fallback to in-use ones)
+  const dropdownCategories = useMemo(() => {
+    const active = categories.filter((c) => c.is_active !== false).map((c) => c.name);
+    const inUse = Array.from(new Set(parameters.map((p) => p.category))).filter(Boolean);
+    return active.length > 0 ? active : inUse.length > 0 ? inUse : ["General"];
+  }, [categories, parameters]);
+
+  // Filter pills: admin-added categories + any categories still in use by parameters
+  const filterCategories = useMemo(() => {
+    const adminNames = categories.map((c) => c.name);
+    const inUse = Array.from(new Set(parameters.map((p) => p.category))).filter(Boolean);
+    return Array.from(new Set([...adminNames, ...inUse]));
+  }, [categories, parameters]);
 
   // Real-time client AST parse diagnostics
   const currentContentText = form.raw_content_en;
@@ -109,7 +123,7 @@ export default function MasterDataManagement() {
       unit: "",
       normal_min: "",
       normal_max: "",
-      category: "Cardiovascular System",
+      category: dropdownCategories[0] || "General",
       description: "",
       raw_content_en: "",
       status: "PUBLISHED",
@@ -239,14 +253,11 @@ export default function MasterDataManagement() {
     },
     {
       key: "name_en",
-      label: t("nameWithLang").replace("{lang}", lang.toUpperCase()),
+      label: "Parameter Name",
       render: (row) => (
         <div>
           <div className="font-semibold text-slate-800 dark:text-slate-100">
-            {lang === "hi" ? row.name_hi : row.name_en}
-          </div>
-          <div className="text-[11px] text-slate-400">
-            {lang === "hi" ? `EN: ${row.name_en}` : `HI: ${row.name_hi}`}
+            {row.name_en}
           </div>
         </div>
       ),
@@ -416,7 +427,7 @@ export default function MasterDataManagement() {
         >
           {t("allCategories")} ({parameters.length})
         </button>
-        {PRESET_CATEGORIES.map((cat) => {
+        {filterCategories.map((cat) => {
           const count = parameters.filter((p) => p.category === cat).length;
           if (count === 0 && selectedCategory !== cat) return null;
           return (
@@ -534,7 +545,7 @@ export default function MasterDataManagement() {
                         onChange={(e) => setForm({ ...form, category: e.target.value })}
                         className="w-full rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                       >
-                        {PRESET_CATEGORIES.map((cat) => (
+                        {dropdownCategories.map((cat) => (
                           <option key={cat} value={cat}>
                             {cat}
                           </option>

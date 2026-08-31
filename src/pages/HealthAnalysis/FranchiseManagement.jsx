@@ -99,11 +99,10 @@ export default function FranchiseManagement() {
       label: "Status",
       render: (row) => (
         <span
-          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-            row.status === "ACTIVE"
+          className={`px-2.5 py-1 rounded-full text-xs font-semibold ${row.status === "ACTIVE"
               ? "bg-emerald-100 text-emerald-700"
               : "bg-rose-100 text-rose-700"
-          }`}
+            }`}
         >
           {row.status}
         </span>
@@ -185,7 +184,7 @@ export default function FranchiseManagement() {
                 <input
                   type="text"
                   required
-                  placeholder="Utkarsh Healthcare Center - Jaipur"
+                  placeholder="Utkarsh Wellness Center - Jaipur"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full rounded border px-3 py-1.5"

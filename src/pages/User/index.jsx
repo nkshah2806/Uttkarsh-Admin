@@ -26,7 +26,7 @@ const ApprovalBadge = ({ status, t }) => {
   if (status === "approved") {
     return (
       <Badge variant="completed" className="capitalize">
-        <CheckCircle2 className="w-3.5 h-3.5" />
+        <CheckCircle2 className="w-4 h-4" />
         {t("approved")}
       </Badge>
     );
@@ -40,7 +40,7 @@ const ApprovalBadge = ({ status, t }) => {
   }
   return (
     <Badge variant="confirmed" className="capitalize">
-      <Clock className="w-3.5 h-3.5" />
+      <Clock className="w-4 h-4" />
       {t("statusPending")}
     </Badge>
   );
@@ -78,8 +78,8 @@ export default function User() {
       label: t("fullName"),
       filterable: true,
     },
-    { key: "email", label: t("email"), filterable: true },
-    { key: "phoneNumber", label: t("phoneNumber"), filterable: true },
+    // { key: "email", label: t("email"), filterable: true },
+    // { key: "phoneNumber", label: t("phoneNumber"), filterable: true },
     {
       key: "role",
       label: t("adminOrUser"),
@@ -94,6 +94,16 @@ export default function User() {
       key: "createdAt",
       label: t("registrationDate"),
       filterable: true,
+    },
+    {
+      key: "profileCompletion",
+      label: t("profileCompletion"),
+      filterable: false,
+      render: (row) => (
+        <Badge variant={row.profile_completed ? "completed" : "destructive"} className="capitalize">
+          {row.profile_completed ? t("completed") : t("incomplete")}
+        </Badge>
+      ),
     },
     {
       key: "approvalStatus",
@@ -123,17 +133,23 @@ export default function User() {
       label: t("actions"),
       render: (row) => (
         <div className="flex gap-3">
-          <Button onClick={() => navigate(`/user/${row._id}`)} title={t("viewDetails")}>
-            <Eye />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => navigate(`/user/${row._id}`)} title={t("viewDetails")}
+            className="h-8 w-8 p-0 text-slate-600 hover:text-indigo-600 border-indigo-600/40 hover:bg-indigo-50"
+          >
+            <Eye className="h-4 w-4" />
           </Button>
           {!row.isAdmin && row.approval_status === "pending" && (
             <Button
+              size="sm"
               variant="outline"
-              className="text-emerald-600 border-emerald-600/40 hover:bg-emerald-50"
+              className="h-8 w-8 p-0 text-slate-600 hover:text-indigo-600 border-indigo-600/40 hover:bg-indigo-50"
               onClick={() => handleApprove(row)}
               title={t("approveUser")}
             >
-              <CheckCircle2 className="size-5" strokeWidth={1.5} />
+              <CheckCircle2 className="h-4 w-4" />
             </Button>
           )}
         </div>

@@ -41,7 +41,7 @@ export default function ReportEntry() {
           <Input placeholder="Report ID" />
           <Input placeholder="Consultant Name" />
           <Input placeholder="Date" />
-          <Textarea className="md:col-span-2" placeholder="Clinical notes and observations" />
+          <Textarea className="md:col-span-2" placeholder="Wellness notes and observations" />
         </CardContent>
       </Card>
 

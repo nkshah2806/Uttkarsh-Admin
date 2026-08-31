@@ -10,7 +10,7 @@ import { toast } from "sonner";
 export default function QuantumDataEntry() {
   const { visitId } = useParams();
   const navigate = useNavigate();
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   const [visit, setVisit] = useState(null);
   const [patient, setPatient] = useState(null);
@@ -164,7 +164,7 @@ export default function QuantumDataEntry() {
               <thead className="bg-slate-100 dark:bg-slate-800 text-xs uppercase font-semibold text-slate-600 dark:text-slate-300 sticky top-0">
                 <tr>
                   <th className="px-4 py-3">Code</th>
-                  <th className="px-4 py-3">Parameter Name ({lang.toUpperCase()})</th>
+                  <th className="px-4 py-3">Parameter Name</th>
                   <th className="px-4 py-3">Category</th>
                   <th className="px-4 py-3">{t("normalRange")}</th>
                   <th className="px-4 py-3 w-40">{t("rawInput")}</th>
@@ -179,7 +179,7 @@ export default function QuantumDataEntry() {
                     <tr key={p._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                       <td className="px-4 py-2.5 font-mono font-bold text-indigo-600">{p.code}</td>
                       <td className="px-4 py-2.5 font-medium">
-                        {lang === "hi" ? p.name_hi : p.name_en}
+                        {p.name_en}
                       </td>
                       <td className="px-4 py-2.5 text-xs text-slate-500">{p.category}</td>
                       <td className="px-4 py-2.5 text-xs text-slate-600">

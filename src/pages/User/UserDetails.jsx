@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getUserById } from "@/services/userService";
+import { getUserById, getMemberPortalPassword } from "@/services/userService";
 import { memberApprovalService } from "@/services/memberApprovalService";
 import {
     Card,
@@ -13,7 +13,16 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import user from "../../assets/user.png";
 import { Config } from "@/lib/Config";
-import { CheckCircle2, Clock, XCircle, ArrowLeft } from "lucide-react";
+import {
+    CheckCircle2,
+    Clock,
+    XCircle,
+    ArrowLeft,
+    Eye,
+    EyeOff,
+    Copy,
+    Check,
+} from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { LANGUAGE_NAMES } from "@/i18n";
 
@@ -78,6 +87,9 @@ export default function UserDetails() {
     const [franchiseProfile, setFranchiseProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState("");
+    const [portalPassword, setPortalPassword] = useState("");
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [passwordCopied, setPasswordCopied] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -92,16 +104,33 @@ export default function UserDetails() {
                 .getMemberProfileByUser(id)
                 .then((res) => res?.data || null)
                 .catch(() => null),
+            // Member portal password — only meaningful for franchise members.
+            // Failing here is non-fatal (older records have no recoverable password).
+            getMemberPortalPassword(id)
+                .then((res) => res?.password || "")
+                .catch(() => ""),
         ])
-            .then(([userData, franchiseData]) => {
+            .then(([userData, franchiseData, password]) => {
                 setUserDetails(userData);
                 setFranchiseProfile(franchiseData);
+                setPortalPassword(password);
             })
             .catch((err) => {
                 setLoadError(err?.message || t("failedFetchUser"));
             })
             .finally(() => setLoading(false));
     }, [id, t]);
+
+    const handleCopyPassword = async () => {
+        if (!portalPassword) return;
+        try {
+            await navigator.clipboard.writeText(portalPassword);
+            setPasswordCopied(true);
+            setTimeout(() => setPasswordCopied(false), 2000);
+        } catch {
+            // Clipboard unavailable — ignore silently.
+        }
+    };
 
     if (loading) return <div className="text-center py-10">{t("loading")}</div>;
 
@@ -253,6 +282,58 @@ export default function UserDetails() {
                         <DetailRow label={t("languagePreference")} value={languagePref} />
                         <DetailRow label={t("registrationDate")} value={formatDateTime(userDetails.createdAt)} />
                         <DetailRow label={t("updatedAt")} value={formatDateTime(userDetails.updatedAt)} />
+
+                        {/* Member Portal Password — admin can view the plaintext
+                            (only recoverable for passwords set after this feature
+                            was deployed). */}
+                        {!userDetails.isAdmin && (
+                            <div className="grid grid-cols-3 gap-4 items-center py-1.5 border-b border-dashed last:border-0">
+                                <p className="text-muted-foreground font-medium text-sm">
+                                    {t("memberPortalPassword")}
+                                </p>
+                                <div className="col-span-2 flex items-center gap-2">
+                                    {portalPassword ? (
+                                        <>
+                                            <span className="font-mono text-sm break-all">
+                                                {passwordVisible ? portalPassword : "••••••••"}
+                                            </span>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-7 w-7 p-0 flex-none"
+                                                onClick={() => setPasswordVisible((v) => !v)}
+                                                title={passwordVisible ? t("hidePassword") : t("showPassword")}
+                                            >
+                                                {passwordVisible ? (
+                                                    <EyeOff className="w-4 h-4" />
+                                                ) : (
+                                                    <Eye className="w-4 h-4" />
+                                                )}
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-7 w-7 p-0 flex-none"
+                                                onClick={handleCopyPassword}
+                                                title={t("copyPassword")}
+                                            >
+                                                {passwordCopied ? (
+                                                    <Check className="w-4 h-4 text-green-600" />
+                                                ) : (
+                                                    <Copy className="w-4 h-4" />
+                                                )}
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <span className="text-sm text-muted-foreground">
+                                            {t("passwordNotAvailable")}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </SectionCard>
 
                     {/* Franchise Information */}

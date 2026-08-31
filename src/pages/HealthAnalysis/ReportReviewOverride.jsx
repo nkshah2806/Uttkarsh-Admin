@@ -17,7 +17,6 @@ import {
   Sparkles,
   RotateCcw,
   Eye,
-  Globe,
   Activity,
   AlertCircle,
 } from "lucide-react";
@@ -26,7 +25,7 @@ import { toast } from "sonner";
 export default function ReportReviewOverride() {
   const { visitId } = useParams();
   const navigate = useNavigate();
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   const [analysisData, setAnalysisData] = useState(null);
   const [patient, setPatient] = useState(null);
@@ -40,9 +39,7 @@ export default function ReportReviewOverride() {
   const [expandedParams, setExpandedParams] = useState({});
   // Search query
   const [searchQuery, setSearchQuery] = useState("");
-  // Preview Language
-  const [previewLang, setPreviewLang] = useState(lang || "en");
-  // Next Visit Date (optional, sent with report generation)
+  // Suggested Wellness Reassessment Date (optional, sent with report generation)
   const [nextVisitDate, setNextVisitDate] = useState("");
 
   const getItemKey = (paramId, bulletId) => `${paramId}_${bulletId}`;
@@ -452,7 +449,7 @@ export default function ReportReviewOverride() {
                         </span>
                         <div>
                           <span className="font-bold text-sm text-slate-900 dark:text-white">
-                            {lang === "hi" ? param.name_hi : param.name_en}
+                            {param.name_en}
                           </span>
                           <span className="text-xs text-slate-400 ml-2">
                             Normal: {param.normal_min}–{param.normal_max} {param.unit}
@@ -462,11 +459,10 @@ export default function ReportReviewOverride() {
 
                       <div className="flex items-center gap-3">
                         <span
-                          className={`px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1 ${
-                            item.result_type === "HIGH"
-                              ? "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
-                              : "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300"
-                          }`}
+                          className={`px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1 ${item.result_type === "HIGH"
+                            ? "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
+                            : "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300"
+                            }`}
                         >
                           {item.result_type === "HIGH" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                           {item.result_type} ({item.raw_value} {param.unit})
@@ -509,7 +505,7 @@ export default function ReportReviewOverride() {
                                     <Square className="h-4 w-4 text-slate-400 group-hover:text-indigo-400 shrink-0" />
                                   )}
                                   <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                                    {lang === "hi" ? sec.title_hi : sec.title_en}
+                                    {sec.title_en}
                                   </span>
                                 </div>
 
@@ -528,13 +524,11 @@ export default function ReportReviewOverride() {
                                     <div
                                       key={itemKey}
                                       onClick={() => toggleItem(param.id, bullet.id)}
-                                      className={`flex items-start gap-3 p-3 rounded-xl border text-xs cursor-pointer select-none transition-all ${
-                                        isSub ? "ml-5 bg-slate-50/50" : ""
-                                      } ${
-                                        isChecked
+                                      className={`flex items-start gap-3 p-3 rounded-xl border text-xs cursor-pointer select-none transition-all ${isSub ? "ml-5 bg-slate-50/50" : ""
+                                        } ${isChecked
                                           ? "bg-indigo-50/60 border-indigo-200 dark:bg-indigo-950/40 dark:border-indigo-800 shadow-xs"
                                           : "bg-slate-50/30 border-slate-200/60 opacity-60 dark:bg-slate-900"
-                                      }`}
+                                        }`}
                                     >
                                       <div className="mt-0.5 shrink-0">
                                         {isChecked ? (
@@ -546,10 +540,7 @@ export default function ReportReviewOverride() {
 
                                       <div className="flex-1 min-w-0">
                                         <p className="font-medium text-slate-900 dark:text-white leading-relaxed">
-                                          {lang === "hi" ? bullet.text_hi : bullet.text_en}
-                                        </p>
-                                        <p className="text-[10px] text-slate-400 mt-1">
-                                          {lang === "hi" ? `EN: ${bullet.text_en}` : `HI: ${bullet.text_hi}`}
+                                          {bullet.text_en}
                                         </p>
                                       </div>
 
@@ -583,26 +574,6 @@ export default function ReportReviewOverride() {
                 </span>
               </div>
 
-              <div className="flex items-center rounded-lg bg-indigo-800/80 p-0.5 text-[11px] font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setPreviewLang("en")}
-                  className={`px-2.5 py-0.5 rounded transition-all ${
-                    previewLang === "en" ? "bg-white text-indigo-700 shadow-xs" : "text-indigo-200"
-                  }`}
-                >
-                  English
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewLang("hi")}
-                  className={`px-2.5 py-0.5 rounded transition-all ${
-                    previewLang === "hi" ? "bg-white text-indigo-700 shadow-xs" : "text-indigo-200"
-                  }`}
-                >
-                  हिंदी
-                </button>
-              </div>
             </div>
 
             <div className="p-4 overflow-y-auto max-h-[620px] space-y-4 text-xs font-sans bg-white dark:bg-slate-900">
@@ -610,7 +581,7 @@ export default function ReportReviewOverride() {
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-extrabold text-sm text-indigo-900 dark:text-indigo-200">
-                      {previewLang === "hi" ? "क्वांटम स्वास्थ्य विश्लेषण रिपोर्ट" : "QUANTUM HEALTH ANALYSIS REPORT"}
+                      QUANTUM HEALTH ANALYSIS REPORT
                     </h3>
                     <p className="text-[10px] text-slate-400">
                       {patient?.name} ({patient?.patient_code}) • {new Date().toLocaleDateString("en-IN")}
@@ -637,13 +608,12 @@ export default function ReportReviewOverride() {
                           <div>
                             <span className="font-mono font-bold text-indigo-600 text-[11px] mr-1.5">{p.code}</span>
                             <strong className="text-xs text-slate-800 dark:text-slate-100">
-                              {previewLang === "hi" ? p.name_hi : p.name_en}
+                              {p.name_en}
                             </strong>
                           </div>
                           <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              item.result_type === "HIGH" ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"
-                            }`}
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.result_type === "HIGH" ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"
+                              }`}
                           >
                             {item.result_type} · {item.raw_value} {p.unit}
                           </span>
@@ -653,17 +623,16 @@ export default function ReportReviewOverride() {
                           {item.sections.map((sec) => (
                             <div key={`${p.id}_${sec.id}`} className="space-y-1">
                               <h5 className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                                ▸ {previewLang === "hi" ? sec.title_hi : sec.title_en}
+                                ▸ {sec.title_en}
                               </h5>
                               <ul className="space-y-1 pl-3 list-disc">
                                 {sec.items.map((bullet) => (
                                   <li
                                     key={`${p.id}_${bullet.id}`}
-                                    className={`text-[11px] text-slate-700 dark:text-slate-300 leading-snug ${
-                                      bullet.level > 1 ? "ml-3 list-circle text-slate-500" : ""
-                                    }`}
+                                    className={`text-[11px] text-slate-700 dark:text-slate-300 leading-snug ${bullet.level > 1 ? "ml-3 list-circle text-slate-500" : ""
+                                      }`}
                                   >
-                                    {previewLang === "hi" ? bullet.text_hi : bullet.text_en}
+                                    {bullet.text_en}
                                   </li>
                                 ))}
                               </ul>
@@ -714,10 +683,10 @@ export default function ReportReviewOverride() {
               </p>
             </div>
 
-            {/* Next Visit Date */}
+            {/* Suggested Wellness Reassessment Date */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <span className="text-emerald-600">📅</span> Next Visit Date
+                <span className="text-emerald-600">📅</span> Suggested Wellness Reassessment Date
                 <span className="text-slate-400 font-normal">(optional)</span>
               </label>
               <input
@@ -729,7 +698,7 @@ export default function ReportReviewOverride() {
               />
               {nextVisitDate && (
                 <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
-                  Next visit scheduled:{" "}
+                  Wellness reassessment scheduled:{" "}
                   {new Date(nextVisitDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
                 </p>
               )}

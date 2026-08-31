@@ -1,5 +1,4 @@
 import { AppSidebar } from "@/components/app-sidebar";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import {
   SidebarInset,
@@ -173,8 +172,6 @@ export default function Layout(props) {
               </ClickAwayListener>
             )}
           </div>
-
-          <LanguageSwitcher />
 
           <Button
             variant={theme === "dark" ? "default" : "secondary"}

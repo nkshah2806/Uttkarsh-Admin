@@ -73,6 +73,15 @@ export const getUserById = async (id) => {
   return response.data.data;
 };
 
+// GET MEMBER PORTAL PASSWORD (ADMIN-ONLY)
+// Returns the decrypted member portal login password so an admin can view it
+// from the Admin User Details page. Only passwords set after this feature was
+// deployed are recoverable; older bcrypt-only records return an empty password.
+export const getMemberPortalPassword = async (id) => {
+  const response = await axiosInstance.get(`${ENDPOINT}/${id}/portal-password`);
+  return response.data.data;
+};
+
 // UPDATE USER
 export const updateUser = async (userId, data) => {
   const payload = { userId, ...data };
