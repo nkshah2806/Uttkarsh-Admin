@@ -27,6 +27,7 @@ import HeaderFooterCMS from "./pages/FrontendCMS/HeaderFooterCMS";
 import ContactCMS from "./pages/FrontendCMS/ContactCMS";
 import DisclaimerManagement from "./pages/HealthAnalysis/DisclaimerManagement";
 import CategoryManagement from "./pages/HealthAnalysis/CategoryManagement";
+import MedicineManagement from "./pages/HealthAnalysis/MedicineManagement";
 import { LanguageProvider } from "./context/LanguageContext";
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
             <Route path="/report-pdf/:visitId" element={<PDFReportViewer />} />
             <Route path="/quantum/disclaimers" element={<DisclaimerManagement />} />
             <Route path="/quantum/categories" element={<CategoryManagement />} />
+            <Route path="/quantum/medicines" element={<MedicineManagement />} />
 
             {/* Frontend CMS */}
             <Route path="/frontend-cms" element={<FrontendCMS />} />

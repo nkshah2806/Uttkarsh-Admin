@@ -19,6 +19,7 @@ import {
   Database,
   Stethoscope,
   Tags,
+  Pill,
 } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -75,6 +76,7 @@ export function AppSidebar({ ...props }) {
           { title: t("masterDataLibrary"), url: "/quantum/master-data", icon: Database },
           { title: t("disclaimerContent"), url: "/quantum/disclaimers", icon: FileText },
           { title: t("parameterCategories"), url: "/quantum/categories", icon: Tags },
+          { title: t("medicineManagement"), url: "/quantum/medicines", icon: Pill },
         ],
       },
       {
