@@ -28,11 +28,12 @@ import ContactCMS from "./pages/FrontendCMS/ContactCMS";
 import DisclaimerManagement from "./pages/HealthAnalysis/DisclaimerManagement";
 import CategoryManagement from "./pages/HealthAnalysis/CategoryManagement";
 import MedicineManagement from "./pages/HealthAnalysis/MedicineManagement";
-import { LanguageProvider } from "./context/LanguageContext";
+import ScanPricingManagement from "./pages/HealthAnalysis/ScanPricingManagement";
+import HealthCampsCMS from "./pages/FrontendCMS/HealthCampsCMS";
 
 function App() {
   return (
-    <LanguageProvider>
+    <>
       <Toaster position="top-right" />
       <BrowserRouter>
         <Routes>
@@ -54,6 +55,7 @@ function App() {
             <Route path="/quantum/disclaimers" element={<DisclaimerManagement />} />
             <Route path="/quantum/categories" element={<CategoryManagement />} />
             <Route path="/quantum/medicines" element={<MedicineManagement />} />
+            <Route path="/quantum/scan-pricing" element={<ScanPricingManagement />} />
 
             {/* Frontend CMS */}
             <Route path="/frontend-cms" element={<FrontendCMS />} />
@@ -66,6 +68,7 @@ function App() {
             <Route path="/frontend-cms/distributor-banner" element={<DistributorCMS />} />
             <Route path="/frontend-cms/header-footer" element={<HeaderFooterCMS />} />
             <Route path="/frontend-cms/contact" element={<ContactCMS />} />
+            <Route path="/frontend-cms/health-camps" element={<HealthCampsCMS />} />
 
             <Route path="/user">
               <Route index element={<User />} />
@@ -75,7 +78,7 @@ function App() {
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>
       </BrowserRouter>
-    </LanguageProvider>
+    </>
   );
 }
 

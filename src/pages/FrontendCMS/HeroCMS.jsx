@@ -4,10 +4,8 @@ import { ImageIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
-import { useLanguage } from "@/context/LanguageContext";
 
 export default function HeroCMS() {
-  const { t } = useLanguage();
   const [data, setData] = useState(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -34,29 +32,29 @@ export default function HeroCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success(t("cmsHeroUpdated"));
+      toast.success("✅ Hero Banner updated live!");
     } catch {
-      toast.error(t("cmsSaveFailed"));
+      toast.error("Failed to save. Please try again.");
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm(t("cmsResetConfirm"))) return;
+    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success(t("cmsResetDone"));
+    toast.success("Content reset to defaults.");
   };
 
-  if (loading) return <CMSLoader label="cmsLoadingHero" />;
+  if (loading) return <CMSLoader label="Loading Hero Banner content…" />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={ImageIcon}
-        title="heroBanner"
-        description="cmsHeroDescription"
+        title="Hero Banner"
+        description="The large full-screen banner visitors see first when they land on the website."
         onSave={handleSave}
         onReset={handleReset}
         saving={saving}
@@ -65,48 +63,48 @@ export default function HeroCMS() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ImageIcon className="h-5 w-5 text-violet-500" /> {t("cmsHeroCardTitle")}
+            <ImageIcon className="h-5 w-5 text-violet-500" /> Hero Banner Content
           </CardTitle>
           <CardDescription>
-            {t("cmsHeroCardDescription")}
+            Edit the headlines, description, background image and call-to-action buttons.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5 md:grid-cols-2">
-          <Field label="cmsBadgePillLabel">
+          <Field label="Badge / Pill Label">
             <CMSInput
               value={data.hero?.badge}
               onChange={(e) => set("hero.badge", e.target.value)}
-              placeholder="cmsLocalForVocalPlaceholder"
+              placeholder="Local for Vocal · GMP Certified"
             />
           </Field>
-          <Field label="cmsBackgroundImageUrl">
+          <Field label="Background Image URL">
             <CMSInput
               value={data.hero?.bgImage}
               onChange={(e) => set("hero.bgImage", e.target.value)}
-              placeholder="cmsImageUrlPlaceholder"
+              placeholder="https://..."
             />
           </Field>
           {data.hero?.bgImage && (
             <div className="md:col-span-2 rounded-xl overflow-hidden h-48 border border-border">
-              <img src={data.hero.bgImage} alt={t("cmsHeroPreviewAlt")} className="w-full h-full object-cover" />
+              <img src={data.hero.bgImage} alt="Hero Preview" className="w-full h-full object-cover" />
             </div>
           )}
-          <Field label="cmsHeadlineLine1">
+          <Field label="Headline Line 1">
             <CMSInput
               value={data.hero?.titleLine1}
               onChange={(e) => set("hero.titleLine1", e.target.value)}
-              placeholder="cmsAncientWisdomPlaceholder"
+              placeholder="Ancient wisdom."
             />
           </Field>
-          <Field label="cmsHeadlineLine2">
+          <Field label="Headline Line 2 (Gold / Italic)">
             <CMSInput
               value={data.hero?.titleLine2}
               onChange={(e) => set("hero.titleLine2", e.target.value)}
-              placeholder="cmsEverydayWellnessPlaceholder"
+              placeholder="Everyday wellness."
             />
           </Field>
           <div className="md:col-span-2">
-            <Field label="cmsDescriptionParagraph">
+            <Field label="Description Paragraph">
               <CMSTextarea
                 rows={3}
                 value={data.hero?.description}
@@ -114,32 +112,32 @@ export default function HeroCMS() {
               />
             </Field>
           </div>
-          <Field label="cmsPrimaryButtonText">
+          <Field label="Primary Button Text">
             <CMSInput
               value={data.hero?.primaryCtaText}
               onChange={(e) => set("hero.primaryCtaText", e.target.value)}
-              placeholder="cmsShopCollectionPlaceholder"
+              placeholder="Shop the Collection"
             />
           </Field>
-          <Field label="cmsPrimaryButtonLink">
+          <Field label="Primary Button Link">
             <CMSInput
               value={data.hero?.primaryCtaLink}
               onChange={(e) => set("hero.primaryCtaLink", e.target.value)}
-              placeholder="cmsShopLinkPlaceholder"
+              placeholder="/shop"
             />
           </Field>
-          <Field label="cmsSecondaryButtonText">
+          <Field label="Secondary Button Text">
             <CMSInput
               value={data.hero?.secondaryCtaText}
               onChange={(e) => set("hero.secondaryCtaText", e.target.value)}
-              placeholder="cmsOurStoryPlaceholder"
+              placeholder="Our Story"
             />
           </Field>
-          <Field label="cmsSecondaryButtonLink">
+          <Field label="Secondary Button Link">
             <CMSInput
               value={data.hero?.secondaryCtaLink}
               onChange={(e) => set("hero.secondaryCtaLink", e.target.value)}
-              placeholder="cmsAboutLinkPlaceholder"
+              placeholder="/about"
             />
           </Field>
         </CardContent>

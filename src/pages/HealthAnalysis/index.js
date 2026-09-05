@@ -11,3 +11,4 @@ export { default as PDFReportViewer } from "./PDFReportViewer";
 export { default as DisclaimerManagement } from "./DisclaimerManagement";
 export { default as CategoryManagement } from "./CategoryManagement";
 export { default as MedicineManagement } from "./MedicineManagement";
+export { default as ScanPricingManagement } from "./ScanPricingManagement";

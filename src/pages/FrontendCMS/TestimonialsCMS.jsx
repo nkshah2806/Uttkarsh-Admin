@@ -5,10 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
-import { useLanguage } from "@/context/LanguageContext";
 
 export default function TestimonialsCMS() {
-  const { t } = useLanguage();
   const [data, setData] = useState(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -30,7 +28,7 @@ export default function TestimonialsCMS() {
       ...prev,
       testimonials: [
         ...(prev.testimonials || []),
-        { id: Date.now(), name: t("cmsCustomerNameCityDefault"), body: t("cmsGreatProductDefault"), stars: 5 },
+        { id: Date.now(), name: "Customer Name, City", body: "Great product!", stars: 5 },
       ],
     }));
   };
@@ -46,29 +44,29 @@ export default function TestimonialsCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success(t("cmsTestimonialsUpdated"));
+      toast.success("✅ Testimonials updated live!");
     } catch {
-      toast.error(t("cmsSaveFailed"));
+      toast.error("Failed to save. Please try again.");
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm(t("cmsResetConfirm"))) return;
+    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success(t("cmsResetDone"));
+    toast.success("Content reset to defaults.");
   };
 
-  if (loading) return <CMSLoader label="cmsLoadingTestimonials" />;
+  if (loading) return <CMSLoader label="Loading Testimonials content…" />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={Quote}
-        title="cmsTestimonialsTitle"
-        description="cmsTestimonialsDescription"
+        title="Customer Testimonials"
+        description="Reviews displayed on the Home page. Add, edit or remove testimonials."
         onSave={handleSave}
         onReset={handleReset}
         saving={saving}
@@ -79,18 +77,18 @@ export default function TestimonialsCMS() {
           <div className="flex items-start justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Quote className="h-5 w-5 text-violet-500" /> {t("cmsTestimonialsCardTitle")}
+                <Quote className="h-5 w-5 text-violet-500" /> Customer Testimonials
               </CardTitle>
-              <CardDescription>{t("cmsTestimonialsCardDescription")}</CardDescription>
+              <CardDescription>Each card shows a star rating, customer name and their review text.</CardDescription>
             </div>
             <Button size="sm" variant="outline" className="gap-1.5 text-xs shrink-0" onClick={addReview}>
-              <Plus className="h-3.5 w-3.5" /> {t("cmsAddReview")}
+              <Plus className="h-3.5 w-3.5" /> Add Review
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {(data.testimonials || []).length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">{t("cmsNoTestimonials")}</p>
+            <p className="text-sm text-muted-foreground text-center py-8">No testimonials yet.</p>
           ) : (
             <div className="grid gap-5 md:grid-cols-3">
               {(data.testimonials || []).map((review, idx) => (
@@ -101,20 +99,20 @@ export default function TestimonialsCMS() {
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
-                  <Field label="cmsCustomerNameCity">
+                  <Field label="Customer Name & City">
                     <CMSInput
                       value={review.name}
                       onChange={(e) => updateItem(idx, "name", e.target.value)}
                     />
                   </Field>
-                  <Field label="cmsReviewText">
+                  <Field label="Review Text">
                     <CMSTextarea
                       rows={3}
                       value={review.body}
                       onChange={(e) => updateItem(idx, "body", e.target.value)}
                     />
                   </Field>
-                  <Field label="cmsStarRating">
+                  <Field label="Star Rating (1–5)">
                     <input
                       type="number"
                       min={1}

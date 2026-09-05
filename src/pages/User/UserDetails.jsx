@@ -23,15 +23,13 @@ import {
     Copy,
     Check,
 } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext";
-import { LANGUAGE_NAMES } from "@/i18n";
 
-const ApprovalBadge = ({ status, t }) => {
+const ApprovalBadge = ({ status }) => {
     if (status === "approved") {
         return (
             <Badge variant="completed" className="capitalize">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                {t("approved")}
+                Approved
             </Badge>
         );
     }
@@ -39,14 +37,14 @@ const ApprovalBadge = ({ status, t }) => {
         return (
             <Badge variant="destructive" className="capitalize">
                 <XCircle className="w-3.5 h-3.5" />
-                {t("rejected")}
+                Rejected
             </Badge>
         );
     }
     return (
         <Badge variant="confirmed" className="capitalize">
             <Clock className="w-3.5 h-3.5" />
-            {t("statusPending")}
+            Pending
         </Badge>
     );
 };
@@ -82,7 +80,6 @@ const formatDateTime = (value) => {
 export default function UserDetails() {
     const navigate = useNavigate();
     const { id } = useParams();
-    const { t } = useLanguage();
     const [userDetails, setUserDetails] = useState(null);
     const [franchiseProfile, setFranchiseProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -97,7 +94,7 @@ export default function UserDetails() {
         setLoadError("");
         Promise.all([
             getUserById(id).catch((err) => {
-                throw new Error(err?.response?.data?.message || t("failedFetchUser"));
+                throw new Error(err?.response?.data?.message || "Failed to fetch user details.");
             }),
             // Franchise profile may not exist yet — that's expected, don't treat as fatal.
             memberApprovalService
@@ -116,10 +113,10 @@ export default function UserDetails() {
                 setPortalPassword(password);
             })
             .catch((err) => {
-                setLoadError(err?.message || t("failedFetchUser"));
+                setLoadError(err?.message || "Failed to fetch user details.");
             })
             .finally(() => setLoading(false));
-    }, [id, t]);
+    }, [id]);
 
     const handleCopyPassword = async () => {
         if (!portalPassword) return;
@@ -132,14 +129,14 @@ export default function UserDetails() {
         }
     };
 
-    if (loading) return <div className="text-center py-10">{t("loading")}</div>;
+    if (loading) return <div className="text-center py-10">Loading...</div>;
 
     if (loadError) {
         return (
             <div className="text-center py-10 space-y-4">
                 <p className="text-muted-foreground">{loadError}</p>
                 <Button onClick={() => navigate(-1)} variant="outline">
-                    {t("back")}
+                    Back
                 </Button>
             </div>
         );
@@ -148,9 +145,9 @@ export default function UserDetails() {
     if (!userDetails) {
         return (
             <div className="text-center py-10 space-y-4">
-                <p className="text-muted-foreground">{t("failedFetchUser")}</p>
+                <p className="text-muted-foreground">Failed to fetch user details.</p>
                 <Button onClick={() => navigate(-1)} variant="outline">
-                    {t("back")}
+                    Back
                 </Button>
             </div>
         );
@@ -163,11 +160,6 @@ export default function UserDetails() {
     const approvalStatus =
         userDetails.approval_status ||
         (userDetails.isAdmin ? "approved" : "pending");
-    const languagePref =
-        userDetails.language_pref &&
-            LANGUAGE_NAMES[userDetails.language_pref]
-            ? LANGUAGE_NAMES[userDetails.language_pref]
-            : userDetails.language_pref || "-";
 
     // Normalize franchise fields (model uses snake_case).
     const fp = franchiseProfile || {};
@@ -175,10 +167,10 @@ export default function UserDetails() {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">{t("userDetails")}</h1>
+                <h1 className="text-2xl font-bold">User Details</h1>
                 <Button onClick={() => navigate(-1)} variant="outline">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    {t("back")}
+                    Back
                 </Button>
             </div>
 
@@ -194,7 +186,7 @@ export default function UserDetails() {
                                         ? `${Config.API_URL}${userDetails.image}`
                                         : user
                                 }
-                                alt={`${fullName} ${t("profile")}`}
+                                alt={`${fullName} Profile`}
                                 onError={({ currentTarget }) => {
                                     currentTarget.onerror = null;
                                     currentTarget.src = user;
@@ -204,18 +196,18 @@ export default function UserDetails() {
                             <div>
                                 <CardTitle className="text-2xl font-bold">{fullName}</CardTitle>
                                 <div className="flex flex-wrap gap-2 justify-center mt-4">
-                                    {userDetails.isAdmin && <Badge variant="destructive">{t("admin")}</Badge>}
-                                    {!userDetails.isAdmin && <Badge variant="outline">{t("franchiseMember")}</Badge>}
-                                    <ApprovalBadge status={approvalStatus} t={t} />
+                                    {userDetails.isAdmin && <Badge variant="destructive">Admin</Badge>}
+                                    {!userDetails.isAdmin && <Badge variant="outline">Franchise Member</Badge>}
+                                    <ApprovalBadge status={approvalStatus} />
                                     {userDetails.isVerified ? (
-                                        <Badge variant="completed">{t("verified")}</Badge>
+                                        <Badge variant="completed">Verified</Badge>
                                     ) : (
-                                        <Badge variant="secondary">{t("notVerified")}</Badge>
+                                        <Badge variant="secondary">Not Verified</Badge>
                                     )}
                                     {userDetails.isActive ? (
-                                        <Badge variant="completed">{t("active")}</Badge>
+                                        <Badge variant="completed">Active</Badge>
                                     ) : (
-                                        <Badge variant="secondary">{t("inactive")}</Badge>
+                                        <Badge variant="secondary">Inactive</Badge>
                                     )}
                                 </div>
                             </div>
@@ -226,62 +218,61 @@ export default function UserDetails() {
                 {/* Right Content */}
                 <div className="col-span-12 md:col-span-8 space-y-4">
                     {/* Personal Information */}
-                    <SectionCard title={t("personalInfo")} icon={() => <span>👤</span>}>
-                        <DetailRow label={t("fullName")} value={fullName} />
-                        <DetailRow label={t("email")} value={userDetails.email} />
+                    <SectionCard title="Personal Info" icon={() => <span>👤</span>}>
+                        <DetailRow label="Full Name" value={fullName} />
+                        <DetailRow label="Email" value={userDetails.email} />
                         <DetailRow
-                            label={t("mobileNumber")}
+                            label="Mobile Number"
                             value={userDetails.mobileNumber || userDetails.phoneNumber}
                         />
-                        <DetailRow label={t("gender")} value={userDetails.gender} />
-                        <DetailRow label={t("age")} value={userDetails.age} />
-                        <DetailRow label={t("birthDate")} value={formatDateTime(userDetails.birthDate)} />
-                        <DetailRow label={t("address")} value={userDetails.address} />
-                        <DetailRow label={t("city")} value={userDetails.city} />
-                        <DetailRow label={t("state")} value={userDetails.state} />
-                        <DetailRow label={t("pinCode")} value={userDetails.pinCode} />
+                        <DetailRow label="Gender" value={userDetails.gender} />
+                        <DetailRow label="Age" value={userDetails.age} />
+                        <DetailRow label="Birth Date" value={formatDateTime(userDetails.birthDate)} />
+                        <DetailRow label="Address" value={userDetails.address} />
+                        <DetailRow label="City" value={userDetails.city} />
+                        <DetailRow label="State" value={userDetails.state} />
+                        <DetailRow label="PIN Code" value={userDetails.pinCode} />
                     </SectionCard>
 
                     {/* Account Information */}
-                    <SectionCard title={t("accountInfo")} icon={() => <span>⚙️</span>}>
+                    <SectionCard title="Account Information" icon={() => <span>⚙️</span>}>
                         <DetailRow
-                            label={t("adminOrUser")}
+                            label="Admin/User"
                             value={
                                 userDetails.isAdmin
-                                    ? t("admin")
-                                    : t("franchiseMember")
+                                    ? "Admin"
+                                    : "Franchise Member"
                             }
                         />
                         <DetailRow
-                            label={t("approvalStatus")}
+                            label="Approval Status"
                             value={
-                                <ApprovalBadge status={approvalStatus} t={t} />
+                                <ApprovalBadge status={approvalStatus} />
                             }
                         />
                         <DetailRow
-                            label={t("accountStatus")}
+                            label="Account Status"
                             value={
                                 userDetails.isActive ? (
-                                    <Badge variant="completed">{t("active")}</Badge>
+                                    <Badge variant="completed">Active</Badge>
                                 ) : (
-                                    <Badge variant="secondary">{t("inactive")}</Badge>
+                                    <Badge variant="secondary">Inactive</Badge>
                                 )
                             }
                         />
                         <DetailRow
-                            label={t("verified")}
+                            label="Verified"
                             value={
                                 userDetails.isVerified ? (
-                                    <Badge variant="completed">{t("yes")}</Badge>
+                                    <Badge variant="completed">Yes</Badge>
                                 ) : (
-                                    <Badge variant="secondary">{t("no")}</Badge>
+                                    <Badge variant="secondary">No</Badge>
                                 )
                             }
                         />
-                        <DetailRow label={t("username")} value={userDetails.username} />
-                        <DetailRow label={t("languagePreference")} value={languagePref} />
-                        <DetailRow label={t("registrationDate")} value={formatDateTime(userDetails.createdAt)} />
-                        <DetailRow label={t("updatedAt")} value={formatDateTime(userDetails.updatedAt)} />
+                        <DetailRow label="Username" value={userDetails.username} />
+                        <DetailRow label="Registration Date" value={formatDateTime(userDetails.createdAt)} />
+                        <DetailRow label="Updated At" value={formatDateTime(userDetails.updatedAt)} />
 
                         {/* Member Portal Password — admin can view the plaintext
                             (only recoverable for passwords set after this feature
@@ -289,7 +280,7 @@ export default function UserDetails() {
                         {!userDetails.isAdmin && (
                             <div className="grid grid-cols-3 gap-4 items-center py-1.5 border-b border-dashed last:border-0">
                                 <p className="text-muted-foreground font-medium text-sm">
-                                    {t("memberPortalPassword")}
+                                    Member Portal Password
                                 </p>
                                 <div className="col-span-2 flex items-center gap-2">
                                     {portalPassword ? (
@@ -303,7 +294,7 @@ export default function UserDetails() {
                                                 size="sm"
                                                 className="h-7 w-7 p-0 flex-none"
                                                 onClick={() => setPasswordVisible((v) => !v)}
-                                                title={passwordVisible ? t("hidePassword") : t("showPassword")}
+                                                title={passwordVisible ? "Hide password" : "Show password"}
                                             >
                                                 {passwordVisible ? (
                                                     <EyeOff className="w-4 h-4" />
@@ -317,7 +308,7 @@ export default function UserDetails() {
                                                 size="sm"
                                                 className="h-7 w-7 p-0 flex-none"
                                                 onClick={handleCopyPassword}
-                                                title={t("copyPassword")}
+                                                title="Copy password"
                                             >
                                                 {passwordCopied ? (
                                                     <Check className="w-4 h-4 text-green-600" />
@@ -328,7 +319,7 @@ export default function UserDetails() {
                                         </>
                                     ) : (
                                         <span className="text-sm text-muted-foreground">
-                                            {t("passwordNotAvailable")}
+                                            Password not available (only passwords set after this feature are recoverable)
                                         </span>
                                     )}
                                 </div>
@@ -337,66 +328,66 @@ export default function UserDetails() {
                     </SectionCard>
 
                     {/* Franchise Information */}
-                    <SectionCard title={t("franchiseInfo")} icon={() => <span>🏪</span>}>
+                    <SectionCard title="Franchise Information" icon={() => <span>🏪</span>}>
                         {franchiseProfile ? (
                             <>
-                                <DetailRow label={t("memberId")} value={fp.member_id} />
-                                <DetailRow label={t("distributorId")} value={fp.distributor_id} />
-                                <DetailRow label={t("franchiseCode")} value={fp.franchise_code} />
-                                <DetailRow label={t("franchiseType")} value={fp.franchise_type} />
-                                <DetailRow label={t("underGroup")} value={fp.under_group} />
-                                <DetailRow label={t("memberName")} value={fp.member_name} />
-                                <DetailRow label={t("branchName")} value={fp.branch_name} />
-                                <DetailRow label={t("storeName")} value={fp.store_name} />
-                                <DetailRow label={t("contactPerson")} value={fp.contact_person} />
-                                <DetailRow label={t("phone")} value={fp.phone} />
-                                <DetailRow label={t("email")} value={fp.email} />
-                                <DetailRow label={t("address")} value={fp.address} />
-                                <DetailRow label={t("state")} value={fp.state} />
-                                <DetailRow label={t("city")} value={fp.city} />
-                                <DetailRow label={t("district")} value={fp.district} />
-                                <DetailRow label={t("area")} value={fp.area} />
-                                <DetailRow label={t("pinCode")} value={fp.pincode} />
-                                <DetailRow label={t("accountHolder")} value={fp.account_name} />
-                                <DetailRow label={t("bank")} value={fp.bank_name} />
-                                <DetailRow label={t("accountNo")} value={fp.account_number} />
-                                <DetailRow label={t("accountType")} value={fp.account_type} />
-                                <DetailRow label={t("ifsc")} value={fp.ifsc_code} />
-                                <DetailRow label={t("branchAddress")} value={fp.branch_address} />
+                                <DetailRow label="Member ID" value={fp.member_id} />
+                                <DetailRow label="Distributor ID" value={fp.distributor_id} />
+                                <DetailRow label="Franchise Code" value={fp.franchise_code} />
+                                <DetailRow label="Franchise Type" value={fp.franchise_type} />
+                                <DetailRow label="Under Group" value={fp.under_group} />
+                                <DetailRow label="Member Name" value={fp.member_name} />
+                                <DetailRow label="Branch Name" value={fp.branch_name} />
+                                <DetailRow label="Store Name" value={fp.store_name} />
+                                <DetailRow label="Contact Person" value={fp.contact_person} />
+                                <DetailRow label="Phone" value={fp.phone} />
+                                <DetailRow label="Email" value={fp.email} />
+                                <DetailRow label="Address" value={fp.address} />
+                                <DetailRow label="State" value={fp.state} />
+                                <DetailRow label="City" value={fp.city} />
+                                <DetailRow label="District" value={fp.district} />
+                                <DetailRow label="Area" value={fp.area} />
+                                <DetailRow label="PIN Code" value={fp.pincode} />
+                                <DetailRow label="Account Holder" value={fp.account_name} />
+                                <DetailRow label="Bank" value={fp.bank_name} />
+                                <DetailRow label="Account No." value={fp.account_number} />
+                                <DetailRow label="Account Type" value={fp.account_type} />
+                                <DetailRow label="IFSC" value={fp.ifsc_code} />
+                                <DetailRow label="Branch Address" value={fp.branch_address} />
                                 <DetailRow
-                                    label={t("profileCompletion")}
+                                    label="Profile Completion"
                                     value={`${fp.completion_percentage ?? 0}%`}
                                 />
                                 <DetailRow
-                                    label={t("submittedForApproval")}
+                                    label="Submitted for Approval"
                                     value={
                                         fp.submitted_for_approval ? (
-                                            <Badge variant="completed">{t("yes")}</Badge>
+                                            <Badge variant="completed">Yes</Badge>
                                         ) : (
-                                            <Badge variant="secondary">{t("no")}</Badge>
+                                            <Badge variant="secondary">No</Badge>
                                         )
                                     }
                                 />
-                                <DetailRow label={t("submissionDate")} value={formatDateTime(fp.submitted_at)} />
-                                <DetailRow label={t("reviewedBy")} value={fp.reviewed_by} />
-                                <DetailRow label={t("reviewedAt")} value={formatDateTime(fp.reviewed_at)} />
+                                <DetailRow label="Submission Date" value={formatDateTime(fp.submitted_at)} />
+                                <DetailRow label="Reviewed By" value={fp.reviewed_by} />
+                                <DetailRow label="Reviewed At" value={formatDateTime(fp.reviewed_at)} />
                                 {fp.rejection_reason && (
-                                    <DetailRow label={t("rejectionReason")} value={fp.rejection_reason} />
+                                    <DetailRow label="Rejection Reason" value={fp.rejection_reason} />
                                 )}
                             </>
                         ) : (
                             <p className="text-muted-foreground text-sm py-4">
-                                {t("noFranchiseProfile")}
+                                No franchise profile found for this user.
                             </p>
                         )}
                     </SectionCard>
 
                     {/* Other Information */}
-                    <SectionCard title={t("otherInfo")} icon={() => <span>ℹ️</span>}>
-                        <DetailRow label={t("deviceId")} value={userDetails.deviceId} />
-                        <DetailRow label={t("deviceName")} value={userDetails.deviceName} />
-                        <DetailRow label={t("fcmToken")} value={userDetails.fcmToken} />
-                        <DetailRow label={t("franchiseId")} value={userDetails.franchise_id} />
+                    <SectionCard title="Other Information" icon={() => <span>ℹ️</span>}>
+                        <DetailRow label="Device ID" value={userDetails.deviceId} />
+                        <DetailRow label="Device Name" value={userDetails.deviceName} />
+                        <DetailRow label="FCM Token" value={userDetails.fcmToken} />
+                        <DetailRow label="Franchise ID" value={userDetails.franchise_id} />
                     </SectionCard>
                 </div>
             </div>

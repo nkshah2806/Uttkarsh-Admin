@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/context/LanguageContext";
 import ReusableTable from "@/components/ReusableTable";
 import {
   ArrowLeft,
@@ -30,13 +29,13 @@ import {
   HeartPulse,
   Sparkles,
   Building2,
+  Tag,
 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function PatientDetails() {
   const { patientId } = useParams();
   const navigate = useNavigate();
-  const { t } = useLanguage();
 
   const [loading, setLoading] = useState(true);
   const [patientData, setPatientData] = useState(null);
@@ -65,7 +64,7 @@ export default function PatientDetails() {
         setStats(res.data.data.stats || {});
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to load patient details");
+      toast.error(err.response?.data?.message || "Failed to load client details");
     } finally {
       setLoading(false);
     }
@@ -115,7 +114,7 @@ export default function PatientDetails() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `HealthReport_${patientData?.patient_code || "Patient"}_${visitId.slice(-6)}.html`;
+      a.download = `HealthReport_${patientData?.patient_code || "Client"}_${visitId.slice(-6)}.html`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -153,7 +152,7 @@ export default function PatientDetails() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[450px] space-y-4">
         <div className="h-10 w-10 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin" />
-        <p className="text-sm font-medium text-slate-500">Loading patient profile...</p>
+        <p className="text-sm font-medium text-slate-500">Loading client profile...</p>
       </div>
     );
   }
@@ -162,9 +161,9 @@ export default function PatientDetails() {
     return (
       <div className="text-center py-16 space-y-4">
         <AlertCircle className="h-12 w-12 text-rose-500 mx-auto" />
-        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Patient Record Not Found</h2>
+        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Client Record Not Found</h2>
         <Button onClick={() => navigate("/quantum/patients")} variant="outline">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Patient Directory
+          <ArrowLeft className="h-4 w-4 mr-2" /> Back to Client Directory
         </Button>
       </div>
     );
@@ -196,7 +195,7 @@ export default function PatientDetails() {
             size="icon"
             onClick={() => navigate("/quantum/patients")}
             className="rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
-            title="Back to Patient Directory"
+            title="Back to Client Directory"
           >
             <ArrowLeft className="h-5 w-5 text-slate-600 dark:text-slate-300" />
           </Button>
@@ -244,7 +243,7 @@ export default function PatientDetails() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-800 dark:text-slate-100">
                 <User className="h-4 w-4 text-indigo-600" />
-                Patient Information & Vitals
+                Client Information & Vitals
               </CardTitle>
               <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                 Admin Record
@@ -254,7 +253,7 @@ export default function PatientDetails() {
           <CardContent className="p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
               <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Patient Code</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Client ID</p>
                 <p className="text-base font-mono font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">
                   {patientData.patient_code}
                 </p>
@@ -435,7 +434,7 @@ export default function PatientDetails() {
                 Previous Reports & Visit History
               </CardTitle>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                All previously generated health analysis scans and clinical reports for this patient.
+                All previously generated health analysis scans and clinical reports for this client.
               </p>
             </div>
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
@@ -533,6 +532,28 @@ export default function PatientDetails() {
                 ),
               },
               {
+                key: "scan_amount",
+                label: "Amount",
+                render: (v) =>
+                  v.scan_amount !== null && v.scan_amount !== undefined ? (
+                    <div className="flex items-center gap-1.5">
+                      <Tag className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                      <div className="leading-tight">
+                        <span className="font-bold text-emerald-700 dark:text-emerald-300">
+                          ₹{Number(v.scan_amount).toLocaleString("en-IN")}
+                        </span>
+                        {v.scan_pricing_name && (
+                          <span className="block text-[10px] text-slate-400 font-medium">
+                            {v.scan_pricing_name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-slate-400 italic">—</span>
+                  ),
+              },
+              {
                 key: "actions",
                 label: "Actions",
                 render: (v) => (
@@ -578,7 +599,7 @@ export default function PatientDetails() {
               },
             ]}
             data={visits}
-            emptyMessage={`No scan sessions or clinical reports have been generated for ${patientData?.name ?? "this patient"} yet.`}
+            emptyMessage={`No scan sessions or clinical reports have been generated for ${patientData?.name ?? "this client"} yet.`}
           />
         </CardContent>
       </Card>
@@ -605,7 +626,7 @@ export default function PatientDetails() {
                     )}
                   </div>
                   <p className="text-xs text-slate-500">
-                    Patient: <strong className="text-slate-700 dark:text-slate-300">{patientData.name}</strong> ({patientData.patient_code}) · {patientData.age} Yrs / {patientData.gender}
+                    Client: <strong className="text-slate-700 dark:text-slate-300">{patientData.name}</strong> ({patientData.patient_code}) · {patientData.age} Yrs / {patientData.gender}
                   </p>
                 </div>
               </div>
@@ -686,6 +707,28 @@ export default function PatientDetails() {
                       <p className="text-[11px] text-indigo-600/70">Wellness guidance points</p>
                     </div>
                   </div>
+
+                  {/* Scan Price Banner */}
+                  {detailedReport.visit?.scan_pricing &&
+                    detailedReport.visit.scan_pricing.amount !== null &&
+                    detailedReport.visit.scan_pricing.amount !== undefined && (
+                      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                        <div className="flex items-center gap-2.5">
+                          <Tag className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                          <div>
+                            <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                              {detailedReport.visit.scan_pricing.name || "Scan Price"}
+                            </p>
+                            <p className="text-[10px] text-emerald-600/70">
+                              Amount charged on this scan session
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
+                          ₹{Number(detailedReport.visit.scan_pricing.amount).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    )}
 
                   {/* Evaluated Parameters Section */}
                   <div className="space-y-3">
@@ -818,7 +861,7 @@ export default function PatientDetails() {
                         Selected Wellness Information & Ayurvedic Lifestyle Guidance in Report
                       </h4>
                       <p className="text-xs text-slate-500">
-                        The specific guidance points and remedies chosen for inclusion in this patient's final report.
+                        The specific guidance points and remedies chosen for inclusion in this client's final report.
                       </p>
                     </div>
 

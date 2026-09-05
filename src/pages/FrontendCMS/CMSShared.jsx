@@ -1,17 +1,15 @@
 import React from "react";
 import { Save, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/context/LanguageContext";
 
 /* ─────────────────────────────────────────
    Tiny reusable field components
 ───────────────────────────────────────── */
 export function Field({ label, children }) {
-  const { t } = useLanguage();
   return (
     <div className="space-y-1.5">
       <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {t(label)}
+        {label}
       </label>
       {children}
     </div>
@@ -19,26 +17,24 @@ export function Field({ label, children }) {
 }
 
 export function CMSInput({ value, onChange, placeholder, type = "text" }) {
-  const { t } = useLanguage();
   return (
     <input
       type={type}
       value={value ?? ""}
       onChange={onChange}
-      placeholder={placeholder ? t(placeholder) : undefined}
+      placeholder={placeholder}
       className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition"
     />
   );
 }
 
 export function CMSTextarea({ value, onChange, rows = 3, placeholder }) {
-  const { t } = useLanguage();
   return (
     <textarea
       rows={rows}
       value={value ?? ""}
       onChange={onChange}
-      placeholder={placeholder ? t(placeholder) : undefined}
+      placeholder={placeholder}
       className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition resize-none"
     />
   );
@@ -48,22 +44,21 @@ export function CMSTextarea({ value, onChange, rows = 3, placeholder }) {
  * Reusable page header for CMS pages with Save & Reset buttons.
  */
 export function CMSPageHeader({ icon: Icon, title, description, onSave, onReset, saving }) {
-  const { t } = useLanguage();
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex items-center gap-3">
         {Icon && <Icon className="h-6 w-6 text-violet-500 shrink-0" />}
         <div>
-          <h1 className="text-2xl font-semibold">{t(title)}</h1>
+          <h1 className="text-2xl font-semibold">{title}</h1>
           {description && (
-            <p className="mt-0.5 text-sm text-muted-foreground">{t(description)}</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
           )}
         </div>
       </div>
       <div className="flex gap-3 shrink-0">
         {onReset && (
           <Button variant="outline" size="sm" onClick={onReset} className="gap-2">
-            <RotateCcw className="h-4 w-4" /> {t("resetDefaults")}
+            <RotateCcw className="h-4 w-4" /> Reset Defaults
           </Button>
         )}
         <Button
@@ -73,7 +68,7 @@ export function CMSPageHeader({ icon: Icon, title, description, onSave, onReset,
           className="gap-2 bg-violet-600 hover:bg-violet-700 text-white"
         >
           <Save className="h-4 w-4" />
-          {saving ? t("publishing") : t("publishLive")}
+          {saving ? "Publishing…" : "Publish Live"}
         </Button>
       </div>
     </div>
@@ -84,7 +79,6 @@ export function CMSPageHeader({ icon: Icon, title, description, onSave, onReset,
  * Sticky save bar pinned to the bottom of the page.
  */
 export function StickyBar({ onSave, saving }) {
-  const { t } = useLanguage();
   return (
     <div className="sticky bottom-4 flex justify-end pt-2">
       <Button
@@ -93,7 +87,7 @@ export function StickyBar({ onSave, saving }) {
         className="shadow-lg gap-2 bg-violet-600 hover:bg-violet-700 text-white px-8 py-5 rounded-2xl"
       >
         <Save className="h-5 w-5" />
-        {saving ? t("publishingChanges") : t("publishLiveChanges")}
+        {saving ? "Publishing Changes…" : "Publish Live Changes"}
       </Button>
     </div>
   );
@@ -103,10 +97,9 @@ export function StickyBar({ onSave, saving }) {
  * Standard loading screen for all CMS pages.
  */
 export function CMSLoader({ label }) {
-  const { t } = useLanguage();
   return (
     <div className="flex h-96 items-center justify-center text-muted-foreground">
-      {label ? t(label) : t("loadingContent")}
+      {label ? label : "Loading content…"}
     </div>
   );
 }
@@ -115,7 +108,6 @@ export function CMSLoader({ label }) {
  * Hook: load content, provide set/save/reset helpers.
  */
 export function useCMSContent(getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT) {
-  const { t } = useLanguage();
   const [data, setData] = React.useState(DEFAULT_CONTENT);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
@@ -142,19 +134,19 @@ export function useCMSContent(getContent, saveContent, resetContentToDefaults, D
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success(t("cmsUpdated"));
+      toast.success("✅ Live site content updated!");
     } catch {
-      toast.error(t("cmsContentSaveFailed"));
+      toast.error("Failed to save content. Please try again.");
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async (toast) => {
-    if (!window.confirm(t("cmsResetConfirm"))) return;
+    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success(t("cmsResetDone"));
+    toast.success("Content reset to defaults.");
   };
 
   return { data, setData, loading, saving, set, handleSave, handleReset };

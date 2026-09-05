@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axiosInstance from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLanguage } from "@/context/LanguageContext";
 import {
   FileText,
   Plus,
@@ -25,8 +24,6 @@ import { toast } from "sonner";
 import ReusableTable from "@/components/ReusableTable";
 
 export default function DisclaimerManagement() {
-  const { t } = useLanguage();
-
   const [disclaimers, setDisclaimers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);

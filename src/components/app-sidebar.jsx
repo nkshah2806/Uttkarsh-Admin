@@ -20,6 +20,7 @@ import {
   Stethoscope,
   Tags,
   Pill,
+  IndianRupee,
 } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -33,10 +34,8 @@ import {
 } from "@/components/ui/sidebar";
 import { DashboardIcon } from "@radix-ui/react-icons";
 import { Config } from "@/lib/Config";
-import { useLanguage } from "@/context/LanguageContext";
 
 export function AppSidebar({ ...props }) {
-  const { t } = useLanguage();
   const [userDetails, setUserDetails] = React.useState(() => {
     const data = localStorage.getItem("UserDetails");
     return data ? JSON.parse(data) : null;
@@ -66,36 +65,38 @@ export function AppSidebar({ ...props }) {
       initials: initials,
     },
     navMain: [
-      { title: t("dashboard"), url: "/dashboard", icon: DashboardIcon },
+      { title: "Dashboard", url: "/dashboard", icon: DashboardIcon },
       {
-        title: t("quantumModule"),
+        title: "Quantum Health Analysis",
         url: "/quantum/patients",
         icon: Stethoscope,
         items: [
-          { title: t("patientDirectory"), url: "/quantum/patients", icon: Users },
-          { title: t("masterDataLibrary"), url: "/quantum/master-data", icon: Database },
-          { title: t("disclaimerContent"), url: "/quantum/disclaimers", icon: FileText },
-          { title: t("parameterCategories"), url: "/quantum/categories", icon: Tags },
-          { title: t("medicineManagement"), url: "/quantum/medicines", icon: Pill },
+          { title: "Client Directory", url: "/quantum/patients", icon: Users },
+          { title: "Master Data Library", url: "/quantum/master-data", icon: Database },
+          { title: "Disclaimer Content", url: "/quantum/disclaimers", icon: FileText },
+          { title: "Parameter Categories", url: "/quantum/categories", icon: Tags },
+          { title: "Medicine Management", url: "/quantum/medicines", icon: Pill },
+          { title: "Scan Pricing Management", url: "/quantum/scan-pricing", icon: IndianRupee },
         ],
       },
       {
-        title: t("frontendCMS"),
+        title: "Frontend CMS",
         url: "/frontend-cms",
         icon: LayoutTemplate,
         items: [
-          { title: t("heroBanner"), url: "/frontend-cms/hero", icon: ImageIcon },
-          { title: t("shopCategories"), url: "/frontend-cms/categories", icon: Grid },
-          { title: t("shopProducts"), url: "/frontend-cms/products", icon: ShoppingBag },
-          { title: t("trustBadges"), url: "/frontend-cms/trust-badges", icon: Shield },
-          { title: t("missionStats"), url: "/frontend-cms/mission", icon: BarChart3 },
-          { title: t("testimonials"), url: "/frontend-cms/testimonials", icon: Quote },
-          { title: t("distributorBanner"), url: "/frontend-cms/distributor-banner", icon: Tag },
-          { title: t("headerFooter"), url: "/frontend-cms/header-footer", icon: Megaphone },
-          { title: t("contactSocial"), url: "/frontend-cms/contact", icon: PhoneCall },
+          { title: "Hero Banner", url: "/frontend-cms/hero", icon: ImageIcon },
+          { title: "Shop Categories", url: "/frontend-cms/categories", icon: Grid },
+          { title: "Shop Products", url: "/frontend-cms/products", icon: ShoppingBag },
+          { title: "Trust Badges", url: "/frontend-cms/trust-badges", icon: Shield },
+          { title: "Mission & Stats", url: "/frontend-cms/mission", icon: BarChart3 },
+          { title: "Testimonials", url: "/frontend-cms/testimonials", icon: Quote },
+          { title: "Distributor Banner", url: "/frontend-cms/distributor-banner", icon: Tag },
+          { title: "Header & Footer", url: "/frontend-cms/header-footer", icon: Megaphone },
+          { title: "Contact & Social", url: "/frontend-cms/contact", icon: PhoneCall },
+          { title: "Health Camps", url: "/frontend-cms/health-camps", icon: HeartPulse },
         ],
       },
-      { title: t("userManagement"), url: "/user", icon: User2Icon },
+      { title: "User Management", url: "/user", icon: User2Icon },
     ],
   };
 

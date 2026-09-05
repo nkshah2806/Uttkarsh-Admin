@@ -5,10 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
-import { useLanguage } from "@/context/LanguageContext";
 
 export default function MissionCMS() {
-  const { t } = useLanguage();
   const [data, setData] = useState(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -38,7 +36,7 @@ export default function MissionCMS() {
   };
 
   const addStat = () => {
-    const stats = [...(data.mission?.stats || []), { id: Date.now(), number: t("cmsNumberPlaceholder"), label: t("cmsNewMetric") }];
+    const stats = [...(data.mission?.stats || []), { id: Date.now(), number: "50+", label: "New Metric" }];
     set("mission.stats", stats);
   };
 
@@ -51,29 +49,29 @@ export default function MissionCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success(t("cmsMissionUpdated"));
+      toast.success("✅ Mission section updated live!");
     } catch {
-      toast.error(t("cmsSaveFailed"));
+      toast.error("Failed to save. Please try again.");
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm(t("cmsResetConfirm"))) return;
+    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success(t("cmsResetDone"));
+    toast.success("Content reset to defaults.");
   };
 
-  if (loading) return <CMSLoader label="cmsLoadingMission" />;
+  if (loading) return <CMSLoader label="Loading Mission content…" />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={BarChart3}
-        title="missionStats"
-        description="cmsMissionDescription"
+        title="Mission & Stats"
+        description='The "Our Mission" two-column section with story description and impact counters.'
         onSave={handleSave}
         onReset={handleReset}
         saving={saving}
@@ -82,35 +80,35 @@ export default function MissionCMS() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-violet-500" /> {t("cmsMissionCardTitle")}
+            <BarChart3 className="h-5 w-5 text-violet-500" /> Mission Story & Impact Stats
           </CardTitle>
           <CardDescription>
-            {t("cmsMissionCardDescription")}
+            Edit the mission narrative, section image, and all impact counter metrics.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-5 md:grid-cols-2">
-            <Field label="cmsSectionBadge">
+            <Field label="Section Badge">
               <CMSInput
                 value={data.mission?.badge}
                 onChange={(e) => set("mission.badge", e.target.value)}
-                placeholder="cmsOurMissionPlaceholder"
+                placeholder="Our Mission"
               />
             </Field>
-            <Field label="cmsSectionImageUrl">
+            <Field label="Section Image URL">
               <CMSInput
                 value={data.mission?.image}
                 onChange={(e) => set("mission.image", e.target.value)}
-                placeholder="cmsImageUrlPlaceholder"
+                placeholder="https://..."
               />
             </Field>
             {data.mission?.image && (
               <div className="md:col-span-2 rounded-xl overflow-hidden h-48 border border-border">
-                <img src={data.mission.image} alt={t("cmsMissionPreviewAlt")} className="w-full h-full object-cover object-center" />
+                <img src={data.mission.image} alt="Mission Preview" className="w-full h-full object-cover object-center" />
               </div>
             )}
             <div className="md:col-span-2">
-              <Field label="cmsSectionTitle">
+              <Field label="Section Title">
                 <CMSInput
                   value={data.mission?.title}
                   onChange={(e) => set("mission.title", e.target.value)}
@@ -118,7 +116,7 @@ export default function MissionCMS() {
               </Field>
             </div>
             <div className="md:col-span-2">
-              <Field label="cmsParagraph1">
+              <Field label="Paragraph 1">
                 <CMSTextarea
                   rows={3}
                   value={data.mission?.paragraph1}
@@ -127,7 +125,7 @@ export default function MissionCMS() {
               </Field>
             </div>
             <div className="md:col-span-2">
-              <Field label="cmsParagraph2">
+              <Field label="Paragraph 2">
                 <CMSTextarea
                   rows={3}
                   value={data.mission?.paragraph2}
@@ -140,9 +138,9 @@ export default function MissionCMS() {
           {/* Stats */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-sm">{t("cmsImpactCounterStats")}</h3>
+              <h3 className="font-semibold text-sm">Impact Counter Stats</h3>
               <Button size="sm" variant="outline" onClick={addStat} className="gap-1.5 text-xs">
-                <Plus className="h-3.5 w-3.5" /> {t("cmsAddCounter")}
+                <Plus className="h-3.5 w-3.5" /> Add Counter
               </Button>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
@@ -154,18 +152,18 @@ export default function MissionCMS() {
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
-                  <Field label="cmsNumberValue">
+                  <Field label="Number / Value">
                     <CMSInput
                       value={stat.number}
                       onChange={(e) => updateStat(idx, "number", e.target.value)}
-                      placeholder="cmsNumberPlaceholder"
+                      placeholder="50+"
                     />
                   </Field>
-                  <Field label="cmsLabel">
+                  <Field label="Label">
                     <CMSInput
                       value={stat.label}
                       onChange={(e) => updateStat(idx, "label", e.target.value)}
-                      placeholder="cmsLabelPlaceholder"
+                      placeholder="Health Camps"
                     />
                   </Field>
                 </div>

@@ -20,28 +20,27 @@ import { Eye, CheckCircle2, Clock } from "lucide-react";
 import DeleteDialog from "@/components/DeleteDialog";
 import user from "../../assets/user.png";
 import { toast } from "sonner";
-import { useLanguage } from "@/context/LanguageContext";
 
-const ApprovalBadge = ({ status, t }) => {
+const ApprovalBadge = ({ status }) => {
   if (status === "approved") {
     return (
       <Badge variant="completed" className="capitalize">
         <CheckCircle2 className="w-4 h-4" />
-        {t("approved")}
+        Approved
       </Badge>
     );
   }
   if (status === "rejected") {
     return (
       <Badge variant="destructive" className="capitalize">
-        {t("rejected")}
+        Rejected
       </Badge>
     );
   }
   return (
     <Badge variant="confirmed" className="capitalize">
       <Clock className="w-4 h-4" />
-      {t("statusPending")}
+      Pending
     </Badge>
   );
 };
@@ -49,23 +48,22 @@ const ApprovalBadge = ({ status, t }) => {
 export default function User() {
   const navigate = useNavigate();
   const tableRef = useRef();
-  const { t } = useLanguage();
 
   const headers = [
     {
       key: "sNo",
-      label: t("sNo"),
+      label: "S. No.",
       filterable: false,
     },
     {
       key: "profileUrl",
-      label: t("profile"),
+      label: "Profile",
       filterable: false,
       render: (row) => (
         <img
           className="w-10 h-10 rounded-full object-cover flex-none"
           src={row.profileUrl}
-          alt={`${row.fullName} ${t("profile")}`}
+          alt={`${row.fullName} Profile`}
           onError={({ currentTarget }) => {
             currentTarget.onerror = null;
             currentTarget.src = user;
@@ -75,50 +73,48 @@ export default function User() {
     },
     {
       key: "name",
-      label: t("fullName"),
+      label: "Full Name",
       filterable: true,
     },
-    // { key: "email", label: t("email"), filterable: true },
-    // { key: "phoneNumber", label: t("phoneNumber"), filterable: true },
     {
       key: "role",
-      label: t("adminOrUser"),
+      label: "Admin/User",
       filterable: true,
       render: (row) => (
         <Badge variant={row.isAdmin ? "destructive" : "default"} className="capitalize min-w-auto">
-          {row.isAdmin ? t("admin") : t("member")}
+          {row.isAdmin ? "Admin" : "Member"}
         </Badge>
       ),
     },
     {
       key: "createdAt",
-      label: t("registrationDate"),
+      label: "Registration Date",
       filterable: true,
     },
     {
       key: "profileCompletion",
-      label: t("profileCompletion"),
+      label: "Profile Completion",
       filterable: false,
       render: (row) => (
         <Badge variant={row.profile_completed ? "completed" : "destructive"} className="capitalize">
-          {row.profile_completed ? t("completed") : t("incomplete")}
+          {row.profile_completed ? "Completed" : "Incomplete"}
         </Badge>
       ),
     },
     {
       key: "approvalStatus",
-      label: t("approvalStatus"),
+      label: "Approval Status",
       filterable: false,
-      render: (row) => <ApprovalBadge status={row.approval_status} t={t} />,
+      render: (row) => <ApprovalBadge status={row.approval_status} />,
     },
     {
       key: "isActive",
-      label: t("isActive"),
+      label: "Status",
       filterable: true,
       render: (row) => (
         <DeleteDialog
-          title={row.isActive ? t("inactiveUserConfirm") : t("activeUserConfirm")}
-          des={(row.isActive ? t("deactivateUserConfirm") : t("activateUserConfirm")).replace(
+          title={row.isActive ? "Inactive User?" : "Active User?"}
+          des={(row.isActive ? "Are you sure you want to deactivate {name}?" : "Are you sure you want to activate {name}?").replace(
             "{name}",
             row.fullName
           )}
@@ -130,13 +126,13 @@ export default function User() {
     },
     {
       key: "actions",
-      label: t("actions"),
+      label: "Actions",
       render: (row) => (
         <div className="flex gap-3">
           <Button
             size="sm"
             variant="outline"
-            onClick={() => navigate(`/user/${row._id}`)} title={t("viewDetails")}
+            onClick={() => navigate(`/user/${row._id}`)} title="View Details"
             className="h-8 w-8 p-0 text-slate-600 hover:text-indigo-600 border-indigo-600/40 hover:bg-indigo-50"
           >
             <Eye className="h-4 w-4" />
@@ -147,7 +143,7 @@ export default function User() {
               variant="outline"
               className="h-8 w-8 p-0 text-slate-600 hover:text-indigo-600 border-indigo-600/40 hover:bg-indigo-50"
               onClick={() => handleApprove(row)}
-              title={t("approveUser")}
+              title="Approve User"
             >
               <CheckCircle2 className="h-4 w-4" />
             </Button>
@@ -160,14 +156,14 @@ export default function User() {
   const approveUserMutation = useApiMutation(
     (id) => approveUser(id),
     {
-      successMessage: t("userApproved"),
+      successMessage: "User approved successfully",
       onSuccess: () => {
         if (tableRef.current) {
           tableRef.current.refetchTable();
         }
       },
       onError: (err) => {
-        toast.error(err?.response?.data?.message || t("failedApproveUser"));
+        toast.error(err?.response?.data?.message || "Failed to approve user");
       },
     }
   );
@@ -179,14 +175,14 @@ export default function User() {
   const deleteUserMutation = useApiMutation(
     ({ id, data }) => toggleUserStatus(id, data),
     {
-      successMessage: t("statusUpdated"),
+      successMessage: "Status updated successfully",
       onSuccess: () => {
         if (tableRef.current) {
           tableRef.current.refetchTable();
         }
       },
       onError: (err) => {
-        toast.error(err?.response?.data?.message || t("failedDeleteUser"));
+        toast.error(err?.response?.data?.message || "Failed to delete user");
       },
     }
   );
@@ -207,8 +203,8 @@ export default function User() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("listOfUsers")}</CardTitle>
-        <CardDescription>{t("allUserInfo")}</CardDescription>
+        <CardTitle>List of Users</CardTitle>
+        <CardDescription>All user information below.</CardDescription>
       </CardHeader>
       <CardContent>
         <ReusableTable

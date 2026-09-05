@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Bell, Moon, Sun, Shield } from "lucide-react";
 import { useTheme } from "@/components/theme-context";
-import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import MenuItem from "@mui/material/MenuItem";
@@ -16,7 +15,6 @@ import ClickAwayListener from "@mui/material/ClickAwayListener";
 
 export default function Layout(props) {
   const { theme, toggleTheme } = useTheme();
-  const { t } = useLanguage();
   const [notificationUserWise, setNotificationUserWise] = useState();
   const [notificationList, setNotificationList] = useState([]);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -82,7 +80,7 @@ export default function Layout(props) {
             <SidebarTrigger className="-ml-1" />
             <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-extrabold bg-indigo-100/90 text-indigo-900 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 rounded-full shadow-2xs">
               <Shield className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-              {t("adminPanel")}
+              ADMIN CONTROL PANEL
             </span>
           </div>
 
@@ -108,7 +106,7 @@ export default function Layout(props) {
                 >
                   <div className="flex-1 overflow-y-auto">
                     {notificationList.length === 0 ? (
-                      <div className="p-4 text-center">{t("noNotifications")}</div>
+                      <div className="p-4 text-center">No notifications</div>
                     ) : (
                       <>
                         {notificationList.map((notifi, i) => (
@@ -164,7 +162,7 @@ export default function Layout(props) {
                         className="dark:text-white font-semibold"
                         underline="hover"
                       >
-                        {t("markAllAsRead")}
+                        Mark all as read
                       </Link>
                     </div>
                   )}

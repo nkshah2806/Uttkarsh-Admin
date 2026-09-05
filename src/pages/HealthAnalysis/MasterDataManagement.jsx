@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import axiosInstance from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLanguage } from "@/context/LanguageContext";
 import {
   Plus,
   FileText,
@@ -30,11 +29,33 @@ import ReusableTable from "@/components/ReusableTable";
 import { parseContent, validateContent, NODE_TYPES } from "@/lib/contentParser";
 
 export default function MasterDataManagement() {
-  const { t } = useLanguage();
   const [parameters, setParameters] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  // Multi-select category filter state — empty array = "All Categories"
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const categoryFilterRef = useRef(null);
+
+  // Close the category filter dropdown on outside click or Escape key
+  useEffect(() => {
+    if (!categoryDropdownOpen) return;
+    const handlePointerDown = (e) => {
+      if (categoryFilterRef.current && !categoryFilterRef.current.contains(e.target)) {
+        setCategoryDropdownOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setCategoryDropdownOpen(false);
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [categoryDropdownOpen]);
 
   // Modals
   const [showEditorModal, setShowEditorModal] = useState(false);
@@ -70,7 +91,7 @@ export default function MasterDataManagement() {
       const res = await axiosInstance.get("v1/admin/parameters");
       setParameters(res.data.data || []);
     } catch (err) {
-      toast.error(err.response?.data?.message || t("failedLoadParameters"));
+      toast.error(err.response?.data?.message || "Failed to load parameters");
     } finally {
       setLoading(false);
     }
@@ -94,7 +115,7 @@ export default function MasterDataManagement() {
     return active.length > 0 ? active : inUse.length > 0 ? inUse : ["General"];
   }, [categories, parameters]);
 
-  // Filter pills: admin-added categories + any categories still in use by parameters
+  // Filter dropdown options: admin-added categories + any categories still in use by parameters
   const filterCategories = useMemo(() => {
     const adminNames = categories.map((c) => c.name);
     const inUse = Array.from(new Set(parameters.map((p) => p.category))).filter(Boolean);
@@ -151,7 +172,7 @@ export default function MasterDataManagement() {
 
   const handleSaveParameter = async (statusOverride) => {
     if (!form.name_en || form.normal_min === "" || form.normal_max === "") {
-      toast.error(t("fillRequiredFields"));
+      toast.error("Please fill all required parameter fields in the Details tab.");
       setEditorTab("details");
       return;
     }
@@ -170,16 +191,16 @@ export default function MasterDataManagement() {
 
       if (editingParam) {
         await axiosInstance.put(`v1/admin/parameters/${editingParam._id}`, payload);
-        toast.success(t("parameterUpdated").replace("{code}", form.code).replace("{version}", String((editingParam.version || 1) + (editingParam.status === "PUBLISHED" ? 1 : 0))));
+        toast.success(`Parameter ${form.code} updated to v${String((editingParam.version || 1) + (editingParam.status === "PUBLISHED" ? 1 : 0))}`);
       } else {
         await axiosInstance.post("v1/admin/parameters", payload);
-        toast.success(t("parameterCreated").replace("{code}", derivedCode));
+        toast.success(`Parameter ${derivedCode} created successfully.`);
       }
 
       setShowEditorModal(false);
       fetchParameters();
     } catch (err) {
-      toast.error(err.response?.data?.message || t("failedSaveParameter"));
+      toast.error(err.response?.data?.message || "Failed to save parameter.");
     } finally {
       setSaving(false);
     }
@@ -188,10 +209,10 @@ export default function MasterDataManagement() {
   const handleDuplicate = async (param) => {
     try {
       const res = await axiosInstance.post(`v1/admin/parameters/${param._id}/duplicate`);
-      toast.success(t("duplicateCreated").replace("{code}", res.data.data.code));
+      toast.success(`Duplicated parameter created: ${res.data.data.code}`);
       fetchParameters();
     } catch (err) {
-      toast.error(err.response?.data?.message || t("failedDuplicate"));
+      toast.error(err.response?.data?.message || "Failed to duplicate parameter.");
     }
   };
 
@@ -199,11 +220,11 @@ export default function MasterDataManagement() {
     if (!deletingParam) return;
     try {
       await axiosInstance.delete(`v1/admin/parameters/${deletingParam._id}`);
-      toast.success(t("parameterDeleted").replace("{code}", deletingParam.code));
+      toast.success(`Parameter ${deletingParam.code} deleted.`);
       setDeletingParam(null);
       fetchParameters();
     } catch (err) {
-      toast.error(err.response?.data?.message || t("failedDeleteParameter"));
+      toast.error(err.response?.data?.message || "Failed to delete parameter.");
     }
   };
 
@@ -211,18 +232,18 @@ export default function MasterDataManagement() {
     try {
       const newActive = !param.is_active;
       await axiosInstance.put(`v1/admin/parameters/${param._id}`, { is_active: newActive });
-      toast.success(t("parameterStatusChanged").replace("{code}", param.code).replace("{status}", newActive ? t("active") : t("inactive")));
+      toast.success(`Parameter ${param.code} is now ${newActive ? "Active" : "Inactive"}`);
       fetchParameters();
     } catch (err) {
-      toast.error(t("failedToggleStatus"));
+      toast.error("Failed to toggle status");
     }
   };
 
-  // Filtered list
+  // Filtered list — supports multi-select category filtering (empty selection = all)
   const filteredParameters = useMemo(() => {
-    if (selectedCategory === "All") return parameters;
-    return parameters.filter((p) => p.category === selectedCategory);
-  }, [parameters, selectedCategory]);
+    if (selectedCategories.length === 0) return parameters;
+    return parameters.filter((p) => selectedCategories.includes(p.category));
+  }, [parameters, selectedCategories]);
 
   // Overall statistics
   const stats = useMemo(() => {
@@ -244,7 +265,7 @@ export default function MasterDataManagement() {
   const tableHeaders = [
     {
       key: "code",
-      label: t("code"),
+      label: "Code",
       render: (row) => (
         <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded text-xs">
           {row.code}
@@ -264,7 +285,7 @@ export default function MasterDataManagement() {
     },
     {
       key: "category",
-      label: t("category"),
+      label: "Category",
       render: (row) => (
         <span className="text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
           {row.category}
@@ -273,7 +294,7 @@ export default function MasterDataManagement() {
     },
     {
       key: "normal_min",
-      label: t("normalRange"),
+      label: "Normal Range",
       filterable: false,
       render: (row) => (
         <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
@@ -283,20 +304,20 @@ export default function MasterDataManagement() {
     },
     {
       key: "selectable_nodes_count",
-      label: t("contentItems"),
+      label: "Content Items",
       render: (row) => {
         const count = row.selectable_nodes_count || (row.parsed_nodes_en?.length || 0);
         return (
           <span className="inline-flex items-center gap-1 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full">
             <Sparkles className="h-3 w-3" />
-            {count > 0 ? t("selectablePoints").replace("{count}", count) : t("legacyBullets")}
+            {count > 0 ? `${count} Selectable Points` : "Legacy Bullets"}
           </span>
         );
       },
     },
     {
       key: "version",
-      label: t("version"),
+      label: "Version",
       render: (row) => (
         <span className="font-mono text-xs font-bold text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/50 px-2 py-0.5 rounded">
           v{row.version || 1}
@@ -305,7 +326,7 @@ export default function MasterDataManagement() {
     },
     {
       key: "is_active",
-      label: t("status"),
+      label: "Status",
       render: (row) => (
         <button
           onClick={(e) => {
@@ -317,20 +338,20 @@ export default function MasterDataManagement() {
             : "bg-slate-200 text-slate-600 hover:bg-slate-300"
             }`}
         >
-          {row.is_active !== false ? t("active") : t("inactive")}
+          {row.is_active !== false ? "Active" : "Inactive"}
         </button>
       ),
     },
     {
       key: "actions",
-      label: t("actions"),
+      label: "Actions",
       filterable: false,
       render: (row) => (
         <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
           <Button
             size="sm"
             variant="ghost"
-            title={t("viewParsedTree")}
+            title="View & Preview Parsed Tree"
             onClick={() => {
               setPreviewParam(row);
               setShowPreviewModal(true);
@@ -342,7 +363,7 @@ export default function MasterDataManagement() {
           <Button
             size="sm"
             variant="ghost"
-            title={t("editParameterContent")}
+            title="Edit Parameter & Content"
             onClick={() => openEditModal(row)}
             className="h-8 w-8 p-0 text-slate-600 hover:text-indigo-600"
           >
@@ -351,7 +372,7 @@ export default function MasterDataManagement() {
           <Button
             size="sm"
             variant="ghost"
-            title={t("duplicateParameter")}
+            title="Duplicate Parameter"
             onClick={() => handleDuplicate(row)}
             className="h-8 w-8 p-0 text-slate-600 hover:text-indigo-600"
           >
@@ -360,7 +381,7 @@ export default function MasterDataManagement() {
           <Button
             size="sm"
             variant="ghost"
-            title={t("deleteParameter")}
+            title="Delete Parameter"
             onClick={() => setDeletingParam(row)}
             className="h-8 w-8 p-0 text-slate-600 hover:text-rose-600"
           >
@@ -378,13 +399,13 @@ export default function MasterDataManagement() {
         <div>
           <div className="flex items-center gap-2 text-indigo-200 text-xs uppercase font-bold tracking-widest">
             <Layers className="h-4 w-4" />
-            <span>{t("masterDataSystem")}</span>
+            <span>Master Data Management System</span>
           </div>
           <h1 className="text-2xl font-bold mt-1">
-            {t("quantumMasterData")}
+            Quantum Parameter Master Data
           </h1>
           <p className="text-xs text-indigo-100 mt-1 max-w-2xl">
-            {t("masterDataSubtitle")}
+            Manage the master data used by quantum analysis: parameters, content and their versions.
           </p>
         </div>
         <Button
@@ -392,57 +413,149 @@ export default function MasterDataManagement() {
           className="bg-white text-indigo-700 hover:bg-indigo-50 font-bold px-5 py-2.5 rounded-xl shadow-lg shrink-0 flex items-center gap-2"
         >
           <Plus className="h-5 w-5" />
-          <span>{t("addNewParameter")}</span>
+          <span>Add New Parameter</span>
         </Button>
       </div>
 
       {/* Statistics Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 border rounded-xl p-4 shadow-xs">
-          <p className="text-xs text-slate-400 uppercase font-semibold">{t("totalParameters")}</p>
+          <p className="text-xs text-slate-400 uppercase font-semibold">Total Parameters</p>
           <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{stats.total}</p>
         </div>
         <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 rounded-xl p-4 shadow-xs">
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 uppercase font-semibold">{t("activeStatus")}</p>
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 uppercase font-semibold">Active Status</p>
           <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mt-1">{stats.active}</p>
         </div>
         <div className="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 rounded-xl p-4 shadow-xs">
-          <p className="text-xs text-indigo-600 dark:text-indigo-400 uppercase font-semibold">{t("parsedContentNodes")}</p>
+          <p className="text-xs text-indigo-600 dark:text-indigo-400 uppercase font-semibold">Parsed Content Nodes</p>
           <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-300 mt-1">{stats.totalNodes}</p>
         </div>
         <div className="bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-900 rounded-xl p-4 shadow-xs">
-          <p className="text-xs text-violet-600 dark:text-violet-400 uppercase font-semibold">{t("categories")}</p>
+          <p className="text-xs text-violet-600 dark:text-violet-400 uppercase font-semibold">Categories</p>
           <p className="text-2xl font-bold text-violet-700 dark:text-violet-300 mt-1">{stats.categories}</p>
         </div>
       </div>
 
-      {/* Category Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        <button
-          onClick={() => setSelectedCategory("All")}
-          className={`shrink-0 text-xs px-3.5 py-1.5 rounded-full font-semibold transition-all ${selectedCategory === "All"
-            ? "bg-indigo-600 text-white shadow-xs"
-            : "bg-white dark:bg-slate-800 text-slate-600 border hover:bg-slate-50"
-            }`}
-        >
-          {t("allCategories")} ({parameters.length})
-        </button>
-        {filterCategories.map((cat) => {
-          const count = parameters.filter((p) => p.category === cat).length;
-          if (count === 0 && selectedCategory !== cat) return null;
-          return (
+      {/* Category Multi-Select Filter Dropdown */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative" ref={categoryFilterRef}>
+          <button
+            type="button"
+            onClick={() => setCategoryDropdownOpen((open) => !open)}
+            className={`inline-flex items-center gap-2 text-xs px-3.5 py-2 rounded-lg font-semibold transition-all border cursor-pointer ${selectedCategories.length > 0
+                ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
+                : "bg-white dark:bg-slate-800 text-slate-600 border hover:bg-slate-50 dark:hover:bg-slate-700 dark:text-slate-300"
+              }`}
+          >
+            <ListFilter className="h-3.5 w-3.5" />
+            <span>
+              {selectedCategories.length === 0
+                ? "All Categories"
+                : `Filtering ${selectedCategories.length} Categor${selectedCategories.length === 1 ? "y" : "ies"}`}
+            </span>
+            <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-150 ${categoryDropdownOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          {categoryDropdownOpen && (
+            <div className="absolute left-0 top-full mt-2 z-30 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl p-2">
+              <div className="flex items-center justify-between px-2 py-1.5 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Filter by Category
+                </span>
+                {selectedCategories.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategories([])}
+                    className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 hover:underline cursor-pointer"
+                  >
+                    Clear ({selectedCategories.length})
+                  </button>
+                )}
+              </div>
+
+              <div className="max-h-72 overflow-y-auto py-1.5 space-y-0.5">
+                <label className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.length === 0}
+                    onChange={() => setSelectedCategories([])}
+                    className="h-3.5 w-3.5 rounded accent-indigo-600"
+                  />
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex-1">
+                    All Categories
+                  </span>
+                  <span className="text-[10px] font-semibold text-slate-400">{parameters.length}</span>
+                </label>
+
+                {filterCategories.map((cat) => {
+                  const count = parameters.filter((p) => p.category === cat).length;
+                  const checked = selectedCategories.includes(cat);
+                  const disabled = count === 0 && !checked;
+                  return (
+                    <label
+                      key={cat}
+                      className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 ${disabled ? "opacity-45 cursor-not-allowed" : ""
+                        }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={disabled}
+                        onChange={() =>
+                          setSelectedCategories((prev) =>
+                            checked ? prev.filter((c) => c !== cat) : [...prev, cat]
+                          )
+                        }
+                        className="h-3.5 w-3.5 rounded accent-indigo-600"
+                      />
+                      <span className="text-xs font-medium text-slate-700 dark:text-slate-200 flex-1 truncate">
+                        {cat}
+                      </span>
+                      <span className="text-[10px] font-semibold text-slate-400">{count}</span>
+                    </label>
+                  );
+                })}
+
+                {filterCategories.length === 0 && (
+                  <p className="px-2 py-3 text-xs text-slate-400 text-center">No categories available</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {selectedCategories.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {selectedCategories.map((cat) => (
+              <span
+                key={cat}
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-900 rounded-full pl-2.5 pr-1.5 py-1"
+              >
+                {cat}
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategories((prev) => prev.filter((c) => c !== cat))}
+                  className="p-0.5 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800 cursor-pointer"
+                  aria-label={`Remove ${cat} filter`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`shrink-0 text-xs px-3.5 py-1.5 rounded-full font-semibold transition-all ${selectedCategory === cat
-                ? "bg-indigo-600 text-white shadow-xs"
-                : "bg-white dark:bg-slate-800 text-slate-600 border hover:bg-slate-50"
-                }`}
+              type="button"
+              onClick={() => setSelectedCategories([])}
+              className="text-[11px] font-semibold text-slate-500 hover:text-rose-600 hover:underline cursor-pointer"
             >
-              {cat} ({count})
+              Clear all
             </button>
-          );
-        })}
+          </div>
+        )}
+
+        <p className="ml-auto text-xs text-slate-400 dark:text-slate-500">
+          Showing {filteredParameters.length} of {parameters.length} parameters
+        </p>
       </div>
 
       {/* Main Parameters Table */}
@@ -452,10 +565,10 @@ export default function MasterDataManagement() {
             headers={tableHeaders}
             data={filteredParameters}
             loading={loading}
-            Search={t("searchParameterPlaceholder")}
+            Search="Search parameter code, name, or category..."
             CreateExportRender={() => (
               <Button onClick={openAddModal} className="bg-indigo-600 hover:bg-indigo-700 text-xs">
-                <Plus className="mr-1 h-3.5 w-3.5" /> {t("addParameter")}
+                <Plus className="mr-1 h-3.5 w-3.5" /> Add Parameter
               </Button>
             )}
             pagination={true}
@@ -481,10 +594,10 @@ export default function MasterDataManagement() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-                    {editingParam ? `${t("editParameter")}: ${editingParam.code}` : t("createQuantumParameter")}
+                    {editingParam ? `Edit Parameter: ${editingParam.code}` : "Create Quantum Parameter"}
                   </h3>
                   <p className="text-xs text-slate-400">
-                    {editingParam ? `${t("currentVersion")}: v${editingParam.version || 1}` : t("initialVersion")}
+                    {editingParam ? `Current Version: v${editingParam.version || 1}` : "Version 1 (Initial Release)"}
                   </p>
                 </div>
               </div>
@@ -497,7 +610,7 @@ export default function MasterDataManagement() {
                   className={`px-3 py-1.5 rounded-lg transition-all ${editorTab === "details" ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-xs" : "text-slate-600"
                     }`}
                 >
-                  {t("tabParameterDetails")}
+                  1. Parameter Details
                 </button>
                 <button
                   type="button"
@@ -505,7 +618,7 @@ export default function MasterDataManagement() {
                   className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${editorTab === "content" ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-xs" : "text-slate-600"
                     }`}
                 >
-                  <span>{t("tabSmartContentEditor")}</span>
+                  <span>2. Smart Content Editor</span>
                   {parseDiagnostics.sectionsCount > 0 && (
                     <span className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 text-[10px] px-1.5 py-0.2 rounded-full">
                       {parseDiagnostics.bulletsCount + parseDiagnostics.subBulletsCount}
@@ -518,7 +631,7 @@ export default function MasterDataManagement() {
                   className={`px-3 py-1.5 rounded-lg transition-all ${editorTab === "preview" ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-xs" : "text-slate-600"
                     }`}
                 >
-                  {t("tabReportPreview")}
+                  3. Report Preview
                 </button>
               </div>
 
@@ -538,7 +651,7 @@ export default function MasterDataManagement() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold mb-1 text-slate-700 dark:text-slate-300">
-                        {t("categoryRequired")}
+                        Category *
                       </label>
                       <select
                         value={form.category}
@@ -556,9 +669,9 @@ export default function MasterDataManagement() {
                     {/* Parameter Code — read-only in edit mode, auto-derived in create mode */}
                     <div>
                       <label className="block text-xs font-semibold mb-1 text-slate-700 dark:text-slate-300">
-                        {t("parameterCode")}
+                        Parameter Code
                         {!editingParam && (
-                          <span className="ml-1.5 text-[10px] font-normal text-indigo-500 italic">{t("autoGeneratedFromEnglish")}</span>
+                          <span className="ml-1.5 text-[10px] font-normal text-indigo-500 italic">(auto-generated from English name)</span>
                         )}
                       </label>
                       <div className="w-full rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm font-mono uppercase bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 min-h-[38px] flex items-center">
@@ -566,7 +679,7 @@ export default function MasterDataManagement() {
                           ? form.code || "—"
                           : form.name_en
                             ? deriveCodeFromName(form.name_en)
-                            : <span className="text-slate-300 dark:text-slate-600 text-xs italic">{t("typeEnglishNameAbove")}</span>
+                            : <span className="text-slate-300 dark:text-slate-600 text-xs italic">Type the English name above…</span>
                         }
                       </div>
                     </div>
@@ -574,12 +687,12 @@ export default function MasterDataManagement() {
 
                   <div>
                     <label className="block text-xs font-semibold mb-1 text-slate-700 dark:text-slate-300">
-                      {t("englishNameRequired")}
+                      English Name *
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder={t("exampleBloodViscosity")}
+                      placeholder="e.g. Blood Viscosity"
                       value={form.name_en}
                       onChange={(e) => setForm({ ...form, name_en: e.target.value })}
                       className="w-full rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -589,7 +702,7 @@ export default function MasterDataManagement() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold mb-1 text-slate-700 dark:text-slate-300">
-                        {t("normalRangeMin")}
+                        Normal Range Min *
                       </label>
                       <input
                         type="number"
@@ -604,7 +717,7 @@ export default function MasterDataManagement() {
 
                     <div>
                       <label className="block text-xs font-semibold mb-1 text-slate-700 dark:text-slate-300">
-                        {t("normalRangeMax")}
+                        Normal Range Max *
                       </label>
                       <input
                         type="number"
@@ -629,7 +742,7 @@ export default function MasterDataManagement() {
                   <div className="space-y-3 flex flex-col">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold uppercase text-slate-500">{t("contentEnglish")}</span>
+                        <span className="text-xs font-bold uppercase text-slate-500">Content (English)</span>
                       </div>
                     </div>
 
@@ -640,28 +753,28 @@ export default function MasterDataManagement() {
                         onClick={() => insertFormatting("1. Section Heading")}
                         className="px-2 py-1 rounded bg-white dark:bg-slate-700 border hover:bg-slate-100 text-[11px] font-semibold"
                       >
-                        {t("addSection")}
+                        + Section
                       </button>
                       <button
                         type="button"
                         onClick={() => insertFormatting("* Bullet Point")}
                         className="px-2 py-1 rounded bg-white dark:bg-slate-700 border hover:bg-slate-100 text-[11px] font-semibold"
                       >
-                        {t("addBullet")}
+                        + Bullet
                       </button>
                       <button
                         type="button"
                         onClick={() => insertFormatting("  * Sub-bullet")}
                         className="px-2 py-1 rounded bg-white dark:bg-slate-700 border hover:bg-slate-100 text-[11px] font-semibold"
                       >
-                        {t("addSubBullet")}
+                        + Sub-bullet
                       </button>
                       <button
                         type="button"
                         onClick={() => insertFormatting("3. Recommendations (Pathya / Parhej)")}
                         className="px-2 py-1 rounded bg-white dark:bg-slate-700 border hover:bg-slate-100 text-[11px] font-semibold"
                       >
-                        {t("addRecommendations")}
+                        + Recommendations
                       </button>
                     </div>
 
@@ -676,7 +789,7 @@ export default function MasterDataManagement() {
                           raw_content_en: val,
                         }));
                       }}
-                      placeholder={t("contentPlaceholder")}
+                      placeholder="Paste or type multi-line content. Lines starting with bullets (• or -) are parsed automatically."
                       className="w-full flex-1 rounded-xl border border-slate-200 dark:border-slate-700 p-3 font-mono text-xs leading-relaxed bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                     />
                   </div>
@@ -687,15 +800,15 @@ export default function MasterDataManagement() {
                       <div className="flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-indigo-600" />
                         <span className="font-bold text-xs uppercase text-slate-700 dark:text-slate-200">
-                          {t("automaticParsePreview")}
+                          Automatic Parse Preview
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded">
-                          {t("sectionsCount").replace("{n}", parseDiagnostics.sectionsCount)}
+                          {`${parseDiagnostics.sectionsCount} Sections`}
                         </span>
                         <span className="text-[11px] font-semibold text-indigo-600 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded">
-                          {t("bulletsCount").replace("{n}", parseDiagnostics.bulletsCount + parseDiagnostics.subBulletsCount)}
+                          {`${parseDiagnostics.bulletsCount + parseDiagnostics.subBulletsCount} Bullets`}
                         </span>
                       </div>
                     </div>
@@ -716,7 +829,7 @@ export default function MasterDataManagement() {
                     <div className="flex-1 overflow-y-auto max-h-[380px] space-y-2 pr-1 text-xs">
                       {parseDiagnostics?.nodes?.length === 0 ? (
                         <div className="py-16 text-center text-slate-400">
-                          {t("noParsedContent")}
+                          No parsed content yet. Paste multi-line content to see the preview.
                         </div>
                       ) : (
                         parseDiagnostics?.nodes?.map((node) => {
@@ -809,14 +922,14 @@ export default function MasterDataManagement() {
                     onClick={() => setEditorTab(editorTab === "preview" ? "content" : "details")}
                     className="text-xs"
                   >
-                    {t("back")}
+                    Back
                   </Button>
                 )}
               </div>
 
               <div className="flex items-center gap-2">
                 <Button type="button" variant="outline" onClick={() => setShowEditorModal(false)}>
-                  {t("cancel")}
+                  Cancel
                 </Button>
 
                 {editorTab !== "preview" && (
@@ -825,7 +938,7 @@ export default function MasterDataManagement() {
                     variant="secondary"
                     onClick={() => setEditorTab(editorTab === "details" ? "content" : "preview")}
                   >
-                    {editorTab === "details" ? t("nextContentEditor") : t("nextPreview")}
+                    {editorTab === "details" ? "Next: Content Editor" : "Next: Preview"}
                   </Button>
                 )}
 
@@ -836,7 +949,7 @@ export default function MasterDataManagement() {
                   onClick={() => handleSaveParameter("DRAFT")}
                   className="border-slate-300"
                 >
-                  {t("saveAsDraft")}
+                  Save as Draft
                 </Button>
 
                 <Button
@@ -845,7 +958,7 @@ export default function MasterDataManagement() {
                   onClick={() => handleSaveParameter("PUBLISHED")}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
                 >
-                  {saving ? t("publishing") : editingParam ? t("publishUpdate").replace("{version}", String((editingParam.version || 1) + 1)) : t("publishParameter")}
+                  {saving ? "Publishing..." : editingParam ? `Publish Update (v${String((editingParam.version || 1) + 1)})` : "Publish Parameter"}
                 </Button>
               </div>
             </div>
@@ -868,7 +981,7 @@ export default function MasterDataManagement() {
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white">{previewParam.name_en}</h3>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  {t("previewSubtitle").replace("{cat}", previewParam.category).replace("{min}", previewParam.normal_min).replace("{max}", previewParam.normal_max).replace("{unit}", previewParam.unit).replace("{version}", previewParam.version || 1)}
+                  {`Category: ${previewParam.category} • Range: ${previewParam.normal_min}–${previewParam.normal_max} ${previewParam.unit} • Version: v${previewParam.version || 1}`}
                 </p>
               </div>
               <button
@@ -882,7 +995,7 @@ export default function MasterDataManagement() {
             <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs">
               {(previewParam.parsed_nodes_en || []).length === 0 ? (
                 <div className="text-center py-10 text-slate-400">
-                  {t("noParsedNodes")}
+                  No parsed nodes found. Click Edit to paste multi-line content.
                 </div>
               ) : (
                 previewParam.parsed_nodes_en.map((node) => {
@@ -904,7 +1017,7 @@ export default function MasterDataManagement() {
 
             <div className="flex justify-end gap-2 pt-2 border-t">
               <Button variant="outline" onClick={() => setShowPreviewModal(false)}>
-                {t("close")}
+                Close
               </Button>
               <Button
                 onClick={() => {
@@ -913,7 +1026,7 @@ export default function MasterDataManagement() {
                 }}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white"
               >
-                <Pencil className="mr-1.5 h-4 w-4" /> {t("editContent")}
+                <Pencil className="mr-1.5 h-4 w-4" /> Edit Content
               </Button>
             </div>
           </div>
@@ -928,17 +1041,17 @@ export default function MasterDataManagement() {
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl border border-rose-200">
             <div className="flex items-center gap-3 text-rose-600">
               <AlertTriangle className="h-6 w-6 shrink-0" />
-              <h3 className="text-lg font-bold">{t("deleteQuantumParameter")}</h3>
+              <h3 className="text-lg font-bold">Delete Quantum Parameter</h3>
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              {t("confirmDeleteParameter").replace("{code}", deletingParam.code).replace("{name}", deletingParam.name_en)}
+              {`Are you sure you want to delete parameter ${deletingParam.code} - ${deletingParam.name_en}? This will remove all associated parsed content versions.`}
             </p>
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" onClick={() => setDeletingParam(null)}>
-                {t("cancel")}
+                Cancel
               </Button>
               <Button variant="destructive" onClick={confirmDeleteParameter}>
-                {t("confirmDeleteButton")}
+                Confirm Delete
               </Button>
             </div>
           </div>

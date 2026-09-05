@@ -51,7 +51,6 @@ import {
 } from "lucide-react";
 import { useApiQuery } from "@/hooks/useApiQuery";
 import { getDashboardOverview } from "@/services/dashboardApi";
-import { useLanguage } from "@/context/LanguageContext";
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
@@ -184,7 +183,6 @@ const STATUS_LABELS = {
 
 export default function DashboardOverview() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
 
   const {
     data,
@@ -228,15 +226,15 @@ export default function DashboardOverview() {
   /* ---------------- Quick actions ---------------- */
   const quickActions = [
     { label: "Add Member", icon: UserPlus, to: "/user/create", accent: "from-violet-500 to-fuchsia-500" },
-    { label: "Register Patient", icon: ClipboardList, to: "/quantum/patients", accent: "from-emerald-500 to-green-500" },
+    { label: "Register Client", icon: ClipboardList, to: "/quantum/patients", accent: "from-emerald-500 to-green-500" },
     { label: "Manage Parameters", icon: SlidersHorizontal, to: "/quantum/master-data", accent: "from-sky-500 to-cyan-500" },
     { label: "Manage Disclaimers", icon: FileCog, to: "/quantum/disclaimers", accent: "from-amber-500 to-orange-500" },
-    { label: "View Patients & Reports", icon: Eye, to: "/quantum/patients", accent: "from-rose-500 to-pink-500" },
+    { label: "View Clients & Reports", icon: Eye, to: "/quantum/patients", accent: "from-rose-500 to-pink-500" },
   ];
 
   /* ---------------- Workflow strip ---------------- */
   const workflow = [
-    { label: "Patient", desc: "Register", icon: UserPlus },
+    { label: "Client", desc: "Register", icon: UserPlus },
     { label: "Machine Data", desc: "Scan entry", icon: ScanLine },
     { label: "Parameter Review", desc: "Verify values", icon: SlidersHorizontal },
     { label: "Report Generation", desc: "PDF output", icon: FileText },
@@ -285,7 +283,7 @@ export default function DashboardOverview() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.35em] text-violet-100">
-              {t("quantumModule")} · Admin Control Panel
+              Quantum Health Analysis · Admin Control Panel
             </p>
             <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">
               {greeting()}{currentUser ? `, ${currentUser}` : ""} 👋
@@ -309,7 +307,7 @@ export default function DashboardOverview() {
               className="bg-white text-violet-700 hover:bg-violet-50"
               onClick={() => navigate("/quantum/patients")}
             >
-              Open Patient Directory <ArrowRight className="ml-2 h-4 w-4" />
+              Open Client Directory <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -363,7 +361,7 @@ export default function DashboardOverview() {
 
       {/* ============ Stat cards ============ */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
-        <StatCard loading={isLoading} title="Total Patients" value={summary.totalPatients ?? "—"} icon={Users} accent="from-emerald-500 to-green-500" hint={`${summary.patientsToday ?? 0} today`} />
+        <StatCard loading={isLoading} title="Total Clients" value={summary.totalPatients ?? "—"} icon={Users} accent="from-emerald-500 to-green-500" hint={`${summary.patientsToday ?? 0} today`} />
         <StatCard loading={isLoading} title="Total Reports" value={summary.totalReports ?? "—"} icon={FileText} accent="from-sky-500 to-cyan-500" hint={`${summary.reportsToday ?? 0} today`} />
         <StatCard loading={isLoading} title="Pending Records" value={(summary.pendingVisits ?? 0) + (summary.reportReadyVisits ?? 0)} icon={Clock} accent="from-amber-500 to-orange-500" hint={`${summary.pendingVisits ?? 0} data entry · ${summary.reportReadyVisits ?? 0} review`} />
         <StatCard loading={isLoading} title="Upcoming Follow-ups" value={summary.upcomingFollowUps ?? "—"} icon={CalendarClock} accent="from-violet-500 to-fuchsia-500" hint={`${summary.overdueFollowUps ?? 0} overdue`} />
@@ -398,7 +396,7 @@ export default function DashboardOverview() {
                   <XAxis dataKey="label" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                   <Tooltip content={<ChartTooltip />} />
-                  <Area type="monotone" dataKey="patients" name="Patients" stroke="#8b5cf6" fill="url(#gradPatients)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="patients" name="Clients" stroke="#8b5cf6" fill="url(#gradPatients)" strokeWidth={2} />
                   <Area type="monotone" dataKey="reports" name="Reports" stroke="#0ea5e9" fill="url(#gradReports)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
@@ -469,7 +467,7 @@ export default function DashboardOverview() {
                   <XAxis dataKey="month" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                   <Tooltip content={<ChartTooltip />} />
-                  <Bar dataKey="count" name="Patients" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="count" name="Clients" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -530,8 +528,8 @@ export default function DashboardOverview() {
         <Card className="border-0 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="text-lg">Recent Patient Registrations</CardTitle>
-              <CardDescription>Latest patients added to the system</CardDescription>
+              <CardTitle className="text-lg">Recent Client Registrations</CardTitle>
+              <CardDescription>Latest clients added to the system</CardDescription>
             </div>
             <Button variant="ghost" size="sm" onClick={() => navigate("/quantum/patients")}>
               View all <ArrowRight className="ml-1 h-4 w-4" />
@@ -569,7 +567,7 @@ export default function DashboardOverview() {
                 ))}
               </div>
             ) : (
-              <EmptyState icon={Users} title="No patients registered yet" description="Register your first patient to see them here." />
+              <EmptyState icon={Users} title="No clients registered yet" description="Register your first client to see them here." />
             )}
           </CardContent>
         </Card>
@@ -603,7 +601,7 @@ export default function DashboardOverview() {
                         <FileText className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{r.patient?.name || "Unknown patient"}</p>
+                        <p className="text-sm font-medium">{r.patient?.name || "Unknown client"}</p>
                         <p className="text-xs text-muted-foreground">
                           {r.patient?.patient_code || "—"} · {r.language === "hi" ? "Hindi" : "English"}
                         </p>
@@ -654,7 +652,7 @@ export default function DashboardOverview() {
                         {v.status === "DATA_ENTRY" ? <ScanLine className="h-4 w-4" /> : <Stethoscope className="h-4 w-4" />}
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{v.patient?.name || "Unknown patient"}</p>
+                        <p className="text-sm font-medium">{v.patient?.name || "Unknown client"}</p>
                         <p className="text-xs text-muted-foreground">
                           {v.patient?.patient_code || "—"} · {fmtDate(v.visit_date || v.createdAt)}
                         </p>
@@ -680,7 +678,7 @@ export default function DashboardOverview() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-lg">Upcoming Follow-ups</CardTitle>
-              <CardDescription>Patients with next visit dates from today</CardDescription>
+              <CardDescription>Clients with next visit dates from today</CardDescription>
             </div>
             <Badge variant="secondary" className="bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
               {summary.upcomingFollowUps ?? 0} scheduled
@@ -704,7 +702,7 @@ export default function DashboardOverview() {
                         <CalendarClock className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{v.patient?.name || "Unknown patient"}</p>
+                        <p className="text-sm font-medium">{v.patient?.name || "Unknown client"}</p>
                         <p className="text-xs text-muted-foreground">
                           {v.patient?.patient_code || "—"} · {v.patient?.mobile || "—"}
                         </p>
