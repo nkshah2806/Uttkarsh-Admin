@@ -207,17 +207,25 @@ export default function PatientDetails() {
               <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                 {patientData.name}
               </h1>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                {patientData.age} Yrs · {patientData.gender}
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 inline-flex items-center gap-x-1">
+                <span>{patientData.age}</span>
+                <span>Yrs</span>
+                <span aria-hidden="true">·</span>
+                <span>{patientData.gender}</span>
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5 text-slate-400" />
-              Registered on {new Date(patientData.createdAt).toLocaleDateString("en-IN", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
+              <span className="inline-flex flex-wrap items-center gap-x-1">
+                <span>Registered on</span>
+                <span>
+                  {new Date(patientData.createdAt).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+              </span>
             </p>
           </div>
         </div>
@@ -437,8 +445,10 @@ export default function PatientDetails() {
                 All previously generated health analysis scans and clinical reports for this client.
               </p>
             </div>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-              {visits.length} Historical {visits.length === 1 ? "Session" : "Sessions"}
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 inline-flex items-center gap-x-1">
+              <span>{visits.length}</span>
+              <span>Historical</span>
+              <span>{visits.length === 1 ? "Session" : "Sessions"}</span>
             </span>
           </div>
         </CardHeader>
@@ -539,8 +549,9 @@ export default function PatientDetails() {
                     <div className="flex items-center gap-1.5">
                       <Tag className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
                       <div className="leading-tight">
-                        <span className="font-bold text-emerald-700 dark:text-emerald-300">
-                          ₹{Number(v.scan_amount).toLocaleString("en-IN")}
+                        <span className="font-bold text-emerald-700 dark:text-emerald-300 inline-flex items-baseline gap-0.5">
+                          <span aria-hidden="true">₹</span>
+                          <span>{Number(v.scan_amount).toLocaleString("en-IN")}</span>
                         </span>
                         {v.scan_pricing_name && (
                           <span className="block text-[10px] text-slate-400 font-medium">
@@ -625,8 +636,19 @@ export default function PatientDetails() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-500">
-                    Client: <strong className="text-slate-700 dark:text-slate-300">{patientData.name}</strong> ({patientData.patient_code}) · {patientData.age} Yrs / {patientData.gender}
+                  <p className="inline-flex flex-wrap items-center gap-x-1.5 text-xs text-slate-500">
+                    <span>Client:</span>
+                    <strong className="text-slate-700 dark:text-slate-300">
+                      <span>{patientData.name}</span>
+                    </strong>
+                    <span aria-hidden="true">(</span>
+                    <span>{patientData.patient_code}</span>
+                    <span aria-hidden="true">)</span>
+                    <span aria-hidden="true">·</span>
+                    <span>{patientData.age}</span>
+                    <span>Yrs</span>
+                    <span aria-hidden="true">/</span>
+                    <span>{patientData.gender}</span>
                   </p>
                 </div>
               </div>
@@ -694,8 +716,12 @@ export default function PatientDetails() {
                       <p className="text-2xl font-bold text-rose-700 dark:text-rose-300 mt-1">
                         {detailedReport.summary?.abnormal || 0}
                       </p>
-                      <p className="text-[11px] text-rose-600/70">
-                        {detailedReport.summary?.high || 0} High · {detailedReport.summary?.low || 0} Low
+                      <p className="text-[11px] text-rose-600/70 inline-flex flex-wrap items-center gap-x-1">
+                        <span>{detailedReport.summary?.high || 0}</span>
+                        <span>High</span>
+                        <span aria-hidden="true">·</span>
+                        <span>{detailedReport.summary?.low || 0}</span>
+                        <span>Low</span>
                       </p>
                     </div>
 
@@ -724,8 +750,9 @@ export default function PatientDetails() {
                             </p>
                           </div>
                         </div>
-                        <span className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
-                          ₹{Number(detailedReport.visit.scan_pricing.amount).toLocaleString("en-IN")}
+                        <span className="text-lg font-bold text-emerald-700 dark:text-emerald-300 inline-flex items-baseline gap-0.5">
+                          <span aria-hidden="true">₹</span>
+                          <span>{Number(detailedReport.visit.scan_pricing.amount).toLocaleString("en-IN")}</span>
                         </span>
                       </div>
                     )}
@@ -821,8 +848,11 @@ export default function PatientDetails() {
                                     {displayName}
                                   </td>
                                   <td className="py-2.5 px-3.5 text-slate-500">{p.category || "General"}</td>
-                                  <td className="py-2.5 px-3.5 font-bold font-mono text-slate-900 dark:text-slate-100">
-                                    {p.raw_value} <span className="text-[10px] font-normal text-slate-500">{p.unit}</span>
+                                  <td className="py-2.5 px-3.5 font-bold font-mono text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                                    <span className="inline-flex items-baseline gap-1">
+                                      <span>{p.raw_value}</span>
+                                      {p.unit ? <span className="text-[10px] font-normal text-slate-500">{p.unit}</span> : null}
+                                    </span>
                                   </td>
                                   <td className="py-2.5 px-3.5 text-slate-500 font-mono">
                                     {p.normal_min !== undefined && p.normal_max !== undefined
@@ -903,7 +933,18 @@ export default function PatientDetails() {
                                     : "bg-amber-100 text-amber-700"
                                     }`}
                                 >
-                                  {item.result_type}: {item.raw_value} {p.unit || ""} (Range: {p.normal_min}–{p.normal_max})
+                                  <span className="inline-flex flex-wrap items-center gap-x-1">
+                                    <span>{item.result_type}</span>
+                                    <span aria-hidden="true">:</span>
+                                    <span>{item.raw_value}</span>
+                                    {p.unit ? <span>{p.unit}</span> : null}
+                                    <span aria-hidden="true">(</span>
+                                    <span>Range:</span>
+                                    <span>{p.normal_min}</span>
+                                    <span aria-hidden="true">–</span>
+                                    <span>{p.normal_max}</span>
+                                    <span aria-hidden="true">)</span>
+                                  </span>
                                 </span>
                               </div>
 

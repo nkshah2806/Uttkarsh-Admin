@@ -156,8 +156,13 @@ function ChartTooltip({ active, payload, label }) {
     <div className="rounded-lg border bg-background px-3 py-2 text-xs shadow-md">
       {label && <p className="font-medium">{label}</p>}
       {payload.map((entry, i) => (
-        <p key={i} className="mt-0.5" style={{ color: entry.color || entry.stroke || entry.fill }}>
-          {entry.name}: <span className="font-semibold">{entry.value}</span>
+        <p
+          key={i}
+          className="mt-0.5 inline-flex items-baseline gap-1"
+          style={{ color: entry.color || entry.stroke || entry.fill }}
+        >
+          <span>{entry.name}:</span>
+          <span className="font-semibold">{entry.value}</span>
         </p>
       ))}
     </div>
@@ -554,8 +559,10 @@ export default function DashboardOverview() {
                       </div>
                       <div>
                         <p className="text-sm font-medium">{p.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {p.patient_code} · {p.mobile || "—"}
+                        <p className="text-xs text-muted-foreground inline-flex flex-wrap items-center gap-x-1.5">
+                          <span>{p.patient_code}</span>
+                          <span aria-hidden="true">·</span>
+                          <span>{p.mobile || "—"}</span>
                         </p>
                       </div>
                     </div>
@@ -602,8 +609,10 @@ export default function DashboardOverview() {
                       </div>
                       <div>
                         <p className="text-sm font-medium">{r.patient?.name || "Unknown client"}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {r.patient?.patient_code || "—"} · {r.language === "hi" ? "Hindi" : "English"}
+                        <p className="text-xs text-muted-foreground inline-flex flex-wrap items-center gap-x-1.5">
+                          <span>{r.patient?.patient_code || "—"}</span>
+                          <span aria-hidden="true">·</span>
+                          <span>{r.language === "hi" ? "Hindi" : "English"}</span>
                         </p>
                       </div>
                     </div>
@@ -631,7 +640,10 @@ export default function DashboardOverview() {
               <CardDescription>Visits that need machine data or report review</CardDescription>
             </div>
             <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-              {(summary.pendingVisits ?? 0) + (summary.reportReadyVisits ?? 0)} pending
+              <span className="inline-flex items-center gap-1">
+                <span>{(summary.pendingVisits ?? 0) + (summary.reportReadyVisits ?? 0)}</span>
+                <span>pending</span>
+              </span>
             </Badge>
           </CardHeader>
           <CardContent>
@@ -653,8 +665,10 @@ export default function DashboardOverview() {
                       </div>
                       <div>
                         <p className="text-sm font-medium">{v.patient?.name || "Unknown client"}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {v.patient?.patient_code || "—"} · {fmtDate(v.visit_date || v.createdAt)}
+                        <p className="text-xs text-muted-foreground inline-flex flex-wrap items-center gap-x-1.5">
+                          <span>{v.patient?.patient_code || "—"}</span>
+                          <span aria-hidden="true">·</span>
+                          <span>{fmtDate(v.visit_date || v.createdAt)}</span>
                         </p>
                       </div>
                     </div>
@@ -681,7 +695,10 @@ export default function DashboardOverview() {
               <CardDescription>Clients with next visit dates from today</CardDescription>
             </div>
             <Badge variant="secondary" className="bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
-              {summary.upcomingFollowUps ?? 0} scheduled
+              <span className="inline-flex items-center gap-1">
+                <span>{summary.upcomingFollowUps ?? 0}</span>
+                <span>scheduled</span>
+              </span>
             </Badge>
           </CardHeader>
           <CardContent>
@@ -703,8 +720,10 @@ export default function DashboardOverview() {
                       </div>
                       <div>
                         <p className="text-sm font-medium">{v.patient?.name || "Unknown client"}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {v.patient?.patient_code || "—"} · {v.patient?.mobile || "—"}
+                        <p className="text-xs text-muted-foreground inline-flex flex-wrap items-center gap-x-1.5">
+                          <span>{v.patient?.patient_code || "—"}</span>
+                          <span aria-hidden="true">·</span>
+                          <span>{v.patient?.mobile || "—"}</span>
                         </p>
                       </div>
                     </div>
@@ -750,8 +769,12 @@ export default function DashboardOverview() {
                 <span className="flex items-center gap-2 text-sm text-muted-foreground">
                   <ShieldCheck className="h-4 w-4 text-violet-500" /> Active Franchises
                 </span>
-                <span className="text-lg font-semibold">
-                  {admin.activeFranchises} <span className="text-xs font-normal text-muted-foreground">/ {admin.totalFranchises}</span>
+                <span className="inline-flex items-baseline gap-1 text-lg font-semibold">
+                  <span>{admin.activeFranchises}</span>
+                  <span className="inline-flex items-baseline gap-0.5 text-xs font-normal text-muted-foreground">
+                    <span aria-hidden="true">/</span>
+                    <span>{admin.totalFranchises}</span>
+                  </span>
                 </span>
               </div>
             </div>
@@ -797,8 +820,11 @@ export default function DashboardOverview() {
                   <p className="text-xs text-muted-foreground">No parameter data available.</p>
                 )}
                 {admin.totalContentNodes > 0 && (
-                  <p className="mt-3 w-full text-xs text-muted-foreground">
-                    {admin.totalContentNodes.toLocaleString()} content nodes across {admin.totalParameters} parameters.
+                  <p className="mt-3 w-full text-xs text-muted-foreground inline-flex flex-wrap items-center gap-x-1">
+                    <span>{admin.totalContentNodes.toLocaleString()}</span>
+                    <span>content nodes across</span>
+                    <span>{admin.totalParameters}</span>
+                    <span>parameters.</span>
                   </p>
                 )}
               </div>

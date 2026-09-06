@@ -378,7 +378,10 @@ export default function ScanPricingManagement() {
                             {defaultPricing ? (
                                 <>
                                     <p className="text-xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
-                                        ₹{Number(defaultPricing.amount).toLocaleString("en-IN")}
+                                        <span className="inline-flex items-baseline gap-0.5">
+                                            <span aria-hidden="true">₹</span>
+                                            <span>{Number(defaultPricing.amount).toLocaleString("en-IN")}</span>
+                                        </span>
                                     </p>
                                     <p className="text-[11px] text-slate-400 mt-0.5">
                                         {defaultPricing.name}

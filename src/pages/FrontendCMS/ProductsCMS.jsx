@@ -329,9 +329,15 @@ export default function ProductsCMS() {
                     <p className="text-xs text-muted-foreground font-mono">{`Category: ${prod.category_slug}`}</p>
                     <p className="text-xs text-muted-foreground line-clamp-2">{prod.short_description}</p>
                     <div className="flex items-baseline gap-2 pt-1">
-                      <span className="text-base font-bold text-violet-900">₹{prod.price}</span>
+                      <span className="text-base font-bold text-violet-900 inline-flex items-baseline gap-0.5">
+                        <span aria-hidden="true">₹</span>
+                        <span>{prod.price}</span>
+                      </span>
                       {prod.mrp > prod.price && (
-                        <span className="text-xs text-muted-foreground line-through">₹{prod.mrp}</span>
+                        <span className="text-xs text-muted-foreground line-through inline-flex items-baseline gap-0.5">
+                          <span aria-hidden="true">₹</span>
+                          <span>{prod.mrp}</span>
+                        </span>
                       )}
                     </div>
                   </div>

@@ -324,8 +324,9 @@ export default function HealthCampsCMS() {
                         )}
                     </span>
                     {row.registration_limit && (
-                        <span className="text-[11px] text-slate-400">
-                            Limit: {row.registration_limit}
+                        <span className="text-[11px] text-slate-400 inline-flex items-center gap-x-1">
+                            <span>Limit:</span>
+                            <span>{row.registration_limit}</span>
                         </span>
                     )}
                 </div>

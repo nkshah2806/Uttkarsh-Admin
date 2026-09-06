@@ -184,10 +184,22 @@ export default function PatientRegistration() {
         <SelectValue placeholder={`All Members (${memberOptions.length})`} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">All Franchise Members ({memberOptions.length})</SelectItem>
+        <SelectItem value="all">
+          <span className="inline-flex items-center gap-x-1">
+            <span>All Franchise Members</span>
+            <span aria-hidden="true">(</span>
+            <span>{memberOptions.length}</span>
+            <span aria-hidden="true">)</span>
+          </span>
+        </SelectItem>
         {memberOptions.map((m) => (
           <SelectItem key={m._id} value={m._id}>
-            {m.fullName} ({m.email || m.username || "Member"})
+            <span className="inline-flex items-center gap-x-1">
+              <span className="truncate">{m.fullName}</span>
+              <span aria-hidden="true">(</span>
+              <span>{m.email || m.username || "Member"}</span>
+              <span aria-hidden="true">)</span>
+            </span>
           </SelectItem>
         ))}
       </SelectContent>

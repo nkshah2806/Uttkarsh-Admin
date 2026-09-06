@@ -169,14 +169,27 @@ export default function QuantumDataEntry() {
       {/* Header Info */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border shadow-sm">
         <div>
-          <span className="text-xs uppercase tracking-widest text-indigo-600 font-bold">
-            Quantum Test Scan # {visitId?.slice(-6)}
+          <span className="text-xs uppercase tracking-widest text-indigo-600 font-bold inline-flex flex-wrap items-center gap-x-1">
+            <span>Quantum Test Scan #</span>
+            <span>{visitId?.slice(-6)}</span>
           </span>
-          <h1 className="text-xl font-bold text-slate-800 dark:text-white mt-1">
-            Client: {patient?.name} ({patient?.patient_code})
+          <h1 className="text-xl font-bold text-slate-800 dark:text-white mt-1 inline-flex flex-wrap items-baseline gap-x-1.5">
+            <span>Client:</span>
+            <span>{patient?.name}</span>
+            <span aria-hidden="true">(</span>
+            <span>{patient?.patient_code}</span>
+            <span aria-hidden="true">)</span>
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Age: {patient?.age} Yrs | Gender: {patient?.gender} | Mobile: {patient?.mobile}
+          <p className="text-xs text-muted-foreground mt-0.5 inline-flex flex-wrap items-center gap-x-1.5">
+            <span>Age:</span>
+            <span>{patient?.age}</span>
+            <span>Yrs</span>
+            <span aria-hidden="true">|</span>
+            <span>Gender:</span>
+            <span>{patient?.gender}</span>
+            <span aria-hidden="true">|</span>
+            <span>Mobile:</span>
+            <span>{patient?.mobile}</span>
           </p>
         </div>
 
@@ -194,7 +207,14 @@ export default function QuantumDataEntry() {
       <Card className="border-0 shadow-sm">
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <Activity className="h-5 w-5 text-indigo-600" /> Quantum Machine Parameter Data Entry ({parameters.length} Parameters)
+            <Activity className="h-5 w-5 text-indigo-600 shrink-0" />
+            <span className="inline-flex flex-wrap items-center gap-x-1">
+              <span>Quantum Machine Parameter Data Entry</span>
+              <span aria-hidden="true">(</span>
+              <span className="font-semibold">{parameters.length}</span>
+              <span>Parameters</span>
+              <span aria-hidden="true">)</span>
+            </span>
           </CardTitle>
           <div className="flex flex-wrap items-center gap-2">
             {/* Category Multi-Select Filter Dropdown */}
@@ -208,11 +228,15 @@ export default function QuantumDataEntry() {
                   }`}
               >
                 <ListFilter className="h-3.5 w-3.5" />
-                <span>
-                  {selectedCategories.length === 0
-                    ? "All Categories"
-                    : `Filtering ${selectedCategories.length} Categor${selectedCategories.length === 1 ? "y" : "ies"}`}
-                </span>
+                {selectedCategories.length === 0 ? (
+                  <span>All Categories</span>
+                ) : (
+                  <span className="inline-flex items-center gap-1">
+                    <span>Filtering</span>
+                    <span>{selectedCategories.length}</span>
+                    <span>Categor{selectedCategories.length === 1 ? "y" : "ies"}</span>
+                  </span>
+                )}
                 <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-150 ${categoryDropdownOpen ? "rotate-180" : ""}`} />
               </button>
 
@@ -334,8 +358,12 @@ export default function QuantumDataEntry() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-end">
-            <span className="text-[11px] text-slate-400">
-              Showing {filteredParams.length} of {parameters.length} parameters
+            <span className="text-[11px] text-slate-400 inline-flex items-center gap-x-1">
+              <span>Showing</span>
+              <span>{filteredParams.length}</span>
+              <span>of</span>
+              <span>{parameters.length}</span>
+              <span>parameters</span>
             </span>
           </div>
           <div className="overflow-x-auto max-h-[600px]">

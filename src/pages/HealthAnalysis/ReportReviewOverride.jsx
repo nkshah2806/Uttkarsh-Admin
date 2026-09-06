@@ -285,9 +285,15 @@ export default function ReportReviewOverride() {
             className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
           >
             <span className="truncate">
-              {selected.length === 0
-                ? "Search & select medicines..."
-                : `${selected.length} medicine${selected.length > 1 ? "s" : ""} selected`}
+              {selected.length === 0 ? (
+                <span>Search & select medicines...</span>
+              ) : (
+                <span className="inline-flex items-center gap-1">
+                  <span>{selected.length}</span>
+                  <span>medicine{selected.length > 1 ? "s" : ""}</span>
+                  <span>selected</span>
+                </span>
+              )}
             </span>
             <ChevronDown
               className={`h-4 w-4 transition-transform shrink-0 ${open ? "rotate-180" : ""}`}
@@ -582,19 +588,33 @@ export default function ReportReviewOverride() {
               Visit #{visitId?.slice(-6).toUpperCase()}
             </span>
           </div>
-          <h1 className="text-xl font-bold">
-            {patient?.name} <span className="text-sm font-normal text-indigo-200">({patient?.patient_code})</span>
+          <h1 className="text-xl font-bold inline-flex flex-wrap items-center gap-x-2">
+            <span>{patient?.name ?? "—"}</span>
+            <span className="text-sm font-normal text-indigo-200">({patient?.patient_code})</span>
           </h1>
-          <p className="text-xs text-indigo-200">
-            Age: {patient?.age} Yrs | Gender: {patient?.gender} | Mobile: {patient?.mobile}
+          <p className="text-xs text-indigo-200 inline-flex flex-wrap items-center gap-x-1.5">
+            <span>Age:</span>
+            <span>{patient?.age ?? "—"}</span>
+            <span>Yrs</span>
+            <span aria-hidden="true">|</span>
+            <span>Gender:</span>
+            <span>{patient?.gender ?? "—"}</span>
+            <span aria-hidden="true">|</span>
+            <span>Mobile:</span>
+            <span>{patient?.mobile ?? "—"}</span>
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="text-right hidden sm:block">
             <div className="text-xs text-indigo-200 font-semibold">Selected for Report</div>
-            <div className="text-xl font-extrabold text-white">
-              {selectedItemsCount} <span className="text-xs font-normal text-indigo-200">/ {totalItemsCount} Points</span>
+            <div className="text-xl font-extrabold text-white inline-flex items-baseline gap-1">
+              <span>{selectedItemsCount}</span>
+              <span className="text-xs font-normal text-indigo-200 inline-flex items-baseline gap-1">
+                <span aria-hidden="true">/</span>
+                <span>{totalItemsCount}</span>
+                <span>Points</span>
+              </span>
             </div>
           </div>
           <Button
@@ -666,10 +686,17 @@ export default function ReportReviewOverride() {
 
               <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-slate-700 dark:text-slate-200">
-                    {selectedItemsCount} of {totalItemsCount} items selected
+                  <span className="inline-flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-200">
+                    <span>{selectedItemsCount}</span>
+                    <span>of</span>
+                    <span>{totalItemsCount}</span>
+                    <span>items selected</span>
                   </span>
-                  <span className="text-slate-400">({selectionPercentage}%)</span>
+                  <span className="text-slate-400 inline-flex items-center gap-0.5">
+                    <span aria-hidden="true">(</span>
+                    <span>{selectionPercentage}</span>
+                    <span aria-hidden="true">%)</span>
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -733,8 +760,12 @@ export default function ReportReviewOverride() {
                           <span className="font-bold text-sm text-slate-900 dark:text-white">
                             {param.name_en}
                           </span>
-                          <span className="text-xs text-slate-400 ml-2">
-                            Normal: {param.normal_min}–{param.normal_max} {param.unit}
+                          <span className="text-xs text-slate-400 ml-2 inline-flex items-center gap-x-1">
+                            <span>Normal:</span>
+                            <span>{param.normal_min}</span>
+                            <span aria-hidden="true">–</span>
+                            <span>{param.normal_max}</span>
+                            {param.unit ? <span>{param.unit}</span> : null}
                           </span>
                         </div>
                       </div>
@@ -747,11 +778,19 @@ export default function ReportReviewOverride() {
                             }`}
                         >
                           {item.result_type === "HIGH" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                          {item.result_type} ({item.raw_value} {param.unit})
+                          <span className="inline-flex items-center gap-x-1">
+                            <span>{item.result_type}</span>
+                            <span aria-hidden="true">(</span>
+                            <span>{item.raw_value}</span>
+                            {param.unit ? <span>{param.unit}</span> : null}
+                            <span aria-hidden="true">)</span>
+                          </span>
                         </span>
 
-                        <span className="text-[11px] font-semibold text-slate-500 bg-slate-200/70 dark:bg-slate-700 px-2 py-0.5 rounded-full">
-                          {selectedParamNodes.length} / {allParamNodes.length}
+                        <span className="text-[11px] font-semibold text-slate-500 bg-slate-200/70 dark:bg-slate-700 px-2 py-0.5 rounded-full inline-flex items-center gap-x-0.5">
+                          <span>{selectedParamNodes.length}</span>
+                          <span aria-hidden="true">/</span>
+                          <span>{allParamNodes.length}</span>
                         </span>
 
                         {isExpanded ? (
@@ -791,8 +830,11 @@ export default function ReportReviewOverride() {
                                   </span>
                                 </div>
 
-                                <span className="text-[10px] font-mono text-slate-400">
-                                  {selectedSecItems.length} of {secItems.length} selected
+                                <span className="text-[10px] font-mono text-slate-400 inline-flex items-center gap-x-1">
+                                  <span>{selectedSecItems.length}</span>
+                                  <span>of</span>
+                                  <span>{secItems.length}</span>
+                                  <span>selected</span>
                                 </span>
                               </div>
 
@@ -870,8 +912,9 @@ export default function ReportReviewOverride() {
                       {patient?.name} ({patient?.patient_code}) • {new Date().toLocaleDateString("en-IN")}
                     </p>
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                    {selectedItemsCount} Points Selected
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded inline-flex items-center gap-x-1">
+                    <span>{selectedItemsCount}</span>
+                    <span>Points Selected</span>
                   </span>
                 </div>
               </div>
@@ -898,7 +941,12 @@ export default function ReportReviewOverride() {
                             className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.result_type === "HIGH" ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"
                               }`}
                           >
-                            {item.result_type} · {item.raw_value} {p.unit}
+                            <span className="inline-flex items-center gap-x-1">
+                              <span>{item.result_type}</span>
+                              <span aria-hidden="true">·</span>
+                              <span>{item.raw_value}</span>
+                              {p.unit ? <span>{p.unit}</span> : null}
+                            </span>
                           </span>
                         </div>
 
@@ -949,8 +997,9 @@ export default function ReportReviewOverride() {
                     </div>
                   )}
                   {medicineNote.trim() && (
-                    <p className="pt-1 text-[10px] italic text-slate-500 dark:text-slate-400">
-                      Note: {medicineNote}
+                    <p className="pt-1 text-[10px] italic text-slate-500 dark:text-slate-400 inline-flex flex-wrap items-baseline gap-x-1">
+                      <span>Note:</span>
+                      <span>{medicineNote}</span>
                     </p>
                   )}
                 </div>
@@ -983,8 +1032,9 @@ export default function ReportReviewOverride() {
             Recommended Medicines
             <span className="text-xs font-normal text-slate-400">for the whole report</span>
             {selectedMedicines.length > 0 && (
-              <span className="ml-auto text-[11px] font-semibold text-violet-600 bg-violet-100 dark:bg-violet-900/50 px-2 py-0.5 rounded-full">
-                {selectedMedicines.length} selected
+              <span className="ml-auto text-[11px] font-semibold text-violet-600 bg-violet-100 dark:bg-violet-900/50 px-2 py-0.5 rounded-full inline-flex items-center gap-x-1">
+                <span>{selectedMedicines.length}</span>
+                <span>selected</span>
               </span>
             )}
           </CardTitle>
@@ -1003,9 +1053,18 @@ export default function ReportReviewOverride() {
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Confirm Final Report Generation</h3>
             </div>
 
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              You have selected <strong className="text-indigo-600">{selectedItemsCount} content points</strong> across{" "}
-              <strong>{previewSelectedParameters.length} parameters</strong>.
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed inline-flex flex-wrap items-center gap-x-1">
+              <span>You have selected</span>
+              <strong className="text-indigo-600 inline-flex items-center gap-1">
+                <span>{selectedItemsCount}</span>
+                <span>content points</span>
+              </strong>
+              <span>across</span>
+              <strong className="inline-flex items-center gap-1">
+                <span>{previewSelectedParameters.length}</span>
+                <span>parameters</span>
+              </strong>
+              <span aria-hidden="true">.</span>
             </p>
 
             <div className="p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 text-xs space-y-1.5 text-slate-700 dark:text-slate-200">
@@ -1029,9 +1088,11 @@ export default function ReportReviewOverride() {
                 className="w-full px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               {nextVisitDate && (
-                <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
-                  Wellness reassessment scheduled:{" "}
-                  {new Date(nextVisitDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 inline-flex flex-wrap items-baseline gap-x-1">
+                  <span>Wellness reassessment scheduled:</span>
+                  <span>
+                    {new Date(nextVisitDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+                  </span>
                 </p>
               )}
             </div>

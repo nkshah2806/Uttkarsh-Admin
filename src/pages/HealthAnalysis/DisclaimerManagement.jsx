@@ -205,8 +205,9 @@ export default function DisclaimerManagement() {
             </span>
           </div>
           {row.updated_by && (
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              by {row.updated_by.fullName || row.updated_by.username}
+            <p className="text-[11px] text-slate-400 mt-0.5 inline-flex items-baseline gap-x-1">
+              <span>by</span>
+              <span>{row.updated_by.fullName || row.updated_by.username}</span>
             </p>
           )}
         </div>

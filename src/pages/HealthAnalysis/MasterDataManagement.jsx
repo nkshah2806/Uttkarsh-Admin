@@ -297,8 +297,11 @@ export default function MasterDataManagement() {
       label: "Normal Range",
       filterable: false,
       render: (row) => (
-        <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
-          {row.normal_min} – {row.normal_max} {row.unit}
+        <span className="text-xs font-mono text-slate-600 dark:text-slate-300 inline-flex items-center gap-x-1">
+          <span>{row.normal_min}</span>
+          <span aria-hidden="true">–</span>
+          <span>{row.normal_max}</span>
+          {row.unit ? <span>{row.unit}</span> : null}
         </span>
       ),
     },
@@ -444,15 +447,21 @@ export default function MasterDataManagement() {
             type="button"
             onClick={() => setCategoryDropdownOpen((open) => !open)}
             className={`inline-flex items-center gap-2 text-xs px-3.5 py-2 rounded-lg font-semibold transition-all border cursor-pointer ${selectedCategories.length > 0
-                ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
-                : "bg-white dark:bg-slate-800 text-slate-600 border hover:bg-slate-50 dark:hover:bg-slate-700 dark:text-slate-300"
+              ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
+              : "bg-white dark:bg-slate-800 text-slate-600 border hover:bg-slate-50 dark:hover:bg-slate-700 dark:text-slate-300"
               }`}
           >
             <ListFilter className="h-3.5 w-3.5" />
             <span>
-              {selectedCategories.length === 0
-                ? "All Categories"
-                : `Filtering ${selectedCategories.length} Categor${selectedCategories.length === 1 ? "y" : "ies"}`}
+              {selectedCategories.length === 0 ? (
+                <span>All Categories</span>
+              ) : (
+                <span className="inline-flex items-center gap-1">
+                  <span>Filtering</span>
+                  <span>{selectedCategories.length}</span>
+                  <span>Categor{selectedCategories.length === 1 ? "y" : "ies"}</span>
+                </span>
+              )}
             </span>
             <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-150 ${categoryDropdownOpen ? "rotate-180" : ""}`} />
           </button>
@@ -553,8 +562,12 @@ export default function MasterDataManagement() {
           </div>
         )}
 
-        <p className="ml-auto text-xs text-slate-400 dark:text-slate-500">
-          Showing {filteredParameters.length} of {parameters.length} parameters
+        <p className="ml-auto text-xs text-slate-400 dark:text-slate-500 inline-flex items-center gap-x-1">
+          <span>Showing</span>
+          <span>{filteredParameters.length}</span>
+          <span>of</span>
+          <span>{parameters.length}</span>
+          <span>parameters</span>
         </p>
       </div>
 
@@ -886,8 +899,12 @@ export default function MasterDataManagement() {
                         {form.name_en || "Parameter Name"}
                       </strong>
                     </div>
-                    <span className="text-xs text-slate-400">
-                      Normal: {form.normal_min || 0} – {form.normal_max || 0} {form.unit}
+                    <span className="text-xs text-slate-400 inline-flex items-center gap-x-1">
+                      <span>Normal:</span>
+                      <span>{form.normal_min || 0}</span>
+                      <span aria-hidden="true">–</span>
+                      <span>{form.normal_max || 0}</span>
+                      {form.unit ? <span>{form.unit}</span> : null}
                     </span>
                   </div>
 
