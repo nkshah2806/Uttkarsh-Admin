@@ -11,6 +11,7 @@ import {
   Megaphone,
   PhoneCall,
   HeartPulse,
+  Scale,
   ArrowRight,
   LayoutTemplate,
 } from "lucide-react";
@@ -96,6 +97,14 @@ const CMS_SECTIONS = [
     href: "/frontend-cms/health-camps",
     color: "from-red-500/10 to-red-600/5",
     iconColor: "text-red-500",
+  },
+  {
+    title: "Legal Content",
+    desc: "Manage Privacy Policy & Terms and Conditions shown on the website.",
+    icon: Scale,
+    href: "/frontend-cms/legal-content",
+    color: "from-indigo-500/10 to-indigo-600/5",
+    iconColor: "text-indigo-500",
   },
 ];
 

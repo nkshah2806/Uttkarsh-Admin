@@ -16,13 +16,16 @@ import {
     Sparkles,
     Phone,
     BadgeCheck,
+    Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import ReusableTable from "@/components/ReusableTable";
 import { healthCampService } from "@/services/healthCampService";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
 
 export default function HealthCampsCMS() {
+    const navigate = useNavigate();
     const [camps, setCamps] = useState([]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -344,6 +347,15 @@ export default function HealthCampsCMS() {
             filterable: false,
             render: (row) => (
                 <div className="flex items-center justify-end gap-1.5">
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => navigate(`/frontend-cms/health-camps/${row._id}`)}
+                        className="h-8 w-8 p-0 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50/50"
+                        title="View Health Camp Details & Registrations"
+                    >
+                        <Eye className="h-3.5 w-3.5" />
+                    </Button>
                     <Button
                         size="sm"
                         variant="ghost"

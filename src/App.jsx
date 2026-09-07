@@ -5,6 +5,7 @@ import ForgetPassword from "./pages/ForgetPassword/forget-password";
 import Dashboard from "./pages/Dashboard/dashboard";
 import { Toaster } from "sonner";
 import ResetPassword from "./pages/ResetPassword/reset-password";
+import ScrollToTop from "./components/ScrollToTop";
 import PrivateRoute from "./routes/private-route";
 import User from "./pages/User";
 import UserDetails from "./pages/User/UserDetails";
@@ -30,12 +31,15 @@ import CategoryManagement from "./pages/HealthAnalysis/CategoryManagement";
 import MedicineManagement from "./pages/HealthAnalysis/MedicineManagement";
 import ScanPricingManagement from "./pages/HealthAnalysis/ScanPricingManagement";
 import HealthCampsCMS from "./pages/FrontendCMS/HealthCampsCMS";
+import LegalContentManagement from "./pages/FrontendCMS/LegalContentManagement";
+import HealthCampDetails from "./pages/FrontendCMS/HealthCampDetails";
 
 function App() {
   return (
     <>
       <Toaster position="top-right" />
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/forgot-password" element={<ForgetPassword />} />
@@ -69,6 +73,8 @@ function App() {
             <Route path="/frontend-cms/header-footer" element={<HeaderFooterCMS />} />
             <Route path="/frontend-cms/contact" element={<ContactCMS />} />
             <Route path="/frontend-cms/health-camps" element={<HealthCampsCMS />} />
+            <Route path="/frontend-cms/health-camps/:campId" element={<HealthCampDetails />} />
+            <Route path="/frontend-cms/legal-content" element={<LegalContentManagement />} />
 
             <Route path="/user">
               <Route index element={<User />} />
