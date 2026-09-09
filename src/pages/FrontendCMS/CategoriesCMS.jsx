@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { categoriesService } from "@/services/categoriesService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, CMSLoader } from "./CMSShared";
+import { MediaUploader } from "@/components/media-uploader";
+import { Config } from "@/lib/Config";
 
 export default function CategoriesCMS() {
   const [categories, setCategories] = useState([]);
@@ -126,19 +128,17 @@ export default function CategoriesCMS() {
                 />
               </Field>
               <div className="sm:col-span-2 lg:col-span-3">
-                <Field label="Image URL">
-                  <CMSInput
+                <Field label="Category Image">
+                  <MediaUploader
                     value={categoryForm.image}
-                    onChange={(e) => setCategoryForm((f) => ({ ...f, image: e.target.value }))}
-                    placeholder="https://..."
+                    onUploaded={(ref) => setCategoryForm((f) => ({ ...f, image: ref }))}
+                    onClear={() => setCategoryForm((f) => ({ ...f, image: "" }))}
+                    folder="categories"
+                    accept="image"
+                    helpText="JPG, JPEG, PNG or WebP (max 5MB) — upload from your device"
                   />
                 </Field>
               </div>
-              {categoryForm.image && (
-                <div className="sm:col-span-2 lg:col-span-3 rounded-xl overflow-hidden h-40 border border-border">
-                  <img src={categoryForm.image} alt="Preview" className="w-full h-full object-cover" />
-                </div>
-              )}
               <div className="sm:col-span-2 lg:col-span-3">
                 <Field label="Description">
                   <CMSTextarea
@@ -178,7 +178,15 @@ export default function CategoriesCMS() {
                   <div className="space-y-2">
                     {cat.image && (
                       <div className="aspect-video rounded-xl overflow-hidden bg-muted">
-                        <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                        <img
+                          src={
+                            cat.image && cat.image.startsWith("/uploads/")
+                              ? `${Config.API_URL}${cat.image.replace(/^\//, "")}`
+                              : cat.image
+                          }
+                          alt={cat.name}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                     )}
                     <div className="flex items-center justify-between">

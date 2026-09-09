@@ -24,6 +24,7 @@ import {
 import { toast } from "sonner";
 import ReusableTable from "@/components/ReusableTable";
 import { healthCampService } from "@/services/healthCampService";
+import { Config } from "@/lib/Config";
 
 // Formatting helpers (kept local; consistent with HealthCamps list behaviour)
 const formatCampDate = (value) => {
@@ -293,7 +294,11 @@ export default function HealthCampDetails() {
                         {camp.image && (
                             <div className="w-full max-h-64 overflow-hidden bg-slate-100 dark:bg-slate-800">
                                 <img
-                                    src={camp.image}
+                                    src={
+                                        camp.image && camp.image.startsWith("/uploads/")
+                                            ? `${Config.API_URL}${camp.image.replace(/^\//, "")}`
+                                            : camp.image
+                                    }
                                     alt="camp-banner"
                                     onError={(e) => {
                                         e.target.style.display = "none";

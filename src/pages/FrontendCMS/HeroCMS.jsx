@@ -4,6 +4,7 @@ import { ImageIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
+import { MediaUploader } from "@/components/media-uploader";
 
 export default function HeroCMS() {
   const [data, setData] = useState(DEFAULT_CONTENT);
@@ -77,18 +78,18 @@ export default function HeroCMS() {
               placeholder="Local for Vocal · GMP Certified"
             />
           </Field>
-          <Field label="Background Image URL">
-            <CMSInput
-              value={data.hero?.bgImage}
-              onChange={(e) => set("hero.bgImage", e.target.value)}
-              placeholder="https://..."
+          <div className="md:col-span-2">
+            <MediaUploader
+              label="Background Image"
+              value={data.hero?.bgImage || ""}
+              onUploaded={(ref) => set("hero.bgImage", ref)}
+              onClear={() => set("hero.bgImage", "")}
+              folder="hero"
+              accept="image"
+              required
+              helpText="JPG, JPEG, PNG or WebP (max 5MB) — upload from your device"
             />
-          </Field>
-          {data.hero?.bgImage && (
-            <div className="md:col-span-2 rounded-xl overflow-hidden h-48 border border-border">
-              <img src={data.hero.bgImage} alt="Hero Preview" className="w-full h-full object-cover" />
-            </div>
-          )}
+          </div>
           <Field label="Headline Line 1">
             <CMSInput
               value={data.hero?.titleLine1}

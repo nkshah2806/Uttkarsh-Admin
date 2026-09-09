@@ -33,6 +33,7 @@ import ScanPricingManagement from "./pages/HealthAnalysis/ScanPricingManagement"
 import HealthCampsCMS from "./pages/FrontendCMS/HealthCampsCMS";
 import LegalContentManagement from "./pages/FrontendCMS/LegalContentManagement";
 import HealthCampDetails from "./pages/FrontendCMS/HealthCampDetails";
+import GalleryCMS from "./pages/FrontendCMS/GalleryCMS";
 
 function App() {
   return (
@@ -74,6 +75,7 @@ function App() {
             <Route path="/frontend-cms/contact" element={<ContactCMS />} />
             <Route path="/frontend-cms/health-camps" element={<HealthCampsCMS />} />
             <Route path="/frontend-cms/health-camps/:campId" element={<HealthCampDetails />} />
+            <Route path="/frontend-cms/gallery" element={<GalleryCMS />} />
             <Route path="/frontend-cms/legal-content" element={<LegalContentManagement />} />
 
             <Route path="/user">

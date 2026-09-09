@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
+import { MediaUploader } from "@/components/media-uploader";
 
 export default function MissionCMS() {
   const [data, setData] = useState(DEFAULT_CONTENT);
@@ -95,18 +96,18 @@ export default function MissionCMS() {
                 placeholder="Our Mission"
               />
             </Field>
-            <Field label="Section Image URL">
-              <CMSInput
-                value={data.mission?.image}
-                onChange={(e) => set("mission.image", e.target.value)}
-                placeholder="https://..."
-              />
-            </Field>
-            {data.mission?.image && (
-              <div className="md:col-span-2 rounded-xl overflow-hidden h-48 border border-border">
-                <img src={data.mission.image} alt="Mission Preview" className="w-full h-full object-cover object-center" />
-              </div>
-            )}
+            <div className="md:col-span-2">
+              <Field label="Section Image">
+                <MediaUploader
+                  value={data.mission?.image || ""}
+                  onUploaded={(ref) => set("mission.image", ref)}
+                  onClear={() => set("mission.image", "")}
+                  folder="mission"
+                  accept="image"
+                  helpText="JPG, JPEG, PNG or WebP (max 5MB) — upload from your device"
+                />
+              </Field>
+            </div>
             <div className="md:col-span-2">
               <Field label="Section Title">
                 <CMSInput

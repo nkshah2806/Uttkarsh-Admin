@@ -12,6 +12,7 @@ import {
   PhoneCall,
   HeartPulse,
   Scale,
+  Images,
   ArrowRight,
   LayoutTemplate,
 } from "lucide-react";
@@ -97,6 +98,14 @@ const CMS_SECTIONS = [
     href: "/frontend-cms/health-camps",
     color: "from-red-500/10 to-red-600/5",
     iconColor: "text-red-500",
+  },
+  {
+    title: "Photo / Video Gallery",
+    desc: "Add photos and videos shown on the public Gallery page.",
+    icon: Images,
+    href: "/frontend-cms/gallery",
+    color: "from-violet-500/10 to-fuchsia-600/5",
+    iconColor: "text-violet-500",
   },
   {
     title: "Legal Content",

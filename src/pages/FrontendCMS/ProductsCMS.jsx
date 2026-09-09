@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { categoriesService } from "@/services/categoriesService";
 import { productsService } from "@/services/productsService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, CMSLoader } from "./CMSShared";
+import { MediaUploader } from "@/components/media-uploader";
+import { Config } from "@/lib/Config";
 
 const EMPTY_PRODUCT = {
   name: "",
@@ -190,24 +192,17 @@ export default function ProductsCMS() {
               </Field>
 
               <div className="sm:col-span-2 lg:col-span-3">
-                <Field label="Product Image URL">
-                  <CMSInput
+                <Field label="Product Image">
+                  <MediaUploader
                     value={Array.isArray(productForm.images) ? productForm.images[0] : productForm.images}
-                    onChange={(e) => setProductForm((f) => ({ ...f, images: [e.target.value] }))}
-                    placeholder=""
+                    onUploaded={(ref) => setProductForm((f) => ({ ...f, images: [ref] }))}
+                    onClear={() => setProductForm((f) => ({ ...f, images: [""] }))}
+                    folder="products"
+                    accept="image"
+                    helpText="JPG, JPEG, PNG or WebP (max 5MB) — upload from your device"
                   />
                 </Field>
               </div>
-
-              {(Array.isArray(productForm.images) ? productForm.images[0] : productForm.images) && (
-                <div className="sm:col-span-2 lg:col-span-3 rounded-xl overflow-hidden h-40 border border-border">
-                  <img
-                    src={Array.isArray(productForm.images) ? productForm.images[0] : productForm.images}
-                    alt="Product Preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
 
               <Field label="Ailment / Concern Tag">
                 <CMSInput
@@ -310,7 +305,15 @@ export default function ProductsCMS() {
                   <div className="space-y-2">
                     {prod.images?.[0] && (
                       <div className="aspect-square rounded-xl overflow-hidden bg-muted">
-                        <img src={prod.images[0]} alt={prod.name} className="w-full h-full object-cover" />
+                        <img
+                          src={
+                            prod.images[0] && prod.images[0].startsWith("/uploads/")
+                              ? `${Config.API_URL}${prod.images[0].replace(/^\//, "")}`
+                              : prod.images[0]
+                          }
+                          alt={prod.name}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                     )}
                     <div className="flex items-center gap-1.5 flex-wrap">

@@ -95,6 +95,7 @@ export function AppSidebar({ ...props }) {
           { title: "Header & Footer", url: "/frontend-cms/header-footer", icon: Megaphone },
           { title: "Contact & Social", url: "/frontend-cms/contact", icon: PhoneCall },
           { title: "Health Camps", url: "/frontend-cms/health-camps", icon: HeartPulse },
+          { title: "Photo / Video Gallery", url: "/frontend-cms/gallery", icon: ImageIcon },
           { title: "Legal Content", url: "/frontend-cms/legal-content", icon: Scale },
         ],
       },

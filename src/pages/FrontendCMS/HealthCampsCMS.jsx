@@ -23,6 +23,7 @@ import ReusableTable from "@/components/ReusableTable";
 import { healthCampService } from "@/services/healthCampService";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
+import { MediaUploader } from "@/components/media-uploader";
 
 export default function HealthCampsCMS() {
     const navigate = useNavigate();
@@ -620,16 +621,15 @@ export default function HealthCampsCMS() {
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        Camp Image / Banner
-                                    </label>
-                                    <input
-                                        type="url"
-                                        placeholder="Paste an image URL for the camp banner"
+                                <div className="sm:col-span-2">
+                                    <MediaUploader
+                                        label="Camp Image / Banner"
                                         value={form.image}
-                                        onChange={(e) => setForm({ ...form, image: e.target.value })}
-                                        className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                                        onUploaded={(ref) => setForm({ ...form, image: ref })}
+                                        onClear={() => setForm({ ...form, image: "" })}
+                                        folder="health-camps"
+                                        accept="image"
+                                        helpText="JPG, JPEG, PNG or WebP (max 5MB) — upload from your device"
                                     />
                                 </div>
 
@@ -791,19 +791,6 @@ export default function HealthCampsCMS() {
                                 </div>
                             </div>
 
-                            {/* Image preview (URL text field) */}
-                            {form.image && (
-                                <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
-                                    <img
-                                        src={form.image}
-                                        alt="banner-preview"
-                                        onError={(e) => {
-                                            e.target.style.display = "none";
-                                        }}
-                                        className="w-full max-h-52 object-cover"
-                                    />
-                                </div>
-                            )}
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
