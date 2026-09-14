@@ -1,4 +1,5 @@
 import React from "react";
+import { withTranslation } from "react-i18next";
 
 /**
  * Top-level React Error Boundary — SAFETY NET ONLY.
@@ -28,6 +29,7 @@ class ErrorBoundary extends React.Component {
     };
 
     render() {
+        const { t } = this.props;
         if (this.state.hasError) {
             return (
                 <div
@@ -63,10 +65,10 @@ class ErrorBoundary extends React.Component {
                                 margin: "0 0 8px",
                             }}
                         >
-                            Something went wrong.
+                            {t("common.errorTitle")}
                         </h1>
                         <p style={{ fontSize: 14, color: "#64748b", margin: "0 0 20px" }}>
-                            An unexpected error occurred while rendering this page.
+                            {t("common.errorDesc")}
                         </p>
                         <button
                             type="button"
@@ -82,7 +84,7 @@ class ErrorBoundary extends React.Component {
                                 cursor: "pointer",
                             }}
                         >
-                            Reload Application
+                            {t("common.reload")}
                         </button>
                     </div>
                 </div>
@@ -92,4 +94,4 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-export default ErrorBoundary;
+export default withTranslation()(ErrorBoundary);

@@ -1,15 +1,29 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ImageIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
 import { MediaUploader } from "@/components/media-uploader";
+import LocalizedText from "@/components/LocalizedText";
+import { useTranslatedText } from "@/hooks/useTranslatedText";
 
 export default function HeroCMS() {
+  const { t } = useTranslation();
   const [data, setData] = useState(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const phBadge = useTranslatedText("Local for Vocal · GMP Certified");
+  const phTitle1 = useTranslatedText("Ancient wisdom.");
+  const phTitle2 = useTranslatedText("Everyday wellness.");
+  const phPrimaryText = useTranslatedText("Shop the Collection");
+  const phSecondaryText = useTranslatedText("Our Story");
+  const phBgLabel = useTranslatedText("Background Image");
+  const phUploadHelp = useTranslatedText(
+    "JPG, JPEG, PNG or WebP (max 5MB) — upload from your device",
+  );
 
   useEffect(() => {
     getContent().then((d) => { setData(d); setLoading(false); }).catch(() => setLoading(false));
@@ -33,29 +47,29 @@ export default function HeroCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success("✅ Hero Banner updated live!");
+      toast.success(`✅ ${t("cms.liveSiteUpdated")}`);
     } catch {
-      toast.error("Failed to save. Please try again.");
+      toast.error(t("cms.saveContentFailed"));
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
+    if (!window.confirm(t("cms.resetConfirm"))) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success("Content reset to defaults.");
+    toast.success(t("cms.contentReset"));
   };
 
-  if (loading) return <CMSLoader label="Loading Hero Banner content…" />;
+  if (loading) return <CMSLoader />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={ImageIcon}
-        title="Hero Banner"
-        description="The large full-screen banner visitors see first when they land on the website."
+        title={t("cms.secHeroBanner")}
+        description={t("cms.secHeroBannerDesc")}
         onSave={handleSave}
         onReset={handleReset}
         saving={saving}
@@ -64,48 +78,49 @@ export default function HeroCMS() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ImageIcon className="h-5 w-5 text-violet-500" /> Hero Banner Content
+            <ImageIcon className="h-5 w-5 text-violet-500" />{" "}
+            <LocalizedText value="Hero Banner Content" />
           </CardTitle>
           <CardDescription>
-            Edit the headlines, description, background image and call-to-action buttons.
+            <LocalizedText value="Edit the headlines, description, background image and call-to-action buttons." />
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5 md:grid-cols-2">
-          <Field label="Badge / Pill Label">
+          <Field label={<LocalizedText value="Badge / Pill Label" />}>
             <CMSInput
               value={data.hero?.badge}
               onChange={(e) => set("hero.badge", e.target.value)}
-              placeholder="Local for Vocal · GMP Certified"
+              placeholder={phBadge}
             />
           </Field>
           <div className="md:col-span-2">
             <MediaUploader
-              label="Background Image"
+              label={phBgLabel}
               value={data.hero?.bgImage || ""}
               onUploaded={(ref) => set("hero.bgImage", ref)}
               onClear={() => set("hero.bgImage", "")}
               folder="hero"
               accept="image"
               required
-              helpText="JPG, JPEG, PNG or WebP (max 5MB) — upload from your device"
+              helpText={phUploadHelp}
             />
           </div>
-          <Field label="Headline Line 1">
+          <Field label={<LocalizedText value="Headline Line 1" />}>
             <CMSInput
               value={data.hero?.titleLine1}
               onChange={(e) => set("hero.titleLine1", e.target.value)}
-              placeholder="Ancient wisdom."
+              placeholder={phTitle1}
             />
           </Field>
-          <Field label="Headline Line 2 (Gold / Italic)">
+          <Field label={<LocalizedText value="Headline Line 2 (Gold / Italic)" />}>
             <CMSInput
               value={data.hero?.titleLine2}
               onChange={(e) => set("hero.titleLine2", e.target.value)}
-              placeholder="Everyday wellness."
+              placeholder={phTitle2}
             />
           </Field>
           <div className="md:col-span-2">
-            <Field label="Description Paragraph">
+            <Field label={<LocalizedText value="Description Paragraph" />}>
               <CMSTextarea
                 rows={3}
                 value={data.hero?.description}
@@ -113,28 +128,28 @@ export default function HeroCMS() {
               />
             </Field>
           </div>
-          <Field label="Primary Button Text">
+          <Field label={<LocalizedText value="Primary Button Text" />}>
             <CMSInput
               value={data.hero?.primaryCtaText}
               onChange={(e) => set("hero.primaryCtaText", e.target.value)}
-              placeholder="Shop the Collection"
+              placeholder={phPrimaryText}
             />
           </Field>
-          <Field label="Primary Button Link">
+          <Field label={<LocalizedText value="Primary Button Link" />}>
             <CMSInput
               value={data.hero?.primaryCtaLink}
               onChange={(e) => set("hero.primaryCtaLink", e.target.value)}
               placeholder="/shop"
             />
           </Field>
-          <Field label="Secondary Button Text">
+          <Field label={<LocalizedText value="Secondary Button Text" />}>
             <CMSInput
               value={data.hero?.secondaryCtaText}
               onChange={(e) => set("hero.secondaryCtaText", e.target.value)}
-              placeholder="Our Story"
+              placeholder={phSecondaryText}
             />
           </Field>
-          <Field label="Secondary Button Link">
+          <Field label={<LocalizedText value="Secondary Button Link" />}>
             <CMSInput
               value={data.hero?.secondaryCtaLink}
               onChange={(e) => set("hero.secondaryCtaLink", e.target.value)}

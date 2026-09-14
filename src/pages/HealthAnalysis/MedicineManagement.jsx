@@ -15,10 +15,13 @@ import {
     Power,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import ReusableTable from "@/components/ReusableTable";
+import LocalizedText from "@/components/LocalizedText";
 import { medicineService } from "@/services/medicineService";
 
 export default function MedicineManagement() {
+    const { t } = useTranslation();
 
     const [medicines, setMedicines] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -43,7 +46,7 @@ export default function MedicineManagement() {
             const medRes = await medicineService.getMedicines();
             setMedicines(medRes || []);
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to load medicines");
+            toast.error(err.response?.data?.message || t("healthAnalysis.medicine.loadFailed"));
         } finally {
             setLoading(false);
         }
@@ -78,7 +81,7 @@ export default function MedicineManagement() {
     const handleSave = async (e) => {
         e.preventDefault();
         if (!form.name.trim()) {
-            toast.error("Medicine name is required");
+            toast.error(t("healthAnalysis.medicine.nameRequired"));
             return;
         }
 
@@ -93,17 +96,17 @@ export default function MedicineManagement() {
 
             if (editingMedicine) {
                 await medicineService.updateMedicine(editingMedicine._id, payload);
-                toast.success("Medicine updated successfully");
+                toast.success(t("healthAnalysis.medicine.updatedSuccess"));
                 setEditingMedicine(null);
             } else {
                 await medicineService.createMedicine(payload);
-                toast.success("Medicine created successfully");
+                toast.success(t("healthAnalysis.medicine.createdSuccess"));
             }
 
             setShowCreateModal(false);
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to save medicine");
+            toast.error(err.response?.data?.message || t("healthAnalysis.medicine.saveFailed"));
         } finally {
             setSubmitting(false);
         }
@@ -114,10 +117,10 @@ export default function MedicineManagement() {
             await medicineService.updateMedicine(item._id, {
                 is_active: !item.is_active,
             });
-            toast.success("Medicine status updated successfully");
+            toast.success(t("healthAnalysis.medicine.statusSuccess"));
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to toggle status");
+            toast.error(err.response?.data?.message || t("healthAnalysis.medicine.statusFailed"));
         }
     };
 
@@ -126,11 +129,11 @@ export default function MedicineManagement() {
         try {
             setSubmitting(true);
             await medicineService.deleteMedicine(deletingMedicine._id);
-            toast.success("Medicine deleted successfully");
+            toast.success(t("healthAnalysis.medicine.deletedSuccess"));
             setDeletingMedicine(null);
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to delete medicine");
+            toast.error(err.response?.data?.message || t("healthAnalysis.medicine.deleteFailed"));
         } finally {
             setSubmitting(false);
         }
@@ -145,7 +148,7 @@ export default function MedicineManagement() {
     const headers = [
         {
             key: "name",
-            label: "Medicine Name",
+            label: t("healthAnalysis.medicine.colName"),
             render: (row) => (
                 <div className="flex items-center gap-2.5">
                     <div className="p-1.5 rounded-lg bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400">
@@ -153,7 +156,7 @@ export default function MedicineManagement() {
                     </div>
                     <div>
                         <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">
-                            {row.name}
+                            <LocalizedText value={row.name} />
                         </span>
                     </div>
                 </div>
@@ -161,7 +164,7 @@ export default function MedicineManagement() {
         },
         {
             key: "details",
-            label: "Details",
+            label: t("healthAnalysis.medicine.colDetails"),
             render: (row) => (
                 <div className="flex items-start gap-1.5 max-w-md">
                     <FileText className="h-3.5 w-3.5 text-slate-400 mt-0.5 shrink-0" />
@@ -173,16 +176,16 @@ export default function MedicineManagement() {
         },
         {
             key: "dosage",
-            label: "Dosage / Usage",
+            label: t("healthAnalysis.medicine.colDosage"),
             render: (row) => (
                 <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-violet-50 dark:bg-violet-950/50 text-xs font-semibold text-violet-700 dark:text-violet-300 border border-violet-100 dark:border-violet-900">
-                    {row.dosage || "—"}
+                    {row.dosage ? <LocalizedText value={row.dosage} /> : "—"}
                 </span>
             ),
         },
         {
             key: "is_active",
-            label: "Status",
+            label: t("healthAnalysis.medicine.colStatus"),
             render: (row) => (
                 <button
                     onClick={() => handleToggleStatus(row)}
@@ -190,15 +193,15 @@ export default function MedicineManagement() {
                         ? "bg-emerald-500 text-white hover:bg-emerald-600 shadow-xs"
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
                         }`}
-                    title="Click to toggle active status"
+                    title={t("healthAnalysis.medicine.toggleTitle")}
                 >
                     {row.is_active !== false ? (
                         <>
-                            <Power className="h-3 w-3" /> Active
+                            <Power className="h-3 w-3" /> {t("healthAnalysis.medicine.active")}
                         </>
                     ) : (
                         <>
-                            <X className="h-3 w-3" /> Inactive
+                            <X className="h-3 w-3" /> {t("healthAnalysis.medicine.inactive")}
                         </>
                     )}
                 </button>
@@ -206,7 +209,7 @@ export default function MedicineManagement() {
         },
         {
             key: "updatedAt",
-            label: "Last Updated",
+            label: t("healthAnalysis.medicine.colLastUpdated"),
             render: (row) => (
                 <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
                     <Clock className="h-3.5 w-3.5 text-slate-400" />
@@ -222,7 +225,7 @@ export default function MedicineManagement() {
         },
         {
             key: "actions",
-            label: "Actions",
+            label: t("healthAnalysis.medicine.colActions"),
             filterable: false,
             render: (row) => (
                 <div className="flex items-center justify-end gap-1.5">
@@ -231,7 +234,7 @@ export default function MedicineManagement() {
                         variant="ghost"
                         onClick={() => openEditModal(row)}
                         className="h-8 w-8 p-0 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/50"
-                        title="Edit Medicine"
+                        title={t("healthAnalysis.medicine.editTitle")}
                     >
                         <Pencil className="h-3.5 w-3.5" />
                     </Button>
@@ -240,7 +243,7 @@ export default function MedicineManagement() {
                         variant="ghost"
                         onClick={() => setDeletingMedicine(row)}
                         className="h-8 w-8 p-0 text-slate-500 hover:text-rose-600 hover:bg-rose-50/50"
-                        title="Delete Medicine"
+                        title={t("healthAnalysis.medicine.deleteTitle")}
                     >
                         <Trash2 className="h-3.5 w-3.5 text-rose-500" />
                     </Button>
@@ -256,13 +259,13 @@ export default function MedicineManagement() {
                 <div>
                     <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-violet-200">
                         <Sparkles className="h-4 w-4" />
-                        <span>Quantum Health Analysis</span>
+                        <span>{t("healthAnalysis.medicine.bannerEyebrow")}</span>
                     </div>
                     <h1 className="text-2xl font-bold mt-1 tracking-tight">
-                        Medicine Management
+                        {t("healthAnalysis.medicine.bannerTitle")}
                     </h1>
                     <p className="text-sm text-violet-100 mt-1 max-w-2xl">
-                        Manage the medicines shown in the report medicine selection. Only the active medicines added here appear in the report point selection.
+                        {t("healthAnalysis.medicine.bannerDesc")}
                     </p>
                 </div>
                 <Button
@@ -270,7 +273,7 @@ export default function MedicineManagement() {
                     className="bg-white text-violet-700 hover:bg-violet-50 font-bold px-5 py-2.5 rounded-xl shadow-md shrink-0 flex items-center gap-2 self-start sm:self-auto"
                 >
                     <Plus className="h-5 w-5" />
-                    <span>Add New Medicine</span>
+                    <span>{t("healthAnalysis.medicine.addNew")}</span>
                 </Button>
             </div>
 
@@ -280,13 +283,13 @@ export default function MedicineManagement() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Total Medicines
+                                {t("healthAnalysis.medicine.cardTotal")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {totalCount}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                Medicines in the library
+                                {t("healthAnalysis.medicine.cardTotalHint")}
                             </p>
                         </div>
                         <div className="p-3 bg-violet-50 dark:bg-violet-950/60 rounded-xl text-violet-600 dark:text-violet-400">
@@ -299,13 +302,13 @@ export default function MedicineManagement() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                                Active Medicines
+                                {t("healthAnalysis.medicine.cardActive")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {activeCount}
                             </p>
                             <p className="text-[11px] text-slate-500 mt-0.5">
-                                Shown in selection
+                                {t("healthAnalysis.medicine.cardActiveHint")}
                             </p>
                         </div>
                         <div className="p-3 bg-emerald-100 dark:bg-emerald-950/60 rounded-xl text-emerald-600 dark:text-emerald-400">
@@ -318,13 +321,13 @@ export default function MedicineManagement() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Inactive Medicines
+                                {t("healthAnalysis.medicine.cardInactive")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {inactiveCount}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                Hidden from selection
+                                {t("healthAnalysis.medicine.cardInactiveHint")}
                             </p>
                         </div>
                         <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500">
@@ -337,13 +340,13 @@ export default function MedicineManagement() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                With Dosage
+                                {t("healthAnalysis.medicine.cardDosage")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {withDosageCount}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                Dosage info provided
+                                {t("healthAnalysis.medicine.cardDosageHint")}
                             </p>
                         </div>
                         <div className="p-3 bg-fuchsia-50 dark:bg-fuchsia-950/60 rounded-xl text-fuchsia-600 dark:text-fuchsia-400">
@@ -360,10 +363,10 @@ export default function MedicineManagement() {
                         <div>
                             <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-800 dark:text-slate-100">
                                 <Pill className="h-4 w-4 text-violet-600" />
-                                Medicine Management
+                                {t("healthAnalysis.medicine.tableTitle")}
                             </CardTitle>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                Only medicines added by admins are shown in the report medicine selection.
+                                {t("healthAnalysis.medicine.tableDesc")}
                             </p>
                         </div>
                         <Button
@@ -371,7 +374,7 @@ export default function MedicineManagement() {
                             size="sm"
                             className="bg-violet-600 hover:bg-violet-700 text-white font-semibold self-start sm:self-auto"
                         >
-                            <Plus className="h-4 w-4 mr-1.5" /> Add Medicine
+                            <Plus className="h-4 w-4 mr-1.5" /> {t("healthAnalysis.medicine.addMedicine")}
                         </Button>
                     </div>
                 </CardHeader>
@@ -380,7 +383,7 @@ export default function MedicineManagement() {
                         headers={headers}
                         data={medicines}
                         loading={loading}
-                        Search="Search medicines by name, details or dosage..."
+                        Search={t("healthAnalysis.medicine.searchPlaceholder")}
                     />
                 </CardContent>
             </Card>
@@ -398,12 +401,12 @@ export default function MedicineManagement() {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                                        {editingMedicine ? "Edit Medicine" : "Create Medicine"}
+                                        {editingMedicine ? t("healthAnalysis.medicine.modalEditTitle") : t("healthAnalysis.medicine.modalCreateTitle")}
                                     </h3>
                                     <p className="text-xs text-slate-500">
                                         {editingMedicine
-                                            ? "Update medicine details and active status"
-                                            : "Add a new medicine to the library"}
+                                            ? t("healthAnalysis.medicine.modalEditSubtitle")
+                                            : t("healthAnalysis.medicine.modalCreateSubtitle")}
                                     </p>
                                 </div>
                             </div>
@@ -421,12 +424,12 @@ export default function MedicineManagement() {
                         <form onSubmit={handleSave} className="space-y-4">
                             <div>
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                    Medicine Name <span className="text-rose-500">*</span>
+                                    {t("healthAnalysis.medicine.nameLabel")} <span className="text-rose-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     required
-                                    placeholder="e.g. Triphala Churna"
+                                    placeholder={t("healthAnalysis.medicine.namePlaceholder")}
                                     value={form.name}
                                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                                     className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
@@ -435,11 +438,11 @@ export default function MedicineManagement() {
 
                             <div>
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                    Details
+                                    {t("healthAnalysis.medicine.detailsLabel")}
                                 </label>
                                 <textarea
                                     rows={3}
-                                    placeholder="Short description of this medicine"
+                                    placeholder={t("healthAnalysis.medicine.detailsPlaceholder")}
                                     value={form.details}
                                     onChange={(e) => setForm({ ...form, details: e.target.value })}
                                     className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
@@ -448,11 +451,11 @@ export default function MedicineManagement() {
 
                             <div>
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                    Dosage / Usage
+                                    {t("healthAnalysis.medicine.dosageLabel")}
                                 </label>
                                 <textarea
                                     rows={2}
-                                    placeholder="e.g. 1 teaspoon twice daily after meals"
+                                    placeholder={t("healthAnalysis.medicine.dosagePlaceholder")}
                                     value={form.dosage}
                                     onChange={(e) => setForm({ ...form, dosage: e.target.value })}
                                     className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
@@ -462,10 +465,10 @@ export default function MedicineManagement() {
                             <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                        Active Medicine
+                                        {t("healthAnalysis.medicine.activeLabel")}
                                     </p>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                                        Inactive medicines are hidden from the report medicine selection dropdown.
+                                        {t("healthAnalysis.medicine.activeHint")}
                                     </p>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
@@ -489,7 +492,7 @@ export default function MedicineManagement() {
                                     }}
                                     disabled={submitting}
                                 >
-                                    Cancel
+                                    {t("healthAnalysis.medicine.cancel")}
                                 </Button>
                                 <Button
                                     type="submit"
@@ -497,10 +500,10 @@ export default function MedicineManagement() {
                                     className="bg-violet-600 hover:bg-violet-700 text-white font-semibold px-5"
                                 >
                                     {submitting
-                                        ? "Saving..."
+                                        ? t("healthAnalysis.medicine.saving")
                                         : editingMedicine
-                                            ? "Update Medicine"
-                                            : "Create Medicine"}
+                                            ? t("healthAnalysis.medicine.updateBtn")
+                                            : t("healthAnalysis.medicine.createBtn")}
                                 </Button>
                             </div>
                         </form>
@@ -520,14 +523,14 @@ export default function MedicineManagement() {
                             </div>
                             <div>
                                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                                    Delete Medicine?
+                                    {t("healthAnalysis.medicine.deleteConfirmTitle")}
                                 </h3>
-                                <p className="text-xs text-slate-500">This action cannot be undone.</p>
+                                <p className="text-xs text-slate-500">{t("healthAnalysis.medicine.deleteCannotUndo")}</p>
                             </div>
                         </div>
 
                         <p className="text-sm text-slate-600 dark:text-slate-300">
-                            {`Are you sure you want to delete medicine "${deletingMedicine.name}"?`}
+                            {t("healthAnalysis.medicine.deleteConfirm", { name: deletingMedicine.name })}
                         </p>
 
                         <div className="flex items-center justify-end gap-3 pt-2">
@@ -536,14 +539,14 @@ export default function MedicineManagement() {
                                 onClick={() => setDeletingMedicine(null)}
                                 disabled={submitting}
                             >
-                                Cancel
+                                {t("healthAnalysis.medicine.cancel")}
                             </Button>
                             <Button
                                 onClick={handleDelete}
                                 disabled={submitting}
                                 className="bg-rose-600 hover:bg-rose-700 text-white font-semibold"
                             >
-                                {submitting ? "Deleting..." : "Are you sure you want to delete this item? This action cannot be undone."}
+                                {submitting ? t("healthAnalysis.medicine.deleting") : t("healthAnalysis.medicine.deleteConfirmTitle")}
                             </Button>
                         </div>
                     </div>

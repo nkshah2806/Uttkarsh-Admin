@@ -2,6 +2,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import {
   Popover,
@@ -17,6 +18,7 @@ const DateRangeFilter = ({
   defaultTodayDate = false,
   value,
 }) => {
+  const { t } = useTranslation();
   const today = new Date();
   const defaultFrom = new Date(today.getFullYear(), today.getMonth(), 1);
   const defaultTo = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -25,8 +27,8 @@ const DateRangeFilter = ({
     defaultTodayDate
       ? { from: defaultFrom, to: defaultTo }
       : value
-      ? { from: new Date(value[0]), to: new Date(value[1]) }
-      : { from: null, to: null }
+        ? { from: new Date(value[0]), to: new Date(value[1]) }
+        : { from: null, to: null }
   );
   const [open, setOpen] = React.useState(false);
 
@@ -76,7 +78,7 @@ const DateRangeFilter = ({
               format(dateRange.from, "LLL dd, y")
             )
           ) : (
-            <span>Select date range</span>
+            <span>{t("components.selectDateRange")}</span>
           )}
         </Button>
       </PopoverTrigger>

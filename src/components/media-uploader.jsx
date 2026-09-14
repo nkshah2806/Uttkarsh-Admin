@@ -6,6 +6,7 @@ import { Trash2, UploadCloud, FileVideo, RefreshCw, Loader2 } from "lucide-react
 import { toast } from "sonner";
 import { Config } from "@/lib/Config";
 import axiosInstance from "@/lib/axios";
+import { useTranslation } from "react-i18next";
 
 /**
  * MediaUploader — a single reusable component for uploading images AND videos
@@ -25,7 +26,7 @@ import axiosInstance from "@/lib/axios";
  *   className    — extra wrapper classes
  */
 export function MediaUploader({
-    label = "Media",
+    label,
     value = "",
     onUploaded,
     onClear,
@@ -41,6 +42,7 @@ export function MediaUploader({
     const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".webp"];
     const VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
     const VIDEO_EXTS = [".mp4", ".webm", ".mov"];
+    const { t } = useTranslation();
 
     const isVideo = accept === "video";
     const acceptedTypes = isVideo ? VIDEO_TYPES : IMAGE_TYPES;
@@ -82,15 +84,20 @@ export function MediaUploader({
     const validateFile = (file) => {
         const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
         if (!acceptedTypes.includes(file.type)) {
-            toast.error(`${file.name} is not a valid ${isVideo ? "video" : "image"} file.`);
+            toast.error(
+                t("components.mediaUploader.invalidFile", {
+                    name: file.name,
+                    kind: isVideo ? t("components.mediaUploader.video") : t("components.mediaUploader.image"),
+                })
+            );
             return false;
         }
         if (!acceptedExts.includes(ext)) {
-            toast.error(`Invalid file extension. Allowed: ${acceptedExts.join(", ")}`);
+            toast.error(t("components.mediaUploader.invalidExtension", { exts: acceptedExts.join(", ") }));
             return false;
         }
         if (file.size > maxMB * 1024 * 1024) {
-            toast.error(`${file.name} exceeds the ${maxMB}MB size limit.`);
+            toast.error(t("components.mediaUploader.exceedsSize", { name: file.name, size: maxMB }));
             return false;
         }
         return true;
@@ -111,11 +118,11 @@ export function MediaUploader({
             if (!fileRef) {
                 throw new Error("Upload response did not include a file reference.");
             }
-            toast.success("File uploaded successfully");
+            toast.success(t("components.mediaUploader.uploadSuccess"));
             onUploaded && onUploaded(fileRef);
             return fileRef;
         } catch (err) {
-            const message = err?.response?.data?.message || err.message || "Upload failed. Try again.";
+            const message = err?.response?.data?.message || err.message || t("components.mediaUploader.uploadFailed");
             toast.error(message);
             return null;
         } finally {
@@ -163,7 +170,7 @@ export function MediaUploader({
     return (
         <div className={className}>
             <Label className="mb-3 block">
-                {label} {required && <span className="text-violet-500">*</span>}
+                {label || t("components.mediaUploader.media")} {required && <span className="text-violet-500">*</span>}
             </Label>
             {helpText && <p className="text-[11px] text-slate-400 mb-2">{helpText}</p>}
 
@@ -187,10 +194,10 @@ export function MediaUploader({
                         )}
                         <p className="text-sm text-gray-500 mt-2 text-center max-w-[180px]">
                             {uploading
-                                ? "Uploading…"
+                                ? t("components.mediaUploader.uploading")
                                 : isVideo
-                                    ? "Drag & drop or click to upload video"
-                                    : "Drag & drop or click to upload image"}
+                                    ? t("components.mediaUploader.dragVideo")
+                                    : t("components.mediaUploader.dragImage")}
                         </p>
                         <Input
                             ref={inputRef}
@@ -232,7 +239,7 @@ export function MediaUploader({
                                 disabled={uploading}
                                 onClick={() => inputRef.current?.click()}
                                 className="bg-white/90 dark:bg-slate-800/90"
-                                title="Replace media"
+                                title={t("components.mediaUploader.replaceMedia")}
                             >
                                 {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                             </Button>
@@ -243,7 +250,7 @@ export function MediaUploader({
                                 disabled={uploading}
                                 onClick={handleRemove}
                                 className="bg-white/90 dark:bg-slate-800/90"
-                                title="Remove media"
+                                title={t("components.mediaUploader.removeMedia")}
                             >
                                 <Trash2 className="h-4 w-4 text-red-600" />
                             </Button>
@@ -251,13 +258,13 @@ export function MediaUploader({
                         {isVideo && (
                             <p className="text-[11px] text-slate-400 mt-1 truncate max-w-[260px]" title={value}>
                                 <FileVideo className="inline h-3 w-3 mr-1" />
-                                {value || "Video uploaded"}
+                                {value || t("components.mediaUploader.videoUploaded")}
                             </p>
                         )}
                     </div>
                 ) : (
                     <div className="flex-1 min-w-[160px] max-w-[280px] rounded-lg border border-dashed border-slate-300 dark:border-slate-700 p-4 text-center text-xs text-slate-400">
-                        {isVideo ? "MP4, WebM or MOV (max 100MB)" : "JPG, JPEG, PNG or WebP (max 5MB)"}
+                        {isVideo ? t("components.mediaUploader.videoHint") : t("components.mediaUploader.imageHint")}
                     </div>
                 )}
             </div>

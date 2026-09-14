@@ -1,14 +1,23 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Megaphone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
+import LocalizedText from "@/components/LocalizedText";
+import { useTranslatedText } from "@/hooks/useTranslatedText";
 
 export default function HeaderFooterCMS() {
+  const { t } = useTranslation();
   const [data, setData] = useState(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const phAnnouncement = useTranslatedText(
+    "Free Shipping on Orders Over ₹499 · 100% Natural",
+  );
+  const phSearch = useTranslatedText("Search herbs, remedies...");
 
   useEffect(() => {
     getContent().then((d) => { setData(d); setLoading(false); }).catch(() => setLoading(false));
@@ -32,29 +41,29 @@ export default function HeaderFooterCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success("✅ Header & Footer updated live!");
+      toast.success(`✅ ${t("cms.liveSiteUpdated")}`);
     } catch {
-      toast.error("Failed to save. Please try again.");
+      toast.error(t("cms.saveContentFailed"));
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
+    if (!window.confirm(t("cms.resetConfirm"))) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success("Content reset to defaults.");
+    toast.success(t("cms.contentReset"));
   };
 
-  if (loading) return <CMSLoader label="Loading Header & Footer content…" />;
+  if (loading) return <CMSLoader />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={Megaphone}
-        title="Header & Footer"
-        description="Manage the announcement bar shown across all pages, and the footer brand description."
+        title={t("cms.secHeaderFooter")}
+        description={t("cms.secHeaderFooterDesc")}
         onSave={handleSave}
         onReset={handleReset}
         saving={saving}
@@ -64,27 +73,28 @@ export default function HeaderFooterCMS() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Megaphone className="h-5 w-5 text-violet-500" /> Header Announcement Bar
+            <Megaphone className="h-5 w-5 text-violet-500" />{" "}
+            <LocalizedText value="Header Announcement Bar" />
           </CardTitle>
           <CardDescription>
-            The dark green strip at the very top of every page on the website.
+            <LocalizedText value="The dark green strip at the very top of every page on the website." />
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5 md:grid-cols-2">
           <div className="md:col-span-2">
-            <Field label="Announcement Text">
+            <Field label={<LocalizedText value="Announcement Text" />}>
               <CMSInput
                 value={data.header?.announcement}
                 onChange={(e) => set("header.announcement", e.target.value)}
-                placeholder="Free Shipping on Orders Over ₹499 · 100% Natural"
+                placeholder={phAnnouncement}
               />
             </Field>
           </div>
-          <Field label="Search Bar Placeholder">
+          <Field label={<LocalizedText value="Search Bar Placeholder" />}>
             <CMSInput
               value={data.header?.searchPlaceholder}
               onChange={(e) => set("header.searchPlaceholder", e.target.value)}
-              placeholder="Search herbs, remedies..."
+              placeholder={phSearch}
             />
           </Field>
         </CardContent>
@@ -93,11 +103,15 @@ export default function HeaderFooterCMS() {
       {/* Footer Brand Description */}
       <Card>
         <CardHeader>
-          <CardTitle>Footer Brand Description</CardTitle>
-          <CardDescription>The description shown in the footer under the company logo.</CardDescription>
+          <CardTitle>
+            <LocalizedText value="Footer Brand Description" />
+          </CardTitle>
+          <CardDescription>
+            <LocalizedText value="The description shown in the footer under the company logo." />
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Field label="Brand Description">
+          <Field label={<LocalizedText value="Brand Description" />}>
             <CMSTextarea
               rows={3}
               value={data.footer?.brandDescription}

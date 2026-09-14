@@ -5,8 +5,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import ReusableTable from "@/components/ReusableTable";
+import LocalizedText from "@/components/LocalizedText";
+import { useTranslation } from "react-i18next";
 
 export default function FranchiseManagement() {
+  const { t } = useTranslation();
   const [franchises, setFranchises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -31,7 +34,7 @@ export default function FranchiseManagement() {
       const res = await axiosInstance.get("v1/admin/franchises");
       setFranchises(res.data.data || []);
     } catch (err) {
-      toast.error("Failed to load franchises");
+      toast.error(t("healthAnalysis.franchise.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -41,11 +44,11 @@ export default function FranchiseManagement() {
     e.preventDefault();
     try {
       await axiosInstance.post("v1/admin/franchises", form);
-      toast.success("Franchise created successfully");
+      toast.success(t("healthAnalysis.franchise.createSuccess"));
       setShowModal(false);
       fetchFranchises();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to create franchise");
+      toast.error(err.response?.data?.message || t("healthAnalysis.franchise.createFailed"));
     }
   };
 
@@ -55,17 +58,19 @@ export default function FranchiseManagement() {
       await axiosInstance.patch(`v1/admin/franchises/${id}/status`, {
         status: nextStatus,
       });
-      toast.success(`Franchise status updated to ${nextStatus}`);
+      toast.success(
+        t("healthAnalysis.franchise.statusUpdated", { status: nextStatus }),
+      );
       fetchFranchises();
     } catch (err) {
-      toast.error("Failed to update franchise status");
+      toast.error(t("healthAnalysis.franchise.statusUpdateFailed"));
     }
   };
 
   const headers = [
     {
       key: "franchise_code",
-      label: "Code",
+      label: t("healthAnalysis.franchise.colCode"),
       render: (row) => (
         <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
           {row.franchise_code}
@@ -74,13 +79,17 @@ export default function FranchiseManagement() {
     },
     {
       key: "name",
-      label: "Branch Name",
-      render: (row) => <span className="font-medium">{row.name}</span>,
+      label: t("healthAnalysis.franchise.colBranchName"),
+      render: (row) => (
+        <span className="font-medium">
+          <LocalizedText value={row.name} />
+        </span>
+      ),
     },
-    { key: "owner_name", label: "Owner" },
+    { key: "owner_name", label: t("healthAnalysis.franchise.colOwner") },
     {
       key: "phone",
-      label: "Contact",
+      label: t("healthAnalysis.franchise.colContact"),
       filterable: false,
       render: (row) => (
         <span>
@@ -91,26 +100,26 @@ export default function FranchiseManagement() {
     },
     {
       key: "royalty_percent",
-      label: "Royalty",
+      label: t("healthAnalysis.franchise.colRoyalty"),
       render: (row) => <span className="font-semibold">{row.royalty_percent}%</span>,
     },
     {
       key: "status",
-      label: "Status",
+      label: t("healthAnalysis.franchise.colStatus"),
       render: (row) => (
         <span
           className={`px-2.5 py-1 rounded-full text-xs font-semibold ${row.status === "ACTIVE"
-              ? "bg-emerald-100 text-emerald-700"
-              : "bg-rose-100 text-rose-700"
+            ? "bg-emerald-100 text-emerald-700"
+            : "bg-rose-100 text-rose-700"
             }`}
         >
-          {row.status}
+          <LocalizedText value={row.status} />
         </span>
       ),
     },
     {
       key: "actions",
-      label: "Action",
+      label: t("healthAnalysis.franchise.colAction"),
       filterable: false,
       render: (row) => (
         <Button
@@ -118,7 +127,9 @@ export default function FranchiseManagement() {
           variant={row.status === "ACTIVE" ? "destructive" : "default"}
           onClick={() => toggleStatus(row._id, row.status)}
         >
-          {row.status === "ACTIVE" ? "Suspend" : "Activate"}
+          {row.status === "ACTIVE"
+            ? t("healthAnalysis.franchise.suspend")
+            : t("healthAnalysis.franchise.activate")}
         </Button>
       ),
     },
@@ -126,16 +137,18 @@ export default function FranchiseManagement() {
 
   const AddFranchiseButton = () => (
     <Button onClick={() => setShowModal(true)} className="bg-indigo-600 hover:bg-indigo-700">
-      <Plus className="mr-2 h-4 w-4" /> Add Franchise Branch
+      <Plus className="mr-2 h-4 w-4" /> {t("healthAnalysis.franchise.addButton")}
     </Button>
   );
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Franchise Branch Management</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {t("healthAnalysis.franchise.title")}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Manage Head Office and regional franchise branches, plans & commission rates.
+          {t("healthAnalysis.franchise.desc")}
         </p>
       </div>
 
@@ -145,7 +158,7 @@ export default function FranchiseManagement() {
             headers={headers}
             data={franchises}
             loading={loading}
-            Search="Search franchise code, name, owner..."
+            Search={t("healthAnalysis.franchise.searchPlaceholder")}
             CreateExportRender={AddFranchiseButton}
             pagination={true}
           />
@@ -155,22 +168,28 @@ export default function FranchiseManagement() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-lg space-y-4">
-            <h3 className="text-lg font-bold">Register New Franchise Branch</h3>
+            <h3 className="text-lg font-bold">
+              {t("healthAnalysis.franchise.modalTitle")}
+            </h3>
             <form onSubmit={handleCreate} className="space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Franchise Code *</label>
+                  <label className="block text-xs font-semibold mb-1">
+                    {t("healthAnalysis.franchise.codeLabel")}
+                  </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. FR01"
+                    placeholder={t("healthAnalysis.franchise.codePlaceholder")}
                     value={form.franchise_code}
                     onChange={(e) => setForm({ ...form, franchise_code: e.target.value })}
                     className="w-full rounded border px-3 py-1.5 font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Royalty %</label>
+                  <label className="block text-xs font-semibold mb-1">
+                    {t("healthAnalysis.franchise.royaltyLabel")}
+                  </label>
                   <input
                     type="number"
                     value={form.royalty_percent}
@@ -180,18 +199,22 @@ export default function FranchiseManagement() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Branch Name *</label>
+                <label className="block text-xs font-semibold mb-1">
+                  {t("healthAnalysis.franchise.branchNameLabel")}
+                </label>
                 <input
                   type="text"
                   required
-                  placeholder="Utkarsh Wellness Center - Jaipur"
+                  placeholder={t("healthAnalysis.franchise.branchNamePlaceholder")}
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full rounded border px-3 py-1.5"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Owner / Manager Name *</label>
+                <label className="block text-xs font-semibold mb-1">
+                  {t("healthAnalysis.franchise.ownerLabel")}
+                </label>
                 <input
                   type="text"
                   required
@@ -202,7 +225,9 @@ export default function FranchiseManagement() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Phone Number *</label>
+                  <label className="block text-xs font-semibold mb-1">
+                    {t("healthAnalysis.franchise.phoneLabel")}
+                  </label>
                   <input
                     type="text"
                     required
@@ -212,7 +237,9 @@ export default function FranchiseManagement() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1">Email</label>
+                  <label className="block text-xs font-semibold mb-1">
+                    {t("healthAnalysis.franchise.emailLabel")}
+                  </label>
                   <input
                     type="email"
                     value={form.email}
@@ -222,7 +249,9 @@ export default function FranchiseManagement() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1">Address</label>
+                <label className="block text-xs font-semibold mb-1">
+                  {t("healthAnalysis.franchise.addressLabel")}
+                </label>
                 <textarea
                   rows={2}
                   value={form.address}
@@ -232,10 +261,10 @@ export default function FranchiseManagement() {
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="outline" onClick={() => setShowModal(false)}>
-                  Cancel
+                  {t("healthAnalysis.franchise.cancel")}
                 </Button>
                 <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">
-                  Create Branch
+                  {t("healthAnalysis.franchise.createBranch")}
                 </Button>
               </div>
             </form>

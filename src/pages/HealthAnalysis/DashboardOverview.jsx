@@ -51,6 +51,8 @@ import {
 } from "lucide-react";
 import { useApiQuery } from "@/hooks/useApiQuery";
 import { getDashboardOverview } from "@/services/dashboardApi";
+import { useTranslation } from "react-i18next";
+import LocalizedText from "@/components/LocalizedText";
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
@@ -74,24 +76,24 @@ const fmtDateTime = (iso) => {
   })}, ${d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}`;
 };
 
-const timeAgo = (iso) => {
+const timeAgo = (iso, t) => {
   if (!iso) return "";
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t("dashboard.justNow");
+  if (mins < 60) return t("dashboard.minutesAgo", { count: mins });
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
+  if (hrs < 24) return t("dashboard.hoursAgo", { count: hrs });
   const days = Math.floor(hrs / 24);
-  if (days < 30) return `${days}d ago`;
+  if (days < 30) return t("dashboard.daysAgo", { count: days });
   return fmtDate(iso);
 };
 
-const greeting = () => {
+const greeting = (t) => {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
+  if (h < 12) return t("dashboard.greetingMorning");
+  if (h < 17) return t("dashboard.greetingAfternoon");
+  return t("dashboard.greetingEvening");
 };
 
 const getCurrentUser = () => {
@@ -175,11 +177,11 @@ const STATUS_STYLES = {
   SHARED: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
 };
 
-const STATUS_LABELS = {
-  DATA_ENTRY: "Data Entry",
-  REPORT_READY: "Report Ready",
-  SHARED: "Report Shared",
-  REGISTERED: "Registered",
+const STATUS_LABEL_KEYS = {
+  DATA_ENTRY: "dashboard.statusDataEntry",
+  REPORT_READY: "dashboard.statusReportReady",
+  SHARED: "dashboard.statusReportShared",
+  REGISTERED: "dashboard.statusRegistered",
 };
 
 /* ------------------------------------------------------------------ */
@@ -188,6 +190,12 @@ const STATUS_LABELS = {
 
 export default function DashboardOverview() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const statusLabel = (status) => {
+    const key = STATUS_LABEL_KEYS[status];
+    return key ? t(key) : status;
+  };
 
   const {
     data,
@@ -230,21 +238,21 @@ export default function DashboardOverview() {
 
   /* ---------------- Quick actions ---------------- */
   const quickActions = [
-    { label: "Add Member", icon: UserPlus, to: "/user/create", accent: "from-violet-500 to-fuchsia-500" },
-    { label: "Register Client", icon: ClipboardList, to: "/quantum/patients", accent: "from-emerald-500 to-green-500" },
-    { label: "Manage Parameters", icon: SlidersHorizontal, to: "/quantum/master-data", accent: "from-sky-500 to-cyan-500" },
-    { label: "Manage Disclaimers", icon: FileCog, to: "/quantum/disclaimers", accent: "from-amber-500 to-orange-500" },
-    { label: "View Clients & Reports", icon: Eye, to: "/quantum/patients", accent: "from-rose-500 to-pink-500" },
+    { label: t("dashboard.addMember"), icon: UserPlus, to: "/user/create", accent: "from-violet-500 to-fuchsia-500" },
+    { label: t("dashboard.registerClient"), icon: ClipboardList, to: "/quantum/patients", accent: "from-emerald-500 to-green-500" },
+    { label: t("dashboard.manageParameters"), icon: SlidersHorizontal, to: "/quantum/master-data", accent: "from-sky-500 to-cyan-500" },
+    { label: t("dashboard.manageDisclaimers"), icon: FileCog, to: "/quantum/disclaimers", accent: "from-amber-500 to-orange-500" },
+    { label: t("dashboard.viewClientsReports"), icon: Eye, to: "/quantum/patients", accent: "from-rose-500 to-pink-500" },
   ];
 
   /* ---------------- Workflow strip ---------------- */
   const workflow = [
-    { label: "Client", desc: "Register", icon: UserPlus },
-    { label: "Machine Data", desc: "Scan entry", icon: ScanLine },
-    { label: "Parameter Review", desc: "Verify values", icon: SlidersHorizontal },
-    { label: "Report Generation", desc: "PDF output", icon: FileText },
-    { label: "Previous Reports", desc: "History", icon: History },
-    { label: "Follow-up", desc: "Next visit", icon: CalendarClock },
+    { label: t("dashboard.workflowClient"), desc: t("dashboard.workflowClientDesc"), icon: UserPlus },
+    { label: t("dashboard.workflowMachine"), desc: t("dashboard.workflowMachineDesc"), icon: ScanLine },
+    { label: t("dashboard.workflowParameter"), desc: t("dashboard.workflowParameterDesc"), icon: SlidersHorizontal },
+    { label: t("dashboard.workflowReport"), desc: t("dashboard.workflowReportDesc"), icon: FileText },
+    { label: t("dashboard.workflowPrevious"), desc: t("dashboard.workflowPreviousDesc"), icon: History },
+    { label: t("dashboard.workflowFollowUp"), desc: t("dashboard.workflowFollowUpDesc"), icon: CalendarClock },
   ];
 
   /* ---------------- Pending records deep links ---------------- */
@@ -267,13 +275,13 @@ export default function DashboardOverview() {
               <AlertTriangle className="h-7 w-7" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">Unable to load dashboard</h2>
+              <h2 className="text-lg font-semibold">{t("dashboard.unableToLoad")}</h2>
               <p className="mt-1 max-w-md text-sm text-muted-foreground">
-                {error?.response?.data?.message || error?.message || "Something went wrong while fetching dashboard data."}
+                {error?.response?.data?.message || error?.message || t("dashboard.loadError")}
               </p>
             </div>
             <Button onClick={() => refetch()}>
-              <RefreshCw className="mr-2 h-4 w-4" /> Retry
+              <RefreshCw className="mr-2 h-4 w-4" /> {t("common.retry")}
             </Button>
           </CardContent>
         </Card>
@@ -288,14 +296,13 @@ export default function DashboardOverview() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.35em] text-violet-100">
-              Quantum Health Analysis · Admin Control Panel
+              {t("dashboard.quantumAdmin")}
             </p>
             <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">
-              {greeting()}{currentUser ? `, ${currentUser}` : ""} 👋
+              {greeting(t)}{currentUser ? `, ${currentUser}` : ""} 👋
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-violet-50">
-              Here's what's happening across your health analysis platform — what needs attention,
-              what happened recently, and what to do next.
+              {t("dashboard.heroDescription")}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -306,13 +313,13 @@ export default function DashboardOverview() {
               disabled={isFetching}
             >
               <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-              Refresh
+              {t("dashboard.refresh")}
             </Button>
             <Button
               className="bg-white text-violet-700 hover:bg-violet-50"
               onClick={() => navigate("/quantum/patients")}
             >
-              Open Client Directory <ArrowRight className="ml-2 h-4 w-4" />
+              {t("dashboard.openClientDirectory")} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -338,7 +345,7 @@ export default function DashboardOverview() {
       <div>
         <div className="mb-2 flex items-center gap-2">
           <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Quick Actions</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{t("dashboard.quickActions")}</h2>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {quickActions.map((action) => {
@@ -356,7 +363,7 @@ export default function DashboardOverview() {
                 </div>
                 <p className="text-sm font-medium">{action.label}</p>
                 <span className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-violet-600 dark:group-hover:text-violet-400">
-                  Open <ArrowRight className="h-3 w-3" />
+                  {t("dashboard.open")} <ArrowRight className="h-3 w-3" />
                 </span>
               </button>
             );
@@ -366,20 +373,20 @@ export default function DashboardOverview() {
 
       {/* ============ Stat cards ============ */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
-        <StatCard loading={isLoading} title="Total Clients" value={summary.totalPatients ?? "—"} icon={Users} accent="from-emerald-500 to-green-500" hint={`${summary.patientsToday ?? 0} today`} />
-        <StatCard loading={isLoading} title="Total Reports" value={summary.totalReports ?? "—"} icon={FileText} accent="from-sky-500 to-cyan-500" hint={`${summary.reportsToday ?? 0} today`} />
-        <StatCard loading={isLoading} title="Pending Records" value={(summary.pendingVisits ?? 0) + (summary.reportReadyVisits ?? 0)} icon={Clock} accent="from-amber-500 to-orange-500" hint={`${summary.pendingVisits ?? 0} data entry · ${summary.reportReadyVisits ?? 0} review`} />
-        <StatCard loading={isLoading} title="Upcoming Follow-ups" value={summary.upcomingFollowUps ?? "—"} icon={CalendarClock} accent="from-violet-500 to-fuchsia-500" hint={`${summary.overdueFollowUps ?? 0} overdue`} />
-        <StatCard loading={isLoading} title="Active Members" value={admin ? admin.activeMembers : "—"} icon={UserCheck} accent="from-teal-500 to-emerald-500" hint={admin ? `${admin.inactiveMembers} inactive` : undefined} />
-        <StatCard loading={isLoading} title="Parameters" value={admin ? admin.totalParameters : "—"} icon={Database} accent="from-rose-500 to-pink-500" hint={admin ? `${admin.publishedParameters} published` : undefined} />
+        <StatCard loading={isLoading} title={t("dashboard.totalClients")} value={summary.totalPatients ?? "—"} icon={Users} accent="from-emerald-500 to-green-500" hint={`${summary.patientsToday ?? 0} ${t("dashboard.today")}`} />
+        <StatCard loading={isLoading} title={t("dashboard.totalReportsStat")} value={summary.totalReports ?? "—"} icon={FileText} accent="from-sky-500 to-cyan-500" hint={`${summary.reportsToday ?? 0} ${t("dashboard.today")}`} />
+        <StatCard loading={isLoading} title={t("dashboard.pendingRecords")} value={(summary.pendingVisits ?? 0) + (summary.reportReadyVisits ?? 0)} icon={Clock} accent="from-amber-500 to-orange-500" hint={`${summary.pendingVisits ?? 0} ${t("dashboard.dataEntry")} · ${summary.reportReadyVisits ?? 0} ${t("dashboard.review")}`} />
+        <StatCard loading={isLoading} title={t("dashboard.upcomingFollowUpsStat")} value={summary.upcomingFollowUps ?? "—"} icon={CalendarClock} accent="from-violet-500 to-fuchsia-500" hint={`${summary.overdueFollowUps ?? 0} ${t("dashboard.overdue")}`} />
+        <StatCard loading={isLoading} title={t("dashboard.activeMembersStat")} value={admin ? admin.activeMembers : "—"} icon={UserCheck} accent="from-teal-500 to-emerald-500" hint={admin ? `${admin.inactiveMembers} ${t("dashboard.inactive")}` : undefined} />
+        <StatCard loading={isLoading} title={t("dashboard.parametersStat")} value={admin ? admin.totalParameters : "—"} icon={Database} accent="from-rose-500 to-pink-500" hint={admin ? `${admin.publishedParameters} ${t("dashboard.published")}` : undefined} />
       </div>
 
       {/* ============ Charts row 1 ============ */}
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="border-0 shadow-sm lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-lg">Registrations & Report Generation</CardTitle>
-            <CardDescription>Last 7 days activity</CardDescription>
+            <CardTitle className="text-lg">{t("dashboard.registrationsReports")}</CardTitle>
+            <CardDescription>{t("dashboard.last7Days")}</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -401,20 +408,20 @@ export default function DashboardOverview() {
                   <XAxis dataKey="label" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                   <Tooltip content={<ChartTooltip />} />
-                  <Area type="monotone" dataKey="patients" name="Clients" stroke="#8b5cf6" fill="url(#gradPatients)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="reports" name="Reports" stroke="#0ea5e9" fill="url(#gradReports)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="patients" name={t("dashboard.clients")} stroke="#8b5cf6" fill="url(#gradPatients)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="reports" name={t("dashboard.reports")} stroke="#0ea5e9" fill="url(#gradReports)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <EmptyState icon={TrendingUp} title="No activity yet" description="Registrations and report generation trends will appear here." />
+              <EmptyState icon={TrendingUp} title={t("dashboard.noActivityYet")} description={t("dashboard.noActivityDesc")} />
             )}
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg">Parameter Results</CardTitle>
-            <CardDescription>Distribution across all scans</CardDescription>
+            <CardTitle className="text-lg">{t("dashboard.parameterResults")}</CardTitle>
+            <CardDescription>{t("dashboard.distributionAllScans")}</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -442,14 +449,14 @@ export default function DashboardOverview() {
                   {charts.resultDistribution.map((r) => (
                     <div key={r.name} className="rounded-xl border border-slate-200 p-2 text-center dark:border-slate-700">
                       <div className="mx-auto mb-1 h-2 w-2 rounded-full" style={{ backgroundColor: r.color }} />
-                      <p className="text-xs text-muted-foreground">{r.name}</p>
+                      <p className="text-xs text-muted-foreground"><LocalizedText value={r.name} /></p>
                       <p className="text-sm font-semibold">{r.value}</p>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <EmptyState icon={HeartPulse} title="No scan results yet" description="Parameter results across scans will appear here." />
+              <EmptyState icon={HeartPulse} title={t("dashboard.noScanResults")} description={t("dashboard.noScanResultsDesc")} />
             )}
           </CardContent>
         </Card>
@@ -459,8 +466,8 @@ export default function DashboardOverview() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="border-0 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg">Monthly Trends</CardTitle>
-            <CardDescription>Last 6 months</CardDescription>
+            <CardTitle className="text-lg">{t("dashboard.monthlyTrends")}</CardTitle>
+            <CardDescription>{t("dashboard.last6Months")}</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -472,19 +479,19 @@ export default function DashboardOverview() {
                   <XAxis dataKey="month" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                   <Tooltip content={<ChartTooltip />} />
-                  <Bar dataKey="count" name="Clients" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="count" name={t("dashboard.clients")} fill="#8b5cf6" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <EmptyState icon={TrendingUp} title="No monthly data yet" description="Monthly registration trends will appear here." />
+              <EmptyState icon={TrendingUp} title={t("dashboard.noMonthlyData")} description={t("dashboard.noMonthlyDataDesc")} />
             )}
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg">Recent Activity</CardTitle>
-            <CardDescription>Latest actions across the platform</CardDescription>
+            <CardTitle className="text-lg">{t("dashboard.recentActivityTitle")}</CardTitle>
+            <CardDescription>{t("dashboard.latestActions")}</CardDescription>
           </CardHeader>
           <CardContent className="max-h-[300px] space-y-0 overflow-y-auto pr-1">
             {isLoading ? (
@@ -511,17 +518,17 @@ export default function DashboardOverview() {
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="truncate text-sm font-medium">{act.title}</p>
-                          <span className="shrink-0 text-xs text-muted-foreground">{timeAgo(act.timestamp)}</span>
+                          <p className="truncate text-sm font-medium"><LocalizedText value={act.title} /></p>
+                          <span className="shrink-0 text-xs text-muted-foreground">{timeAgo(act.timestamp, t)}</span>
                         </div>
-                        <p className="truncate text-xs text-muted-foreground">{act.description}</p>
+                        <p className="truncate text-xs text-muted-foreground"><LocalizedText value={act.description} /></p>
                       </div>
                     </button>
                   </li>
                 ))}
               </ul>
             ) : (
-              <EmptyState icon={Activity} title="No recent activity" description="New actions will appear here in real time." />
+              <EmptyState icon={Activity} title={t("dashboard.noRecentActivity")} description={t("dashboard.noRecentActivityDesc")} />
             )}
           </CardContent>
         </Card>
@@ -533,11 +540,11 @@ export default function DashboardOverview() {
         <Card className="border-0 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="text-lg">Recent Client Registrations</CardTitle>
-              <CardDescription>Latest clients added to the system</CardDescription>
+              <CardTitle className="text-lg">{t("dashboard.recentClientRegistrations")}</CardTitle>
+              <CardDescription>{t("dashboard.latestClients")}</CardDescription>
             </div>
             <Button variant="ghost" size="sm" onClick={() => navigate("/quantum/patients")}>
-              View all <ArrowRight className="ml-1 h-4 w-4" />
+              {t("dashboard.viewAll")} <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </CardHeader>
           <CardContent>
@@ -558,7 +565,7 @@ export default function DashboardOverview() {
                         <Users className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{p.name}</p>
+                        <p className="text-sm font-medium"><LocalizedText value={p.name} /></p>
                         <p className="text-xs text-muted-foreground inline-flex flex-wrap items-center gap-x-1.5">
                           <span>{p.patient_code}</span>
                           <span aria-hidden="true">·</span>
@@ -567,14 +574,14 @@ export default function DashboardOverview() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-muted-foreground">{timeAgo(p.createdAt)}</p>
+                      <p className="text-xs text-muted-foreground">{timeAgo(p.createdAt, t)}</p>
                       <ArrowRight className="ml-auto mt-1 h-4 w-4 text-muted-foreground" />
                     </div>
                   </button>
                 ))}
               </div>
             ) : (
-              <EmptyState icon={Users} title="No clients registered yet" description="Register your first client to see them here." />
+              <EmptyState icon={Users} title={t("dashboard.noClientsRegistered")} description={t("dashboard.noClientsRegisteredDesc")} />
             )}
           </CardContent>
         </Card>
@@ -583,11 +590,11 @@ export default function DashboardOverview() {
         <Card className="border-0 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="text-lg">Recent Report Generations</CardTitle>
-              <CardDescription>Latest PDF reports generated</CardDescription>
+              <CardTitle className="text-lg">{t("dashboard.recentReportGenerations")}</CardTitle>
+              <CardDescription>{t("dashboard.latestPdfReports")}</CardDescription>
             </div>
             <Button variant="ghost" size="sm" onClick={() => navigate("/quantum/patients")}>
-              View all <ArrowRight className="ml-1 h-4 w-4" />
+              {t("dashboard.viewAll")} <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </CardHeader>
           <CardContent>
@@ -608,11 +615,11 @@ export default function DashboardOverview() {
                         <FileText className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{r.patient?.name || "Unknown client"}</p>
+                        <p className="text-sm font-medium"><LocalizedText value={r.patient?.name} fallback={t("dashboard.unknownClient")} /></p>
                         <p className="text-xs text-muted-foreground inline-flex flex-wrap items-center gap-x-1.5">
                           <span>{r.patient?.patient_code || "—"}</span>
                           <span aria-hidden="true">·</span>
-                          <span>{r.language === "hi" ? "Hindi" : "English"}</span>
+                          <span>{r.language === "hi" ? t("dashboard.hindi") : t("dashboard.english")}</span>
                         </p>
                       </div>
                     </div>
@@ -624,7 +631,7 @@ export default function DashboardOverview() {
                 ))}
               </div>
             ) : (
-              <EmptyState icon={FileText} title="No reports generated yet" description="Generated reports will appear here." />
+              <EmptyState icon={FileText} title={t("dashboard.noReportsGenerated")} description={t("dashboard.noReportsGeneratedDesc")} />
             )}
           </CardContent>
         </Card>
@@ -636,13 +643,13 @@ export default function DashboardOverview() {
         <Card className="border-0 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="text-lg">Pending / Incomplete Records</CardTitle>
-              <CardDescription>Visits that need machine data or report review</CardDescription>
+              <CardTitle className="text-lg">{t("dashboard.pendingIncompleteRecords")}</CardTitle>
+              <CardDescription>{t("dashboard.pendingRecordsDesc")}</CardDescription>
             </div>
             <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
               <span className="inline-flex items-center gap-1">
                 <span>{(summary.pendingVisits ?? 0) + (summary.reportReadyVisits ?? 0)}</span>
-                <span>pending</span>
+                <span>{t("dashboard.pending")}</span>
               </span>
             </Badge>
           </CardHeader>
@@ -664,7 +671,7 @@ export default function DashboardOverview() {
                         {v.status === "DATA_ENTRY" ? <ScanLine className="h-4 w-4" /> : <Stethoscope className="h-4 w-4" />}
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{v.patient?.name || "Unknown client"}</p>
+                        <p className="text-sm font-medium"><LocalizedText value={v.patient?.name} fallback={t("dashboard.unknownClient")} /></p>
                         <p className="text-xs text-muted-foreground inline-flex flex-wrap items-center gap-x-1.5">
                           <span>{v.patient?.patient_code || "—"}</span>
                           <span aria-hidden="true">·</span>
@@ -674,7 +681,7 @@ export default function DashboardOverview() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[v.status] || "bg-slate-100 text-slate-600"}`}>
-                        {STATUS_LABELS[v.status] || v.status}
+                        {statusLabel(v.status)}
                       </span>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     </div>
@@ -682,7 +689,7 @@ export default function DashboardOverview() {
                 ))}
               </div>
             ) : (
-              <EmptyState icon={CheckCircle2} title="No pending records" description="All visits are complete. New data entry or report reviews will appear here." />
+              <EmptyState icon={CheckCircle2} title={t("dashboard.noPendingRecords")} description={t("dashboard.noPendingRecordsDesc")} />
             )}
           </CardContent>
         </Card>
@@ -691,13 +698,13 @@ export default function DashboardOverview() {
         <Card className="border-0 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="text-lg">Upcoming Follow-ups</CardTitle>
-              <CardDescription>Clients with next visit dates from today</CardDescription>
+              <CardTitle className="text-lg">{t("dashboard.upcomingFollowUpsTitle")}</CardTitle>
+              <CardDescription>{t("dashboard.upcomingFollowUpsDesc")}</CardDescription>
             </div>
             <Badge variant="secondary" className="bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
               <span className="inline-flex items-center gap-1">
                 <span>{summary.upcomingFollowUps ?? 0}</span>
-                <span>scheduled</span>
+                <span>{t("dashboard.scheduled")}</span>
               </span>
             </Badge>
           </CardHeader>
@@ -719,7 +726,7 @@ export default function DashboardOverview() {
                         <CalendarClock className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{v.patient?.name || "Unknown client"}</p>
+                        <p className="text-sm font-medium"><LocalizedText value={v.patient?.name} fallback={t("dashboard.unknownClient")} /></p>
                         <p className="text-xs text-muted-foreground inline-flex flex-wrap items-center gap-x-1.5">
                           <span>{v.patient?.patient_code || "—"}</span>
                           <span aria-hidden="true">·</span>
@@ -737,7 +744,7 @@ export default function DashboardOverview() {
                 ))}
               </div>
             ) : (
-              <EmptyState icon={CalendarClock} title="No upcoming follow-ups" description="Visits with next visit dates will appear here." />
+              <EmptyState icon={CalendarClock} title={t("dashboard.noUpcomingFollowUps")} description={t("dashboard.noUpcomingFollowUpsDesc")} />
             )}
           </CardContent>
         </Card>
@@ -747,27 +754,27 @@ export default function DashboardOverview() {
       {admin && (
         <Card className="border-0 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg">System Overview</CardTitle>
-            <CardDescription>Platform-wide statistics</CardDescription>
+            <CardTitle className="text-lg">{t("dashboard.systemOverview")}</CardTitle>
+            <CardDescription>{t("dashboard.platformStats")}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 lg:grid-cols-3">
             {/* Member & franchise stats */}
             <div className="space-y-3">
               <div className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-700">
                 <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <UserCheck className="h-4 w-4 text-emerald-500" /> Active Members
+                  <UserCheck className="h-4 w-4 text-emerald-500" /> {t("dashboard.activeMembersLabel")}
                 </span>
                 <span className="text-lg font-semibold">{admin.activeMembers}</span>
               </div>
               <div className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-700">
                 <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <UserX className="h-4 w-4 text-rose-500" /> Inactive Members
+                  <UserX className="h-4 w-4 text-rose-500" /> {t("dashboard.inactiveMembersLabel")}
                 </span>
                 <span className="text-lg font-semibold">{admin.inactiveMembers}</span>
               </div>
               <div className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-700">
                 <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <ShieldCheck className="h-4 w-4 text-violet-500" /> Active Franchises
+                  <ShieldCheck className="h-4 w-4 text-violet-500" /> {t("dashboard.activeFranchises")}
                 </span>
                 <span className="inline-flex items-baseline gap-1 text-lg font-semibold">
                   <span>{admin.activeFranchises}</span>
@@ -781,14 +788,14 @@ export default function DashboardOverview() {
 
             {/* Role distribution */}
             <div>
-              <p className="mb-2 text-sm font-medium">User Roles</p>
+              <p className="mb-2 text-sm font-medium">{t("dashboard.userRoles")}</p>
               {admin.roleDistribution?.length ? (
                 <div className="space-y-2">
                   {admin.roleDistribution.slice(0, 6).map((r) => {
                     const max = Math.max(...admin.roleDistribution.map((x) => x.count), 1);
                     return (
                       <div key={r.role} className="flex items-center gap-2">
-                        <span className="w-28 shrink-0 truncate text-xs text-muted-foreground">{r.role}</span>
+                        <span className="w-28 shrink-0 truncate text-xs text-muted-foreground"><LocalizedText value={r.role} /></span>
                         <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                           <div
                             className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
@@ -801,30 +808,30 @@ export default function DashboardOverview() {
                   })}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">No user data available.</p>
+                <p className="text-xs text-muted-foreground">{t("dashboard.noUserData")}</p>
               )}
             </div>
 
             {/* Parameter categories */}
             <div>
-              <p className="mb-2 text-sm font-medium">Parameters by Category</p>
+              <p className="mb-2 text-sm font-medium">{t("dashboard.parametersByCategory")}</p>
               <div className="flex flex-wrap gap-2">
                 {admin.parameterCategories?.length ? (
                   admin.parameterCategories.slice(0, 8).map((c) => (
                     <Badge key={c.category} variant="outline" className="gap-1 px-2.5 py-1">
-                      {c.category}
+                      <LocalizedText value={c.category} />
                       <span className="font-semibold text-violet-600 dark:text-violet-400">{c.count}</span>
                     </Badge>
                   ))
                 ) : (
-                  <p className="text-xs text-muted-foreground">No parameter data available.</p>
+                  <p className="text-xs text-muted-foreground">{t("dashboard.noParameterData")}</p>
                 )}
                 {admin.totalContentNodes > 0 && (
                   <p className="mt-3 w-full text-xs text-muted-foreground inline-flex flex-wrap items-center gap-x-1">
                     <span>{admin.totalContentNodes.toLocaleString()}</span>
-                    <span>content nodes across</span>
+                    <span>{t("dashboard.contentNodesAcross")}</span>
                     <span>{admin.totalParameters}</span>
-                    <span>parameters.</span>
+                    <span>{t("dashboard.parametersSuffix")}</span>
                   </p>
                 )}
               </div>

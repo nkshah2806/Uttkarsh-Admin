@@ -1,14 +1,23 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { PhoneCall } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
+import LocalizedText from "@/components/LocalizedText";
+import { useTranslatedText } from "@/hooks/useTranslatedText";
 
 export default function ContactCMS() {
+  const { t } = useTranslation();
   const [data, setData] = useState(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const phInstagram = useTranslatedText("https://instagram.com/...");
+  const phFacebook = useTranslatedText("https://facebook.com/...");
+  const phYoutube = useTranslatedText("https://youtube.com/...");
+  const phCopyright = useTranslatedText("Utkarsh Corporation. All rights reserved.");
 
   useEffect(() => {
     getContent().then((d) => { setData(d); setLoading(false); }).catch(() => setLoading(false));
@@ -32,29 +41,29 @@ export default function ContactCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success("✅ Contact & Social info updated live!");
+      toast.success(`✅ ${t("cms.liveSiteUpdated")}`);
     } catch {
-      toast.error("Failed to save. Please try again.");
+      toast.error(t("cms.saveContentFailed"));
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
+    if (!window.confirm(t("cms.resetConfirm"))) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success("Content reset to defaults.");
+    toast.success(t("cms.contentReset"));
   };
 
-  if (loading) return <CMSLoader label="Loading Contact content…" />;
+  if (loading) return <CMSLoader />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={PhoneCall}
-        title="Contact & Social Links"
-        description="Details shown in the website footer and Contact page. Social URLs power the icons in the footer."
+        title={t("cms.secContactSocial")}
+        description={t("cms.secContactSocialDesc")}
         onSave={handleSave}
         onReset={handleReset}
         saving={saving}
@@ -63,21 +72,22 @@ export default function ContactCMS() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <PhoneCall className="h-5 w-5 text-violet-500" /> Contact Info & Social Links
+            <PhoneCall className="h-5 w-5 text-violet-500" />{" "}
+            <LocalizedText value="Contact Info & Social Links" />
           </CardTitle>
           <CardDescription>
-            Update the phone number, email address, office address and social media profile URLs.
+            <LocalizedText value="Update the phone number, email address, office address and social media profile URLs." />
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5 md:grid-cols-2">
-          <Field label="Customer Care Phone">
+          <Field label={<LocalizedText value="Customer Care Phone" />}>
             <CMSInput
               value={data.footer?.phone}
               onChange={(e) => set("footer.phone", e.target.value)}
               placeholder=""
             />
           </Field>
-          <Field label="Support Email">
+          <Field label={<LocalizedText value="Support Email" />}>
             <CMSInput
               value={data.footer?.email}
               onChange={(e) => set("footer.email", e.target.value)}
@@ -85,7 +95,7 @@ export default function ContactCMS() {
             />
           </Field>
           <div className="md:col-span-2">
-            <Field label="Office / HQ Address">
+            <Field label={<LocalizedText value="Office / HQ Address" />}>
               <CMSInput
                 value={data.footer?.address}
                 onChange={(e) => set("footer.address", e.target.value)}
@@ -93,32 +103,32 @@ export default function ContactCMS() {
               />
             </Field>
           </div>
-          <Field label="Instagram URL">
+          <Field label={<LocalizedText value="Instagram URL" />}>
             <CMSInput
               value={data.footer?.instagramUrl}
               onChange={(e) => set("footer.instagramUrl", e.target.value)}
-              placeholder="https://instagram.com/..."
+              placeholder={phInstagram}
             />
           </Field>
-          <Field label="Facebook URL">
+          <Field label={<LocalizedText value="Facebook URL" />}>
             <CMSInput
               value={data.footer?.facebookUrl}
               onChange={(e) => set("footer.facebookUrl", e.target.value)}
-              placeholder="https://facebook.com/..."
+              placeholder={phFacebook}
             />
           </Field>
-          <Field label="YouTube URL">
+          <Field label={<LocalizedText value="YouTube URL" />}>
             <CMSInput
               value={data.footer?.youtubeUrl}
               onChange={(e) => set("footer.youtubeUrl", e.target.value)}
-              placeholder="https://youtube.com/..."
+              placeholder={phYoutube}
             />
           </Field>
-          <Field label="Copyright Notice">
+          <Field label={<LocalizedText value="Copyright Notice" />}>
             <CMSInput
               value={data.footer?.copyrightText}
               onChange={(e) => set("footer.copyrightText", e.target.value)}
-              placeholder="Utkarsh Corporation. All rights reserved."
+              placeholder={phCopyright}
             />
           </Field>
         </CardContent>

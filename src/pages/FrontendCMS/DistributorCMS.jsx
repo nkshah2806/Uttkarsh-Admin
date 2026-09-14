@@ -1,14 +1,22 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Tag } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
+import LocalizedText from "@/components/LocalizedText";
+import { useTranslatedText } from "@/hooks/useTranslatedText";
 
 export default function DistributorCMS() {
+  const { t } = useTranslation();
   const [data, setData] = useState(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const phBadge = useTranslatedText("Business Opportunity");
+  const phTitle = useTranslatedText("Grow with us. Become a distributor.");
+  const phCtaText = useTranslatedText("Apply now");
 
   useEffect(() => {
     getContent().then((d) => { setData(d); setLoading(false); }).catch(() => setLoading(false));
@@ -32,29 +40,29 @@ export default function DistributorCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success("✅ Distributor Banner updated live!");
+      toast.success(`✅ ${t("cms.liveSiteUpdated")}`);
     } catch {
-      toast.error("Failed to save. Please try again.");
+      toast.error(t("cms.saveContentFailed"));
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
+    if (!window.confirm(t("cms.resetConfirm"))) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success("Content reset to defaults.");
+    toast.success(t("cms.contentReset"));
   };
 
-  if (loading) return <CMSLoader label="Loading Distributor content…" />;
+  if (loading) return <CMSLoader />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={Tag}
-        title="Distributor Banner"
-        description="The brown call-to-action banner at the bottom of the Home page and Distributor page."
+        title={t("cms.secDistributorBanner")}
+        description={t("cms.secDistributorBannerDesc")}
         onSave={handleSave}
         onReset={handleReset}
         saving={saving}
@@ -63,29 +71,30 @@ export default function DistributorCMS() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Tag className="h-5 w-5 text-violet-500" /> Distributor CTA Banner
+            <Tag className="h-5 w-5 text-violet-500" />{" "}
+            <LocalizedText value="Distributor CTA Banner" />
           </CardTitle>
           <CardDescription>
-            Edit the banner's eyebrow label, headline, description paragraph, and action button.
+            <LocalizedText value="Edit the banner's eyebrow label, headline, description paragraph, and action button." />
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5 md:grid-cols-2">
-          <Field label="Badge / Eyebrow Label">
+          <Field label={<LocalizedText value="Badge / Eyebrow Label" />}>
             <CMSInput
               value={data.distributorCta?.badge}
               onChange={(e) => set("distributorCta.badge", e.target.value)}
-              placeholder="Business Opportunity"
+              placeholder={phBadge}
             />
           </Field>
-          <Field label="Heading Title">
+          <Field label={<LocalizedText value="Heading Title" />}>
             <CMSInput
               value={data.distributorCta?.title}
               onChange={(e) => set("distributorCta.title", e.target.value)}
-              placeholder="Grow with us. Become a distributor."
+              placeholder={phTitle}
             />
           </Field>
           <div className="md:col-span-2">
-            <Field label="Description Text">
+            <Field label={<LocalizedText value="Description Text" />}>
               <CMSTextarea
                 rows={2}
                 value={data.distributorCta?.description}
@@ -93,14 +102,14 @@ export default function DistributorCMS() {
               />
             </Field>
           </div>
-          <Field label="CTA Button Text">
+          <Field label={<LocalizedText value="CTA Button Text" />}>
             <CMSInput
               value={data.distributorCta?.ctaText}
               onChange={(e) => set("distributorCta.ctaText", e.target.value)}
-              placeholder="Apply now"
+              placeholder={phCtaText}
             />
           </Field>
-          <Field label="CTA Button Link">
+          <Field label={<LocalizedText value="CTA Button Link" />}>
             <CMSInput
               value={data.distributorCta?.ctaLink}
               onChange={(e) => set("distributorCta.ctaLink", e.target.value)}

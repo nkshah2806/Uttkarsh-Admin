@@ -16,10 +16,13 @@ import {
     Power,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import ReusableTable from "@/components/ReusableTable";
+import LocalizedText from "@/components/LocalizedText";
 import { parameterCategoryService } from "@/services/parameterCategoryService";
 
 export default function CategoryManagement() {
+    const { t } = useTranslation();
 
     const [categories, setCategories] = useState([]);
     const [parameters, setParameters] = useState([]);
@@ -50,7 +53,7 @@ export default function CategoryManagement() {
             setCategories(catRes || []);
             setParameters(paramRes?.data?.data || []);
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to load categories");
+            toast.error(err.response?.data?.message || t("healthAnalysis.categoryManagement.loadFailed"));
         } finally {
             setLoading(false);
         }
@@ -96,7 +99,7 @@ export default function CategoryManagement() {
     const handleSave = async (e) => {
         e.preventDefault();
         if (!form.name.trim()) {
-            toast.error("Category name is required");
+            toast.error(t("healthAnalysis.categoryManagement.nameRequired"));
             return;
         }
 
@@ -112,17 +115,17 @@ export default function CategoryManagement() {
 
             if (editingCategory) {
                 await parameterCategoryService.updateCategory(editingCategory._id, payload);
-                toast.success("Category updated successfully");
+                toast.success(t("healthAnalysis.categoryManagement.updatedSuccess"));
                 setEditingCategory(null);
             } else {
                 await parameterCategoryService.createCategory(payload);
-                toast.success("Category created successfully");
+                toast.success(t("healthAnalysis.categoryManagement.createdSuccess"));
             }
 
             setShowCreateModal(false);
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to save category");
+            toast.error(err.response?.data?.message || t("healthAnalysis.categoryManagement.saveFailed"));
         } finally {
             setSubmitting(false);
         }
@@ -133,10 +136,10 @@ export default function CategoryManagement() {
             await parameterCategoryService.updateCategory(item._id, {
                 is_active: !item.is_active,
             });
-            toast.success("Category status updated successfully");
+            toast.success(t("healthAnalysis.categoryManagement.statusSuccess"));
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to toggle status");
+            toast.error(err.response?.data?.message || t("healthAnalysis.categoryManagement.statusFailed"));
         }
     };
 
@@ -145,11 +148,11 @@ export default function CategoryManagement() {
         try {
             setSubmitting(true);
             await parameterCategoryService.deleteCategory(deletingCategory._id);
-            toast.success("Category deleted successfully");
+            toast.success(t("healthAnalysis.categoryManagement.deletedSuccess"));
             setDeletingCategory(null);
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to delete category");
+            toast.error(err.response?.data?.message || t("healthAnalysis.categoryManagement.deleteFailed"));
         } finally {
             setSubmitting(false);
         }
@@ -164,7 +167,7 @@ export default function CategoryManagement() {
     const headers = [
         {
             key: "name",
-            label: "Category Name",
+            label: t("healthAnalysis.categoryManagement.colName"),
             render: (row) => (
                 <div className="flex items-center gap-2.5">
                     <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
@@ -173,7 +176,7 @@ export default function CategoryManagement() {
                     <div>
                         <div className="flex items-center gap-2">
                             <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">
-                                {row.name}
+                                <LocalizedText value={row.name} />
                             </span>
                             {row.slug && (
                                 <span className="text-[10px] font-mono text-slate-400 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-0.5">
@@ -183,7 +186,7 @@ export default function CategoryManagement() {
                         </div>
                         {row.description && (
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1 max-w-md">
-                                {row.description}
+                                <LocalizedText value={row.description} />
                             </p>
                         )}
                     </div>
@@ -192,7 +195,7 @@ export default function CategoryManagement() {
         },
         {
             key: "parameters",
-            label: "Parameters Used",
+            label: t("healthAnalysis.categoryManagement.colParameters"),
             render: (row) => {
                 const count = parameterCountByCategory[row.name] || 0;
                 return (
@@ -201,14 +204,14 @@ export default function CategoryManagement() {
                         <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                             {count}
                         </span>
-                        <span className="text-xs text-slate-400">parameters</span>
+                        <span className="text-xs text-slate-400">{t("healthAnalysis.categoryManagement.parametersWord")}</span>
                     </div>
                 );
             },
         },
         {
             key: "order",
-            label: "Display Order",
+            label: t("healthAnalysis.categoryManagement.colOrder"),
             render: (row) => (
                 <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300">
                     {row.order ?? 0}
@@ -217,7 +220,7 @@ export default function CategoryManagement() {
         },
         {
             key: "is_active",
-            label: "Status",
+            label: t("healthAnalysis.categoryManagement.colStatus"),
             render: (row) => (
                 <button
                     onClick={() => handleToggleStatus(row)}
@@ -225,15 +228,15 @@ export default function CategoryManagement() {
                         ? "bg-emerald-500 text-white hover:bg-emerald-600 shadow-xs"
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
                         }`}
-                    title="Click to toggle active status"
+                    title={t("healthAnalysis.categoryManagement.toggleTitle")}
                 >
                     {row.is_active !== false ? (
                         <>
-                            <Power className="h-3 w-3" /> Active
+                            <Power className="h-3 w-3" /> {t("healthAnalysis.categoryManagement.active")}
                         </>
                     ) : (
                         <>
-                            <X className="h-3 w-3" /> Inactive
+                            <X className="h-3 w-3" /> {t("healthAnalysis.categoryManagement.inactive")}
                         </>
                     )}
                 </button>
@@ -241,7 +244,7 @@ export default function CategoryManagement() {
         },
         {
             key: "updatedAt",
-            label: "Last Updated",
+            label: t("healthAnalysis.categoryManagement.colLastUpdated"),
             render: (row) => (
                 <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
                     <Clock className="h-3.5 w-3.5 text-slate-400" />
@@ -257,7 +260,7 @@ export default function CategoryManagement() {
         },
         {
             key: "actions",
-            label: "Actions",
+            label: t("healthAnalysis.categoryManagement.colActions"),
             filterable: false,
             render: (row) => (
                 <div className="flex items-center justify-end gap-1.5">
@@ -266,7 +269,7 @@ export default function CategoryManagement() {
                         variant="ghost"
                         onClick={() => openEditModal(row)}
                         className="h-8 w-8 p-0 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/50"
-                        title="Edit Category"
+                        title={t("healthAnalysis.categoryManagement.editTitle")}
                     >
                         <Pencil className="h-3.5 w-3.5" />
                     </Button>
@@ -275,7 +278,7 @@ export default function CategoryManagement() {
                         variant="ghost"
                         onClick={() => setDeletingCategory(row)}
                         className="h-8 w-8 p-0 text-slate-500 hover:text-rose-600 hover:bg-rose-50/50"
-                        title="Delete Category"
+                        title={t("healthAnalysis.categoryManagement.deleteTitle")}
                     >
                         <Trash2 className="h-3.5 w-3.5 text-rose-500" />
                     </Button>
@@ -291,13 +294,13 @@ export default function CategoryManagement() {
                 <div>
                     <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-indigo-200">
                         <Sparkles className="h-4 w-4" />
-                        <span>Quantum Health Analysis</span>
+                        <span>{t("healthAnalysis.categoryManagement.bannerEyebrow")}</span>
                     </div>
                     <h1 className="text-2xl font-bold mt-1 tracking-tight">
-                        Category Management
+                        {t("healthAnalysis.categoryManagement.bannerTitle")}
                     </h1>
                     <p className="text-sm text-indigo-100 mt-1 max-w-2xl">
-                        Manage the categories used by quantum parameters. Only the categories added here will appear in the Create Quantum Parameter list.
+                        {t("healthAnalysis.categoryManagement.bannerDesc")}
                     </p>
                 </div>
                 <Button
@@ -305,7 +308,7 @@ export default function CategoryManagement() {
                     className="bg-white text-indigo-700 hover:bg-indigo-50 font-bold px-5 py-2.5 rounded-xl shadow-md shrink-0 flex items-center gap-2 self-start sm:self-auto"
                 >
                     <Plus className="h-5 w-5" />
-                    <span>Add New Category</span>
+                    <span>{t("healthAnalysis.categoryManagement.addNew")}</span>
                 </Button>
             </div>
 
@@ -315,13 +318,13 @@ export default function CategoryManagement() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Total Categories
+                                {t("healthAnalysis.categoryManagement.cardTotal")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {totalCount}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                Categories in the list
+                                {t("healthAnalysis.categoryManagement.cardTotalHint")}
                             </p>
                         </div>
                         <div className="p-3 bg-indigo-50 dark:bg-indigo-950/60 rounded-xl text-indigo-600 dark:text-indigo-400">
@@ -334,13 +337,13 @@ export default function CategoryManagement() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                                Active Categories
+                                {t("healthAnalysis.categoryManagement.cardActive")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {activeCount}
                             </p>
                             <p className="text-[11px] text-slate-500 mt-0.5">
-                                Shown in dropdown
+                                {t("healthAnalysis.categoryManagement.cardActiveHint")}
                             </p>
                         </div>
                         <div className="p-3 bg-emerald-100 dark:bg-emerald-950/60 rounded-xl text-emerald-600 dark:text-emerald-400">
@@ -353,13 +356,13 @@ export default function CategoryManagement() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Inactive Categories
+                                {t("healthAnalysis.categoryManagement.cardInactive")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {inactiveCount}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                Hidden from list
+                                {t("healthAnalysis.categoryManagement.cardInactiveHint")}
                             </p>
                         </div>
                         <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500">
@@ -372,13 +375,13 @@ export default function CategoryManagement() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Total Parameters
+                                {t("healthAnalysis.categoryManagement.cardParameters")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {totalParameters}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                Across all categories
+                                {t("healthAnalysis.categoryManagement.cardParametersHint")}
                             </p>
                         </div>
                         <div className="p-3 bg-violet-50 dark:bg-violet-950/60 rounded-xl text-violet-600 dark:text-violet-400">
@@ -395,10 +398,10 @@ export default function CategoryManagement() {
                         <div>
                             <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-800 dark:text-slate-100">
                                 <Tags className="h-4 w-4 text-indigo-600" />
-                                Parameter Categories
+                                {t("healthAnalysis.categoryManagement.tableTitle")}
                             </CardTitle>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                Only categories added by admins are shown in the Create Quantum Parameter editor.
+                                {t("healthAnalysis.categoryManagement.tableDesc")}
                             </p>
                         </div>
                         <Button
@@ -406,7 +409,7 @@ export default function CategoryManagement() {
                             size="sm"
                             className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold self-start sm:self-auto"
                         >
-                            <Plus className="h-4 w-4 mr-1.5" /> Add Category
+                            <Plus className="h-4 w-4 mr-1.5" /> {t("healthAnalysis.categoryManagement.addCategory")}
                         </Button>
                     </div>
                 </CardHeader>
@@ -415,7 +418,7 @@ export default function CategoryManagement() {
                         headers={headers}
                         data={categories}
                         loading={loading}
-                        Search="Search categories by name, slug or description..."
+                        Search={t("healthAnalysis.categoryManagement.searchPlaceholder")}
                     />
                 </CardContent>
             </Card>
@@ -433,12 +436,14 @@ export default function CategoryManagement() {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                                        {editingCategory ? "Edit Category" : "Create Category"}
+                                        {editingCategory
+                                            ? t("healthAnalysis.categoryManagement.modalEditTitle")
+                                            : t("healthAnalysis.categoryManagement.modalCreateTitle")}
                                     </h3>
                                     <p className="text-xs text-slate-500">
                                         {editingCategory
-                                            ? "Update category details and active status"
-                                            : "Add a new category for quantum parameters"}
+                                            ? t("healthAnalysis.categoryManagement.modalEditSubtitle")
+                                            : t("healthAnalysis.categoryManagement.modalCreateSubtitle")}
                                     </p>
                                 </div>
                             </div>
@@ -456,12 +461,12 @@ export default function CategoryManagement() {
                         <form onSubmit={handleSave} className="space-y-4">
                             <div>
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                    Category Name <span className="text-rose-500">*</span>
+                                    {t("healthAnalysis.categoryManagement.nameLabel")} <span className="text-rose-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     required
-                                    placeholder="e.g. Cardiovascular System"
+                                    placeholder={t("healthAnalysis.categoryManagement.namePlaceholder")}
                                     value={form.name}
                                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                                     className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -470,11 +475,11 @@ export default function CategoryManagement() {
 
                             <div>
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                    Slug (optional)
+                                    {t("healthAnalysis.categoryManagement.slugLabel")}
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder="e.g. cardiovascular-system"
+                                    placeholder={t("healthAnalysis.categoryManagement.slugPlaceholder")}
                                     value={form.slug}
                                     onChange={(e) => setForm({ ...form, slug: e.target.value })}
                                     className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -483,11 +488,11 @@ export default function CategoryManagement() {
 
                             <div>
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                    Description
+                                    {t("healthAnalysis.categoryManagement.descriptionLabel")}
                                 </label>
                                 <textarea
                                     rows={3}
-                                    placeholder="Short description of this category"
+                                    placeholder={t("healthAnalysis.categoryManagement.descriptionPlaceholder")}
                                     value={form.description}
                                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                                     className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -496,7 +501,7 @@ export default function CategoryManagement() {
 
                             <div>
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                    Display Order
+                                    {t("healthAnalysis.categoryManagement.orderLabel")}
                                 </label>
                                 <input
                                     type="number"
@@ -511,10 +516,10 @@ export default function CategoryManagement() {
                             <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                        Active Category
+                                        {t("healthAnalysis.categoryManagement.activeLabel")}
                                     </p>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                                        Inactive categories are hidden from the Create Quantum Parameter dropdown and filter list.
+                                        {t("healthAnalysis.categoryManagement.activeHint")}
                                     </p>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
@@ -538,7 +543,7 @@ export default function CategoryManagement() {
                                     }}
                                     disabled={submitting}
                                 >
-                                    Cancel
+                                    {t("healthAnalysis.categoryManagement.cancel")}
                                 </Button>
                                 <Button
                                     type="submit"
@@ -546,10 +551,10 @@ export default function CategoryManagement() {
                                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5"
                                 >
                                     {submitting
-                                        ? "Saving..."
+                                        ? t("healthAnalysis.categoryManagement.saving")
                                         : editingCategory
-                                            ? "Update Category"
-                                            : "Create Category"}
+                                            ? t("healthAnalysis.categoryManagement.updateBtn")
+                                            : t("healthAnalysis.categoryManagement.createBtn")}
                                 </Button>
                             </div>
                         </form>
@@ -569,14 +574,14 @@ export default function CategoryManagement() {
                             </div>
                             <div>
                                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                                    Delete Category?
+                                    {t("healthAnalysis.categoryManagement.deleteConfirmTitle")}
                                 </h3>
-                                <p className="text-xs text-slate-500">This action cannot be undone.</p>
+                                <p className="text-xs text-slate-500">{t("healthAnalysis.categoryManagement.deleteCannotUndo")}</p>
                             </div>
                         </div>
 
                         <p className="text-sm text-slate-600 dark:text-slate-300">
-                            {`Are you sure you want to delete category "${deletingCategory.name}"?`}
+                            {t("healthAnalysis.categoryManagement.deleteConfirm", { name: deletingCategory.name })}
                         </p>
 
                         <div className="flex items-center justify-end gap-3 pt-2">
@@ -585,14 +590,14 @@ export default function CategoryManagement() {
                                 onClick={() => setDeletingCategory(null)}
                                 disabled={submitting}
                             >
-                                Cancel
+                                {t("healthAnalysis.categoryManagement.cancel")}
                             </Button>
                             <Button
                                 onClick={handleDelete}
                                 disabled={submitting}
                                 className="bg-rose-600 hover:bg-rose-700 text-white font-semibold"
                             >
-                                {submitting ? "Deleting..." : "Are you sure you want to delete this item? This action cannot be undone."}
+                                {submitting ? t("healthAnalysis.categoryManagement.deleting") : t("healthAnalysis.categoryManagement.confirmDelete")}
                             </Button>
                         </div>
                     </div>

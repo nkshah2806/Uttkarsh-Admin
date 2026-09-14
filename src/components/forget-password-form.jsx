@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 export function ForgetPasswordForm({ className, ...props }) {
   const {
     register,
@@ -16,6 +17,7 @@ export function ForgetPasswordForm({ className, ...props }) {
   } = useForm();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const onSubmit = async (data) => {
     try {
       // debugger
@@ -24,10 +26,10 @@ export function ForgetPasswordForm({ className, ...props }) {
         email: data.email,
         isWebsite: true,
       });
-      toast.success("Email sent successful! Redirecting to login...");
+      toast.success(t("auth.emailSentSuccess"));
       navigate("/");
     } catch (error) {
-      toast.error("Email sent failed. Please try again.");
+      toast.error(t("auth.emailSentFailed"));
     } finally {
       setLoading(false);
     }
@@ -39,19 +41,19 @@ export function ForgetPasswordForm({ className, ...props }) {
       {...props}
     >
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-3xl font-bold">Forget your passowrd?</h1>
+        <h1 className="text-3xl font-bold">{t("auth.forgetPasswordTitle")}</h1>
         <p className="text-muted-foreground text-sm text-balance">
-          We will send you the reset instrucations
+          {t("auth.forgetPasswordSubtitle")}
         </p>
       </div>
       <div className="grid gap-6">
         <div className="grid gap-3">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("auth.email")}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="m@example.com"
-            {...register("email", { required: "Email is required" })}
+            placeholder={t("auth.emailPlaceholder")}
+            {...register("email", { required: t("auth.emailRequired") })}
           />
           {errors.email && (
             <p className="text-red-500 text-sm">{errors.email.message}</p>
@@ -66,14 +68,14 @@ export function ForgetPasswordForm({ className, ...props }) {
           size="lg"
           disabled={loading}
         >
-          Send Mail
+          {t("auth.sendMail")}
         </Button>
         <Link
           to="/"
           className="text-[14px] font-medium flex items-center justify-center gap-2 hover:text-gray-500 duration-300 transition-all"
         >
           <MoveLeft />
-          Back to login
+          {t("auth.backToLogin")}
         </Link>
       </div>
     </form>

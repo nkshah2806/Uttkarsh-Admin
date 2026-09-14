@@ -1,5 +1,6 @@
 import "./App.scss";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Login from "./pages/Login/login";
 import ForgetPassword from "./pages/ForgetPassword/forget-password";
 import Dashboard from "./pages/Dashboard/dashboard";
@@ -36,6 +37,7 @@ import HealthCampDetails from "./pages/FrontendCMS/HealthCampDetails";
 import GalleryCMS from "./pages/FrontendCMS/GalleryCMS";
 
 function App() {
+  const { t } = useTranslation();
   return (
     <>
       <Toaster position="top-right" />
@@ -83,7 +85,7 @@ function App() {
             </Route>
             <Route path="/user/:id" element={<UserDetails />} />
           </Route>
-          <Route path="*" element={<div>404 Not Found</div>} />
+          <Route path="*" element={<div>{t("common.notFound")}</div>} />
         </Routes>
       </BrowserRouter>
     </>

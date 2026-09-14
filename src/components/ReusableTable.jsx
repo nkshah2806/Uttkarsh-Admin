@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import ReactPaginate from "react-paginate";
+import { useTranslation } from "react-i18next";
 import { useQueryEffect } from "@/hooks/useQueryEffect";
 import { useApiQuery } from "@/hooks/useApiQuery";
 import {
@@ -75,6 +76,7 @@ const ReusableTable = forwardRef(
     const [dateRange, setDateRange] = useState([null, null]);
     const [startDate, endDate] = dateRange;
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     useEffect(() => {
       return () => {
@@ -125,7 +127,7 @@ const ReusableTable = forwardRef(
           err?.response?.data?.meta?.message ||
           err?.response?.data?.message ||
           err?.message ||
-          "Something went wrong";
+          t("table.somethingWentWrong");
         toast.error(msg);
       },
     });
@@ -254,7 +256,7 @@ const ReusableTable = forwardRef(
       setPage(1);
     };
 
-    const searchPlaceholder = typeof Search === "string" ? Search : "Search...";
+    const searchPlaceholder = typeof Search === "string" ? Search : t("table.searchPlaceholder");
 
     return (
       <>
@@ -287,14 +289,14 @@ const ReusableTable = forwardRef(
                   value={isActive === undefined ? "" : String(isActive)}
                 >
                   <SelectTrigger className="max-w-max">
-                    <SelectValue placeholder="Select Status" />
+                    <SelectValue placeholder={t("table.selectStatus")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem key="active" value="true">
-                      Active
+                      {t("table.active")}
                     </SelectItem>
                     <SelectItem key="inactive" value="false">
-                      Inactive
+                      {t("table.inactive")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -305,33 +307,33 @@ const ReusableTable = forwardRef(
                   value={status === undefined ? "" : status}
                 >
                   <SelectTrigger className="max-w-max">
-                    <SelectValue placeholder="Select Booking Status" />
+                    <SelectValue placeholder={t("table.selectBookingStatus")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem key="confirmed" value="confirmed">
-                      Confirmed
+                      {t("table.confirmed")}
                     </SelectItem>
                     <SelectItem key="completed" value="completed">
-                      Completed
+                      {t("table.completed")}
                     </SelectItem>
                     <SelectItem key="booked" value="booked">
-                      Booked
+                      {t("table.booked")}
                     </SelectItem>
                     <SelectItem key="cancelled" value="cancelled">
-                      Cancelled
+                      {t("table.cancelled")}
                     </SelectItem>
                     <SelectItem key="request for refund" value="request for refund">
-                      Request for Refund
+                      {t("table.requestForRefund")}
                     </SelectItem>
                     <SelectItem key="refunded" value="refunded">
-                      Refunded
+                      {t("table.refunded")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
               )}
               {(search || status || isActive !== undefined || dateRange[0]) && (
                 <Button variant="outline" size="sm" onClick={handleClearFilters}>
-                  Clear Filters
+                  {t("table.clearFilters")}
                 </Button>
               )}
             </div>
@@ -347,7 +349,7 @@ const ReusableTable = forwardRef(
             )}
             {viewAll && (
               <Button className="ms-auto" variant="outline" onClick={() => navigate('/booking')}>
-                View All
+                {t("table.viewAll")}
               </Button>
             )}
           </div>
@@ -356,7 +358,7 @@ const ReusableTable = forwardRef(
         {selectedRows.length > 0 && (
           <div className="mb-4 text-sm font-medium inline-flex items-center gap-x-1">
             <span>{selectedRows.length}</span>
-            <span>row(s) selected</span>
+            <span>{t("table.rowsSelected")}</span>
           </div>
         )}
 
@@ -400,7 +402,7 @@ const ReusableTable = forwardRef(
                       colSpan={headers.length + (selectable ? 1 : 0)}
                       className="text-center py-8 text-gray-400"
                     >
-                      No data found
+                      {t("table.noDataFound")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -442,11 +444,11 @@ const ReusableTable = forwardRef(
           <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between mt-4">
             <div className="flex items-center gap-2">
               <label htmlFor="pageSize" className="text-sm flex-none text-muted-foreground">
-                Rows per page:
+                {t("table.rowsPerPage")}
               </label>
               <Select onValueChange={handleLimitChange} value={String(limit)}>
                 <SelectTrigger className="w-[80px]">
-                  <SelectValue placeholder="Size" />
+                  <SelectValue placeholder={t("table.size")} />
                 </SelectTrigger>
                 <SelectContent>
                   {limitOptions.map((opt) => (
@@ -467,8 +469,8 @@ const ReusableTable = forwardRef(
               pageClassName="border rounded-md cursor-pointer"
               activeClassName="active bg-primary dark:bg-gray-800 border-primary dark:border-gray-800 text-white font-bold"
               pageLinkClassName="px-3 py-1 bg-transparent text-sm inline-block"
-              previousLabel="Prev"
-              nextLabel="Next"
+              previousLabel={t("table.prev")}
+              nextLabel={t("table.next")}
               breakLabel="..."
               previousLinkClassName="px-3 py-1 bg-transparent text-sm inline-block"
               nextLinkClassName="px-3 py-1 bg-transparent text-sm inline-block"

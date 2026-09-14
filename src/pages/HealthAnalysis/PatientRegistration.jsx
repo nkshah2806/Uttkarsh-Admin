@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Calendar, Eye, CheckCircle2, FileText, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import ReusableTable from "@/components/ReusableTable";
+import LocalizedText from "@/components/LocalizedText";
 import {
   Select,
   SelectTrigger,
@@ -16,6 +18,7 @@ import {
 
 export default function PatientRegistration() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,7 +49,7 @@ export default function PatientRegistration() {
       });
       setMemberOptions(Array.from(membersMap.values()));
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to load clients");
+      toast.error(err.response?.data?.message || t("healthAnalysis.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -56,7 +59,7 @@ export default function PatientRegistration() {
   const headers = [
     {
       key: "patient_code",
-      label: "Client ID",
+      label: t("healthAnalysis.colClientId"),
       render: (row) => (
         <span className="font-mono font-bold text-xs bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 px-2 py-1 rounded-md border border-indigo-200/60 dark:border-indigo-800">
           {row.patient_code}
@@ -65,28 +68,28 @@ export default function PatientRegistration() {
     },
     {
       key: "name",
-      label: "Client Name",
+      label: t("healthAnalysis.colClientName"),
       render: (row) => (
         <button
           onClick={() => navigate(`/quantum/patients/${row._id}`)}
           className="text-left font-semibold text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline transition-colors"
         >
-          {row.name}
+          <LocalizedText value={row.name} />
         </button>
       ),
     },
     {
       key: "age",
-      label: "Age / Gender",
+      label: t("healthAnalysis.colAgeGender"),
       render: (row) => (
         <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-          {row.age} Yrs / {row.gender}
+          {t("healthAnalysis.ageGender", { age: row.age, gender: row.gender })}
         </span>
       ),
     },
     {
       key: "mobile",
-      label: "Mobile Number",
+      label: t("healthAnalysis.colMobile"),
       render: (row) => (
         <span className="text-xs font-mono text-slate-700 dark:text-slate-300 font-medium">
           {row.mobile}
@@ -95,7 +98,7 @@ export default function PatientRegistration() {
     },
     {
       key: "createdAt",
-      label: "Registration Date",
+      label: t("healthAnalysis.colRegDate"),
       render: (row) => (
         <span className="flex items-center gap-1.5 text-xs text-slate-500">
           <Calendar className="h-3.5 w-3.5 text-slate-400" />
@@ -109,54 +112,54 @@ export default function PatientRegistration() {
     },
     {
       key: "registered_by",
-      label: "Consultant / Member",
+      label: t("healthAnalysis.colConsultant"),
       render: (row) => (
         <div className="flex flex-col text-xs">
           <span className="font-semibold text-slate-800 dark:text-slate-200">
-            {row.registered_by?.fullName || row.registered_by?.username || "Franchise Member"}
+            {row.registered_by?.fullName || row.registered_by?.username || t("healthAnalysis.franchiseMember")}
           </span>
           <span className="text-slate-400 text-[11px]">
-            {row.registered_by?.email || row.registered_by?.role || "Member"}
+            {row.registered_by?.email || row.registered_by?.role || t("healthAnalysis.member")}
           </span>
         </div>
       ),
     },
     {
       key: "latest_status",
-      label: "Status",
+      label: t("healthAnalysis.colStatus"),
       render: (row) => {
         const st = row.latest_status;
         if (st === "SHARED") {
           return (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-              <CheckCircle2 className="h-3 w-3" /> Report Shared
+              <CheckCircle2 className="h-3 w-3" /> {t("healthAnalysis.statusShared")}
             </span>
           );
         }
         if (st === "REPORT_READY") {
           return (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-              <FileText className="h-3 w-3" /> Report Ready
+              <FileText className="h-3 w-3" /> {t("healthAnalysis.statusReportReady")}
             </span>
           );
         }
         if (st === "DATA_ENTRY") {
           return (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-              <Clock className="h-3 w-3" /> In Progress
+              <Clock className="h-3 w-3" /> {t("healthAnalysis.statusInProgress")}
             </span>
           );
         }
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-            Registered
+            {t("healthAnalysis.statusRegistered")}
           </span>
         );
       },
     },
     {
       key: "actions",
-      label: "Actions",
+      label: t("healthAnalysis.colActions"),
       filterable: false,
       render: (row) => (
         <div className="flex items-center justify-end gap-1.5">
@@ -166,9 +169,9 @@ export default function PatientRegistration() {
             variant="outline"
             onClick={() => navigate(`/quantum/patients/${row._id}`)}
             className="h-8 px-2.5 text-xs font-semibold text-indigo-600 border-indigo-200 hover:bg-indigo-50 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-950"
-            title="View Complete Client Profile & History"
+            title={t("healthAnalysis.viewDetailsTitle")}
           >
-            <Eye className="h-3.5 w-3.5 mr-1" /> View Details
+            <Eye className="h-3.5 w-3.5 mr-1" /> {t("healthAnalysis.viewDetails")}
           </Button>
         </div>
       ),
@@ -181,12 +184,12 @@ export default function PatientRegistration() {
       onValueChange={(val) => setSelectedMember(val === "all" ? "" : val)}
     >
       <SelectTrigger className="max-w-max min-w-[200px]">
-        <SelectValue placeholder={`All Members (${memberOptions.length})`} />
+        <SelectValue placeholder={t("healthAnalysis.allMembers", { count: memberOptions.length })} />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="all">
           <span className="inline-flex items-center gap-x-1">
-            <span>All Franchise Members</span>
+            <span>{t("healthAnalysis.allFranchiseMembers")}</span>
             <span aria-hidden="true">(</span>
             <span>{memberOptions.length}</span>
             <span aria-hidden="true">)</span>
@@ -197,7 +200,7 @@ export default function PatientRegistration() {
             <span className="inline-flex items-center gap-x-1">
               <span className="truncate">{m.fullName}</span>
               <span aria-hidden="true">(</span>
-              <span>{m.email || m.username || "Member"}</span>
+              <span>{m.email || m.username || t("healthAnalysis.member")}</span>
               <span aria-hidden="true">)</span>
             </span>
           </SelectItem>
@@ -214,13 +217,13 @@ export default function PatientRegistration() {
           <div>
             <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-indigo-300 font-bold mb-1">
               <Users className="h-4 w-4 text-indigo-400" />
-              Admin Client Directory
+              {t("healthAnalysis.bannerEyebrow")}
             </div>
             <h1 className="text-2xl font-bold tracking-tight">
-              Client Directory
+              {t("healthAnalysis.bannerTitle")}
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl">
-              View all clients registered across all franchise members, and open their full profile and history.
+              {t("healthAnalysis.bannerDesc")}
             </p>
           </div>
         </div>
@@ -233,7 +236,7 @@ export default function PatientRegistration() {
             headers={headers}
             data={patients}
             loading={loading}
-            Search="Search by Client ID, Name, Mobile, Email..."
+            Search={t("healthAnalysis.searchPlaceholder")}
             CreateExportRender={MemberFilterRender}
             pagination={true}
           />

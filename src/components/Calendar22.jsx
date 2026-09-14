@@ -8,8 +8,10 @@ import { Label } from "./ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Button } from "./ui/button";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 export function Calendar22({ value, onValueChange, placeholder }) {
+  const { t } = useTranslation();
   const [open, setOpen] = React.useState(false);
   const [date, setDate] = React.useState(undefined);
   // Sync internal state with prop
@@ -26,7 +28,7 @@ export function Calendar22({ value, onValueChange, placeholder }) {
       <PopoverTrigger asChild>
         <Button variant="outline" className="font-normal justify-start">
           <CalendarIcon className="text-muted-foreground " />
-          {date ? format(date, "PPP") : <span className="text-muted-foreground text-[14px]">{placeholder || "Pick a date"}</span>}
+          {date ? format(date, "PPP") : <span className="text-muted-foreground text-[14px]">{placeholder || t("components.pickDate")}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto overflow-hidden p-0" align="start">

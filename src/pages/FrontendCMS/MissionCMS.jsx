@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { BarChart3, Plus, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -6,11 +7,22 @@ import { Button } from "@/components/ui/button";
 import { getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT } from "@/services/contentService";
 import { Field, CMSInput, CMSTextarea, CMSPageHeader, StickyBar, CMSLoader } from "./CMSShared";
 import { MediaUploader } from "@/components/media-uploader";
+import LocalizedText from "@/components/LocalizedText";
+import { useTranslatedText } from "@/hooks/useTranslatedText";
 
 export default function MissionCMS() {
+  const { t } = useTranslation();
   const [data, setData] = useState(DEFAULT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const phBadge = useTranslatedText("Our Mission");
+  const phStatNumber = useTranslatedText("Number / Value");
+  const phStatLabel = useTranslatedText("Label");
+  const phStatLabelPlaceholder = useTranslatedText("Health Camps");
+  const phUploadHelp = useTranslatedText(
+    "JPG, JPEG, PNG or WebP (max 5MB) — upload from your device",
+  );
 
   useEffect(() => {
     getContent().then((d) => { setData(d); setLoading(false); }).catch(() => setLoading(false));
@@ -50,29 +62,29 @@ export default function MissionCMS() {
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success("✅ Mission section updated live!");
+      toast.success(`✅ ${t("cms.liveSiteUpdated")}`);
     } catch {
-      toast.error("Failed to save. Please try again.");
+      toast.error(t("cms.saveContentFailed"));
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
+    if (!window.confirm(t("cms.resetConfirm"))) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success("Content reset to defaults.");
+    toast.success(t("cms.contentReset"));
   };
 
-  if (loading) return <CMSLoader label="Loading Mission content…" />;
+  if (loading) return <CMSLoader />;
 
   return (
     <div className="space-y-6">
       <CMSPageHeader
         icon={BarChart3}
-        title="Mission & Stats"
-        description='The "Our Mission" two-column section with story description and impact counters.'
+        title={t("cms.secMissionStats")}
+        description={t("cms.secMissionStatsDesc")}
         onSave={handleSave}
         onReset={handleReset}
         saving={saving}
@@ -81,35 +93,36 @@ export default function MissionCMS() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-violet-500" /> Mission Story & Impact Stats
+            <BarChart3 className="h-5 w-5 text-violet-500" />{" "}
+            <LocalizedText value="Mission Story & Impact Stats" />
           </CardTitle>
           <CardDescription>
-            Edit the mission narrative, section image, and all impact counter metrics.
+            <LocalizedText value="Edit the mission narrative, section image, and all impact counter metrics." />
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-5 md:grid-cols-2">
-            <Field label="Section Badge">
+            <Field label={<LocalizedText value="Section Badge" />}>
               <CMSInput
                 value={data.mission?.badge}
                 onChange={(e) => set("mission.badge", e.target.value)}
-                placeholder="Our Mission"
+                placeholder={phBadge}
               />
             </Field>
             <div className="md:col-span-2">
-              <Field label="Section Image">
+              <Field label={<LocalizedText value="Section Image" />}>
                 <MediaUploader
                   value={data.mission?.image || ""}
                   onUploaded={(ref) => set("mission.image", ref)}
                   onClear={() => set("mission.image", "")}
                   folder="mission"
                   accept="image"
-                  helpText="JPG, JPEG, PNG or WebP (max 5MB) — upload from your device"
+                  helpText={phUploadHelp}
                 />
               </Field>
             </div>
             <div className="md:col-span-2">
-              <Field label="Section Title">
+              <Field label={<LocalizedText value="Section Title" />}>
                 <CMSInput
                   value={data.mission?.title}
                   onChange={(e) => set("mission.title", e.target.value)}
@@ -117,7 +130,7 @@ export default function MissionCMS() {
               </Field>
             </div>
             <div className="md:col-span-2">
-              <Field label="Paragraph 1">
+              <Field label={<LocalizedText value="Paragraph 1" />}>
                 <CMSTextarea
                   rows={3}
                   value={data.mission?.paragraph1}
@@ -126,7 +139,7 @@ export default function MissionCMS() {
               </Field>
             </div>
             <div className="md:col-span-2">
-              <Field label="Paragraph 2">
+              <Field label={<LocalizedText value="Paragraph 2" />}>
                 <CMSTextarea
                   rows={3}
                   value={data.mission?.paragraph2}
@@ -139,9 +152,12 @@ export default function MissionCMS() {
           {/* Stats */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-sm">Impact Counter Stats</h3>
+              <h3 className="font-semibold text-sm">
+                <LocalizedText value="Impact Counter Stats" />
+              </h3>
               <Button size="sm" variant="outline" onClick={addStat} className="gap-1.5 text-xs">
-                <Plus className="h-3.5 w-3.5" /> Add Counter
+                <Plus className="h-3.5 w-3.5" />{" "}
+                <LocalizedText value="Add Counter" />
               </Button>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
@@ -153,18 +169,18 @@ export default function MissionCMS() {
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
-                  <Field label="Number / Value">
+                  <Field label={phStatNumber}>
                     <CMSInput
                       value={stat.number}
                       onChange={(e) => updateStat(idx, "number", e.target.value)}
                       placeholder="50+"
                     />
                   </Field>
-                  <Field label="Label">
+                  <Field label={phStatLabel}>
                     <CMSInput
                       value={stat.label}
                       onChange={(e) => updateStat(idx, "label", e.target.value)}
-                      placeholder="Health Camps"
+                      placeholder={phStatLabelPlaceholder}
                     />
                   </Field>
                 </div>

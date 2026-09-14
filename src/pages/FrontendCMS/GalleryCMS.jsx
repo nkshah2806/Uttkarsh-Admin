@@ -23,6 +23,8 @@ import { galleryService } from "@/services/galleryService";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { MediaUploader } from "@/components/media-uploader";
 import { Config } from "@/lib/Config";
+import { useTranslation } from "react-i18next";
+import LocalizedText from "@/components/LocalizedText";
 
 const SUGGESTED_CATEGORIES = [
     "Camps",
@@ -50,6 +52,7 @@ const emptyForm = {
 };
 
 export default function GalleryCMS() {
+    const { t } = useTranslation();
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -72,7 +75,7 @@ export default function GalleryCMS() {
             const res = await galleryService.getAll();
             setItems(res || []);
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to load gallery items");
+            toast.error(err.response?.data?.message || t("gallery.loadFailed"));
         } finally {
             setLoading(false);
         }
@@ -106,11 +109,11 @@ export default function GalleryCMS() {
     const handleSave = async (e) => {
         e.preventDefault();
         if (!form.title.trim()) {
-            toast.error("Please enter the title");
+            toast.error(t("gallery.titleRequired"));
             return;
         }
         if (!form.media_url.trim()) {
-            toast.error(form.type === "video" ? "Please upload the video file" : "Please upload the photo file");
+            toast.error(form.type === "video" ? t("gallery.videoRequired") : t("gallery.photoRequired"));
             return;
         }
 
@@ -132,17 +135,17 @@ export default function GalleryCMS() {
 
             if (editingItem) {
                 await galleryService.update(editingItem._id, payload);
-                toast.success("Gallery item updated successfully");
+                toast.success(t("gallery.updated"));
                 setEditingItem(null);
             } else {
                 await galleryService.create(payload);
-                toast.success("Gallery item created successfully");
+                toast.success(t("gallery.created"));
             }
 
             setShowFormModal(false);
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to save gallery item");
+            toast.error(err.response?.data?.message || t("gallery.saveFailed"));
         } finally {
             setSubmitting(false);
         }
@@ -153,10 +156,10 @@ export default function GalleryCMS() {
             await galleryService.update(item._id, {
                 is_active: item.is_active !== false ? false : true,
             });
-            toast.success("Gallery item status updated successfully");
+            toast.success(t("gallery.statusUpdated"));
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to toggle status");
+            toast.error(err.response?.data?.message || t("gallery.toggleFailed"));
         }
     };
 
@@ -165,11 +168,11 @@ export default function GalleryCMS() {
         try {
             setSubmitting(true);
             await galleryService.remove(deletingItem._id);
-            toast.success("Gallery item deleted successfully");
+            toast.success(t("gallery.deleted"));
             setDeletingItem(null);
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to delete gallery item");
+            toast.error(err.response?.data?.message || t("gallery.deleteFailed"));
         } finally {
             setSubmitting(false);
         }
@@ -197,15 +200,15 @@ export default function GalleryCMS() {
                 ? "bg-emerald-500 text-white hover:bg-emerald-600 shadow-xs"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
                 }`}
-            title="Click to toggle active status"
+            title={t("gallery.toggleTitle")}
         >
             {row.is_active !== false ? (
                 <>
-                    <Check className="h-3 w-3" /> Active
+                    <Check className="h-3 w-3" /> {t("gallery.active")}
                 </>
             ) : (
                 <>
-                    <X className="h-3 w-3" /> Inactive
+                    <X className="h-3 w-3" /> {t("gallery.inactive")}
                 </>
             )}
         </button>
@@ -214,18 +217,18 @@ export default function GalleryCMS() {
     const renderTypeBadge = (type) =>
         type === "video" ? (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-xs font-semibold text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900">
-                <Video className="h-3 w-3" /> Video
+                <Video className="h-3 w-3" /> {t("gallery.typeVideo")}
             </span>
         ) : (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-50 dark:bg-amber-950/60 text-xs font-semibold text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-900">
-                <ImageIcon className="h-3 w-3" /> Photo
+                <ImageIcon className="h-3 w-3" /> {t("gallery.typePhoto")}
             </span>
         );
 
     const headers = [
         {
             key: "thumbnail",
-            label: "Thumbnail",
+            label: t("gallery.colThumbnail"),
             filterable: false,
             render: (row) => {
                 const thumbSrc =
@@ -257,7 +260,7 @@ export default function GalleryCMS() {
         },
         {
             key: "title",
-            label: "Title",
+            label: t("gallery.colTitle"),
             render: (row) => (
                 <div className="flex items-center gap-2.5 max-w-xs">
                     <div className="p-1.5 rounded-lg bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 shrink-0">
@@ -269,10 +272,10 @@ export default function GalleryCMS() {
                     </div>
                     <div className="min-w-0">
                         <span className="block font-bold text-slate-900 dark:text-slate-100 text-sm truncate">
-                            {row.title}
+                            <LocalizedText value={row.title} />
                         </span>
                         <span className="block text-[11px] text-slate-400 truncate">
-                            {row.description || "—"}
+                            {row.description ? <LocalizedText value={row.description} /> : "—"}
                         </span>
                     </div>
                 </div>
@@ -280,17 +283,17 @@ export default function GalleryCMS() {
         },
         {
             key: "type",
-            label: "Type",
+            label: t("gallery.colType"),
             filterable: false,
             render: (row) => renderTypeBadge(row.type),
         },
         {
             key: "category",
-            label: "Category",
+            label: t("gallery.colCategory"),
             render: (row) =>
                 row.category ? (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-300">
-                        {row.category}
+                        <LocalizedText value={row.category} />
                     </span>
                 ) : (
                     <span className="text-xs text-slate-400">—</span>
@@ -298,7 +301,7 @@ export default function GalleryCMS() {
         },
         {
             key: "display_order",
-            label: "Order",
+            label: t("gallery.colOrder"),
             filterable: false,
             render: (row) => (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
@@ -309,13 +312,13 @@ export default function GalleryCMS() {
         },
         {
             key: "is_active",
-            label: "Status",
+            label: t("gallery.colStatus"),
             filterable: false,
             render: renderStatus,
         },
         {
             key: "createdAt",
-            label: "Created",
+            label: t("gallery.colCreated"),
             render: (row) => (
                 <span className="text-xs text-slate-500 dark:text-slate-400">
                     {row.createdAt
@@ -330,7 +333,7 @@ export default function GalleryCMS() {
         },
         {
             key: "actions",
-            label: "Actions",
+            label: t("gallery.colActions"),
             filterable: false,
             render: (row) => (
                 <div className="flex items-center justify-end gap-1.5">
@@ -339,7 +342,7 @@ export default function GalleryCMS() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:text-violet-600 hover:bg-violet-50/50"
-                        title="View Media"
+                        title={t("gallery.viewTitle")}
                     >
                         <Eye className="h-3.5 w-3.5" />
                     </a>
@@ -348,7 +351,7 @@ export default function GalleryCMS() {
                         variant="ghost"
                         onClick={() => openEditModal(row)}
                         className="h-8 w-8 p-0 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/50"
-                        title="Edit Gallery Item"
+                        title={t("gallery.editTitle")}
                     >
                         <Pencil className="h-3.5 w-3.5" />
                     </Button>
@@ -357,7 +360,7 @@ export default function GalleryCMS() {
                         variant="ghost"
                         onClick={() => setDeletingItem(row)}
                         className="h-8 w-8 p-0 text-slate-500 hover:text-rose-600 hover:bg-rose-50/50"
-                        title="Delete Gallery Item"
+                        title={t("gallery.deleteTitle")}
                     >
                         <Trash2 className="h-3.5 w-3.5 text-rose-500" />
                     </Button>
@@ -373,13 +376,13 @@ export default function GalleryCMS() {
                 <div>
                     <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-violet-100">
                         <Sparkles className="h-4 w-4" />
-                        <span>Frontend CMS</span>
+                        <span>{t("gallery.eyebrow")}</span>
                     </div>
                     <h1 className="text-2xl font-bold mt-1 tracking-tight">
-                        Gallery Management
+                        {t("gallery.title")}
                     </h1>
                     <p className="text-sm text-violet-100 mt-1 max-w-2xl">
-                        Add photos and videos shown on the public Gallery page. Only active items appear on the site.
+                        {t("gallery.subtitle")}
                     </p>
                 </div>
                 <Button
@@ -387,7 +390,7 @@ export default function GalleryCMS() {
                     className="bg-white text-violet-700 hover:bg-violet-50 font-bold px-5 py-2.5 rounded-xl shadow-md shrink-0 flex items-center gap-2 self-start sm:self-auto"
                 >
                     <Plus className="h-5 w-5" />
-                    <span>Add New Gallery Item</span>
+                    <span>{t("gallery.addNew")}</span>
                 </Button>
             </div>
 
@@ -397,13 +400,13 @@ export default function GalleryCMS() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Total Items
+                                {t("gallery.totalItems")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {totalCount}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                All gallery items
+                                {t("gallery.allItems")}
                             </p>
                         </div>
                         <div className="p-3 bg-violet-50 dark:bg-violet-950/60 rounded-xl text-violet-600 dark:text-violet-400">
@@ -416,13 +419,13 @@ export default function GalleryCMS() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                                Active Items
+                                {t("gallery.activeItems")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {activeCount}
                             </p>
                             <p className="text-[11px] text-slate-500 mt-0.5">
-                                Shown on the public website
+                                {t("gallery.shownOnSite")}
                             </p>
                         </div>
                         <div className="p-3 bg-emerald-100 dark:bg-emerald-950/60 rounded-xl text-emerald-600 dark:text-emerald-400">
@@ -435,13 +438,13 @@ export default function GalleryCMS() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Photos
+                                {t("gallery.photos")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {photoCount}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                Image gallery items
+                                {t("gallery.photoItems")}
                             </p>
                         </div>
                         <div className="p-3 bg-amber-50 dark:bg-amber-950/60 rounded-xl text-amber-600 dark:text-amber-400">
@@ -454,13 +457,13 @@ export default function GalleryCMS() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Videos
+                                {t("gallery.videos")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {videoCount}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                Uploaded video files
+                                {t("gallery.videoFiles")}
                             </p>
                         </div>
                         <div className="p-3 bg-indigo-50 dark:bg-indigo-950/60 rounded-xl text-indigo-600 dark:text-indigo-400">
@@ -477,10 +480,10 @@ export default function GalleryCMS() {
                         <div>
                             <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-800 dark:text-slate-100">
                                 <Images className="h-4 w-4 text-violet-600" />
-                                Gallery Items List
+                                {t("gallery.setTitle")}
                             </CardTitle>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                Manage the photos and videos that appear on the public Gallery page.
+                                {t("gallery.listSubtitle")}
                             </p>
                         </div>
                         <Button
@@ -488,7 +491,7 @@ export default function GalleryCMS() {
                             size="sm"
                             className="bg-violet-600 hover:bg-violet-700 text-white font-semibold self-start sm:self-auto"
                         >
-                            <Plus className="h-4 w-4 mr-1.5" /> Add Gallery Item
+                            <Plus className="h-4 w-4 mr-1.5" /> {t("gallery.addItem")}
                         </Button>
                     </div>
                 </CardHeader>
@@ -497,22 +500,22 @@ export default function GalleryCMS() {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                         <Select value={filterStatus} onValueChange={setFilterStatus}>
                             <SelectTrigger className="w-full sm:w-44">
-                                <SelectValue placeholder="Filter by status" />
+                                <SelectValue placeholder={t("gallery.filterByStatus")} />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All Statuses</SelectItem>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive">Inactive</SelectItem>
+                                <SelectItem value="all">{t("gallery.allStatuses")}</SelectItem>
+                                <SelectItem value="active">{t("gallery.active")}</SelectItem>
+                                <SelectItem value="inactive">{t("gallery.inactive")}</SelectItem>
                             </SelectContent>
                         </Select>
                         <Select value={filterType} onValueChange={setFilterType}>
                             <SelectTrigger className="w-full sm:w-44">
-                                <SelectValue placeholder="Filter by type" />
+                                <SelectValue placeholder={t("gallery.filterByType")} />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All Types</SelectItem>
-                                <SelectItem value="photo">Photos</SelectItem>
-                                <SelectItem value="video">Videos</SelectItem>
+                                <SelectItem value="all">{t("gallery.allTypes")}</SelectItem>
+                                <SelectItem value="photo">{t("gallery.photos")}</SelectItem>
+                                <SelectItem value="video">{t("gallery.videos")}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -521,7 +524,7 @@ export default function GalleryCMS() {
                         headers={headers}
                         data={filteredItems}
                         loading={loading}
-                        Search="Search by title, description, or category..."
+                        Search={t("gallery.searchPlaceholder")}
                     />
                 </CardContent>
             </Card>
@@ -545,16 +548,16 @@ export default function GalleryCMS() {
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                                         {editingItem
                                             ? form.type === "video"
-                                                ? "Edit Video"
-                                                : "Edit Photo"
+                                                ? t("gallery.modalEditVideo")
+                                                : t("gallery.modalEditPhoto")
                                             : form.type === "video"
-                                                ? "Add Video"
-                                                : "Add Photo"}
+                                                ? t("gallery.modalAddVideo")
+                                                : t("gallery.modalAddPhoto")}
                                     </h3>
                                     <p className="text-xs text-slate-500">
                                         {editingItem
-                                            ? "Update item details and active status"
-                                            : "Add a new item to the public gallery"}
+                                            ? t("gallery.modalEditSubtitle")
+                                            : t("gallery.modalAddSubtitle")}
                                     </p>
                                 </div>
                             </div>
@@ -587,7 +590,7 @@ export default function GalleryCMS() {
                                         }`}
                                 >
                                     <ImageIcon className="h-4 w-4" />
-                                    Photo
+                                    {t("gallery.typePhoto")}
                                 </button>
                                 <button
                                     type="button"
@@ -604,19 +607,19 @@ export default function GalleryCMS() {
                                         }`}
                                 >
                                     <Video className="h-4 w-4" />
-                                    Video
+                                    {t("gallery.typeVideo")}
                                 </button>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="sm:col-span-2">
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        Title <span className="text-violet-500">*</span>
+                                        {t("gallery.titleLabel")} <span className="text-violet-500">*</span>
                                     </label>
                                     <input
                                         type="text"
                                         required
-                                        placeholder={form.type === "video" ? "e.g. Health Camp Highlights 2026" : "e.g. Community Health Awareness Drive"}
+                                        placeholder={form.type === "video" ? t("gallery.phTitleVideo") : t("gallery.phTitlePhoto")}
                                         value={form.title}
                                         onChange={(e) => setForm({ ...form, title: e.target.value })}
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
@@ -625,11 +628,11 @@ export default function GalleryCMS() {
 
                                 <div className="sm:col-span-2">
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        Description
+                                        {t("gallery.description")}
                                     </label>
                                     <textarea
                                         rows={2}
-                                        placeholder="Short caption shown with the media..."
+                                        placeholder={t("gallery.phDescription")}
                                         value={form.description}
                                         onChange={(e) => setForm({ ...form, description: e.target.value })}
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
@@ -640,51 +643,51 @@ export default function GalleryCMS() {
                                     <>
                                         <div className="sm:col-span-2">
                                             <MediaUploader
-                                                label="Upload Video"
+                                                label={t("gallery.uploadVideo")}
                                                 value={form.media_url}
                                                 onUploaded={(ref) => setForm((f) => ({ ...f, media_url: ref }))}
                                                 onClear={() => setForm((f) => ({ ...f, media_url: "" }))}
                                                 folder="gallery-video"
                                                 accept="video"
                                                 required
-                                                helpText="MP4, WebM or MOV (max 100MB) — upload from your device"
+                                                helpText={t("gallery.videoHelp")}
                                             />
                                         </div>
                                         <div className="sm:col-span-2">
                                             <MediaUploader
-                                                label="Upload Thumbnail / Cover Image"
+                                                label={t("gallery.uploadThumbnail")}
                                                 value={form.thumbnail_url}
                                                 onUploaded={(ref) => setForm((f) => ({ ...f, thumbnail_url: ref }))}
                                                 onClear={() => setForm((f) => ({ ...f, thumbnail_url: "" }))}
                                                 folder="gallery-thumb"
                                                 accept="image"
-                                                helpText="JPG, JPEG, PNG or WebP (max 5MB) — optional cover shown on the card"
+                                                helpText={t("gallery.thumbnailHelp")}
                                             />
                                         </div>
                                     </>
                                 ) : (
                                     <div className="sm:col-span-2">
                                         <MediaUploader
-                                            label="Upload Photo"
+                                            label={t("gallery.uploadPhoto")}
                                             value={form.media_url}
                                             onUploaded={(ref) => setForm((f) => ({ ...f, media_url: ref }))}
                                             onClear={() => setForm((f) => ({ ...f, media_url: "" }))}
                                             folder="gallery"
                                             accept="image"
                                             required
-                                            helpText="JPG, JPEG, PNG or WebP (max 5MB) — upload from your device"
+                                            helpText={t("gallery.photoHelp")}
                                         />
                                     </div>
                                 )}
 
                                 <div>
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        Category
+                                        {t("gallery.category")}
                                     </label>
                                     <input
                                         type="text"
                                         list="gallery-categories"
-                                        placeholder="e.g. Camps"
+                                        placeholder={t("gallery.phCategory")}
                                         value={form.category}
                                         onChange={(e) => setForm({ ...form, category: e.target.value })}
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
@@ -697,7 +700,7 @@ export default function GalleryCMS() {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        Display Order
+                                        {t("gallery.displayOrder")}
                                     </label>
                                     <input
                                         type="number"
@@ -708,7 +711,7 @@ export default function GalleryCMS() {
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
                                     />
                                     <p className="text-[11px] text-slate-400 mt-1">
-                                        Lower numbers appear first on the gallery.
+                                        {t("gallery.displayOrderHelp")}
                                     </p>
                                 </div>
                             </div>
@@ -717,10 +720,10 @@ export default function GalleryCMS() {
                             <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                        Item Active
+                                        {t("gallery.itemActive")}
                                     </p>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                                        Active items are shown on the public Gallery page
+                                        {t("gallery.itemActiveHelp")}
                                     </p>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
@@ -744,7 +747,7 @@ export default function GalleryCMS() {
                                     }}
                                     disabled={submitting}
                                 >
-                                    Cancel
+                                    {t("gallery.cancel")}
                                 </Button>
                                 <Button
                                     type="submit"
@@ -752,10 +755,10 @@ export default function GalleryCMS() {
                                     className="bg-violet-600 hover:bg-violet-700 text-white font-semibold px-5"
                                 >
                                     {submitting
-                                        ? "Saving..."
+                                        ? t("gallery.saving")
                                         : editingItem
-                                            ? "Update Gallery Item"
-                                            : "Create Gallery Item"}
+                                            ? t("gallery.updateItem")
+                                            : t("gallery.createItem")}
                                 </Button>
                             </div>
                         </form>
@@ -775,14 +778,14 @@ export default function GalleryCMS() {
                             </div>
                             <div>
                                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                                    Delete Gallery Item?
+                                    {t("gallery.deleteQuestion")}
                                 </h3>
-                                <p className="text-xs text-slate-500">This action cannot be undone.</p>
+                                <p className="text-xs text-slate-500">{t("gallery.deleteWarning")}</p>
                             </div>
                         </div>
 
                         <p className="text-sm text-slate-600 dark:text-slate-300">
-                            {`Are you sure you want to delete this gallery item? (${deletingItem.title})`}
+                            {t("gallery.deleteConfirmText", { title: deletingItem.title })}
                         </p>
 
                         <div className="flex items-center justify-end gap-3 pt-2">
@@ -791,14 +794,14 @@ export default function GalleryCMS() {
                                 onClick={() => setDeletingItem(null)}
                                 disabled={submitting}
                             >
-                                Cancel
+                                {t("gallery.cancel")}
                             </Button>
                             <Button
                                 onClick={handleDelete}
                                 disabled={submitting}
                                 className="bg-rose-600 hover:bg-rose-700 text-white font-semibold"
                             >
-                                {submitting ? "Deleting..." : "Yes, Delete"}
+                                {submitting ? t("gallery.deleting") : t("gallery.deleteBtn")}
                             </Button>
                         </div>
                     </div>

@@ -24,9 +24,12 @@ import { healthCampService } from "@/services/healthCampService";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { MediaUploader } from "@/components/media-uploader";
+import { useTranslation } from "react-i18next";
+import LocalizedText from "@/components/LocalizedText";
 
 export default function HealthCampsCMS() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [camps, setCamps] = useState([]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -69,7 +72,7 @@ export default function HealthCampsCMS() {
             const campRes = await healthCampService.getHealthCamps();
             setCamps(campRes || []);
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to load health camps");
+            toast.error(err.response?.data?.message || t("camps.loadFailed"));
         } finally {
             setLoading(false);
         }
@@ -113,11 +116,11 @@ export default function HealthCampsCMS() {
     const handleSave = async (e) => {
         e.preventDefault();
         if (!form.name.trim()) {
-            toast.error("Please enter the camp name");
+            toast.error(t("camps.nameRequired"));
             return;
         }
         if (!form.date) {
-            toast.error("Please select the camp date");
+            toast.error(t("camps.dateRequired"));
             return;
         }
 
@@ -149,17 +152,17 @@ export default function HealthCampsCMS() {
 
             if (editingCamp) {
                 await healthCampService.updateHealthCamp(editingCamp._id, payload);
-                toast.success("Health camp updated successfully");
+                toast.success(t("camps.updated"));
                 setEditingCamp(null);
             } else {
                 await healthCampService.createHealthCamp(payload);
-                toast.success("Health camp created successfully");
+                toast.success(t("camps.created"));
             }
 
             setShowCreateModal(false);
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to save health camp");
+            toast.error(err.response?.data?.message || t("camps.saveFailed"));
         } finally {
             setSubmitting(false);
         }
@@ -170,10 +173,10 @@ export default function HealthCampsCMS() {
             await healthCampService.updateHealthCamp(item._id, {
                 is_active: item.is_active !== false ? false : true,
             });
-            toast.success("Health camp status updated successfully");
+            toast.success(t("camps.statusUpdated"));
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to toggle status");
+            toast.error(err.response?.data?.message || t("camps.toggleFailed"));
         }
     };
 
@@ -182,11 +185,11 @@ export default function HealthCampsCMS() {
         try {
             setSubmitting(true);
             await healthCampService.deleteHealthCamp(deletingCamp._id);
-            toast.success("Health camp deleted successfully");
+            toast.success(t("camps.deleted"));
             setDeletingCamp(null);
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to delete health camp");
+            toast.error(err.response?.data?.message || t("camps.deleteFailed"));
         } finally {
             setSubmitting(false);
         }
@@ -223,15 +226,15 @@ export default function HealthCampsCMS() {
                 ? "bg-emerald-500 text-white hover:bg-emerald-600 shadow-xs"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
                 }`}
-            title="Click to toggle active status"
+            title={t("camps.toggleActiveTitle")}
         >
             {row.is_active !== false ? (
                 <>
-                    <Check className="h-3 w-3" /> Active
+                    <Check className="h-3 w-3" /> {t("camps.active")}
                 </>
             ) : (
                 <>
-                    <X className="h-3 w-3" /> Inactive
+                    <X className="h-3 w-3" /> {t("camps.inactive")}
                 </>
             )}
         </button>
@@ -240,7 +243,7 @@ export default function HealthCampsCMS() {
     const headers = [
         {
             key: "name",
-            label: "Camp Name",
+            label: t("camps.colCampName"),
             render: (row) => (
                 <div className="flex items-center gap-2.5 max-w-xs">
                     <div className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 shrink-0">
@@ -248,10 +251,10 @@ export default function HealthCampsCMS() {
                     </div>
                     <div className="min-w-0">
                         <span className="block font-bold text-slate-900 dark:text-slate-100 text-sm truncate">
-                            {row.name}
+                            <LocalizedText value={row.name} />
                         </span>
                         <span className="block text-[11px] text-slate-400 truncate">
-                            {row.description || "—"}
+                            {row.description ? <LocalizedText value={row.description} /> : "—"}
                         </span>
                     </div>
                 </div>
@@ -259,7 +262,7 @@ export default function HealthCampsCMS() {
         },
         {
             key: "date",
-            label: "Camp Date",
+            label: t("camps.colCampDate"),
             render: (row) => (
                 <div className="flex flex-col text-xs">
                     <span className="inline-flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200">
@@ -283,7 +286,7 @@ export default function HealthCampsCMS() {
         },
         {
             key: "time",
-            label: "Time",
+            label: t("camps.colTime"),
             filterable: false,
             render: (row) => (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950/50 text-xs font-semibold text-rose-700 dark:text-rose-300 border border-rose-100 dark:border-rose-900">
@@ -294,16 +297,16 @@ export default function HealthCampsCMS() {
         },
         {
             key: "location",
-            label: "Location",
+            label: t("camps.colLocation"),
             render: (row) => (
                 <div className="flex items-start gap-1.5 max-w-xs">
                     <MapPin className="h-3.5 w-3.5 text-slate-400 mt-0.5 shrink-0" />
                     <div className="min-w-0">
                         <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">
-                            {row.venue || "—"}
+                            {row.venue ? <LocalizedText value={row.venue} /> : "—"}
                         </span>
                         <span className="block text-[11px] text-slate-400 truncate">
-                            {[row.city, row.state].filter(Boolean).join(", ") || ""}
+                            <LocalizedText value={[row.city, row.state].filter(Boolean).join(", ")} />
                         </span>
                     </div>
                 </div>
@@ -311,7 +314,7 @@ export default function HealthCampsCMS() {
         },
         {
             key: "registration",
-            label: "Registration",
+            label: t("camps.colRegistration"),
             filterable: false,
             render: (row) => (
                 <div className="flex flex-col gap-0.5 text-xs">
@@ -321,15 +324,15 @@ export default function HealthCampsCMS() {
                         }`}>
                         {row.registration_required ? (
                             <>
-                                <Users className="h-3 w-3" /> Required
+                                <Users className="h-3 w-3" /> {t("camps.required")}
                             </>
                         ) : (
-                            <>Not Required</>
+                            <>{t("camps.notRequired")}</>
                         )}
                     </span>
                     {row.registration_limit && (
                         <span className="text-[11px] text-slate-400 inline-flex items-center gap-x-1">
-                            <span>Limit:</span>
+                            <span>{t("camps.limit")}</span>
                             <span>{row.registration_limit}</span>
                         </span>
                     )}
@@ -338,13 +341,13 @@ export default function HealthCampsCMS() {
         },
         {
             key: "is_active",
-            label: "Status",
+            label: t("camps.colStatus"),
             filterable: false,
             render: renderCampStatus,
         },
         {
             key: "actions",
-            label: "Actions",
+            label: t("camps.colActions"),
             filterable: false,
             render: (row) => (
                 <div className="flex items-center justify-end gap-1.5">
@@ -353,7 +356,7 @@ export default function HealthCampsCMS() {
                         variant="ghost"
                         onClick={() => navigate(`/frontend-cms/health-camps/${row._id}`)}
                         className="h-8 w-8 p-0 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50/50"
-                        title="View Health Camp Details & Registrations"
+                        title={t("camps.viewTitle")}
                     >
                         <Eye className="h-3.5 w-3.5" />
                     </Button>
@@ -362,7 +365,7 @@ export default function HealthCampsCMS() {
                         variant="ghost"
                         onClick={() => openEditModal(row)}
                         className="h-8 w-8 p-0 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/50"
-                        title="Edit Health Camp"
+                        title={t("camps.editTitle")}
                     >
                         <Pencil className="h-3.5 w-3.5" />
                     </Button>
@@ -371,7 +374,7 @@ export default function HealthCampsCMS() {
                         variant="ghost"
                         onClick={() => setDeletingCamp(row)}
                         className="h-8 w-8 p-0 text-slate-500 hover:text-rose-600 hover:bg-rose-50/50"
-                        title="Delete Health Camp"
+                        title={t("camps.deleteTitle")}
                     >
                         <Trash2 className="h-3.5 w-3.5 text-rose-500" />
                     </Button>
@@ -387,13 +390,13 @@ export default function HealthCampsCMS() {
                 <div>
                     <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-rose-100">
                         <Sparkles className="h-4 w-4" />
-                        <span>Quantum Health Analysis</span>
+                        <span>{t("camps.eyebrow")}</span>
                     </div>
                     <h1 className="text-2xl font-bold mt-1 tracking-tight">
-                        Health Camps Management
+                        {t("camps.title")}
                     </h1>
                     <p className="text-sm text-rose-100 mt-1 max-w-2xl">
-                        Create and manage health camps shown on the public website. Only active camps appear on the site.
+                        {t("camps.subtitle")}
                     </p>
                 </div>
                 <Button
@@ -401,7 +404,7 @@ export default function HealthCampsCMS() {
                     className="bg-white text-rose-700 hover:bg-rose-50 font-bold px-5 py-2.5 rounded-xl shadow-md shrink-0 flex items-center gap-2 self-start sm:self-auto"
                 >
                     <Plus className="h-5 w-5" />
-                    <span>Add New Health Camp</span>
+                    <span>{t("camps.addNew")}</span>
                 </Button>
             </div>
 
@@ -411,13 +414,13 @@ export default function HealthCampsCMS() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Total Health Camps
+                                {t("camps.totalCamps")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {totalCount}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                All scheduled camps
+                                {t("camps.allScheduled")}
                             </p>
                         </div>
                         <div className="p-3 bg-rose-50 dark:bg-rose-950/60 rounded-xl text-rose-600 dark:text-rose-400">
@@ -430,13 +433,13 @@ export default function HealthCampsCMS() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                                Active Health Camps
+                                {t("camps.activeCamps")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {activeCount}
                             </p>
                             <p className="text-[11px] text-slate-500 mt-0.5">
-                                Shown on the public website
+                                {t("camps.shownOnSite")}
                             </p>
                         </div>
                         <div className="p-3 bg-emerald-100 dark:bg-emerald-950/60 rounded-xl text-emerald-600 dark:text-emerald-400">
@@ -449,13 +452,13 @@ export default function HealthCampsCMS() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Upcoming Camps
+                                {t("camps.upcomingCamps")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {upcomingCount}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                Date today or later
+                                {t("camps.dateTodayOrLater")}
                             </p>
                         </div>
                         <div className="p-3 bg-indigo-50 dark:bg-indigo-950/60 rounded-xl text-indigo-600 dark:text-indigo-400">
@@ -468,13 +471,13 @@ export default function HealthCampsCMS() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Registration Camps
+                                {t("camps.registrationCamps")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {regCount}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                With registration enabled
+                                {t("camps.withRegistration")}
                             </p>
                         </div>
                         <div className="p-3 bg-fuchsia-50 dark:bg-fuchsia-950/60 rounded-xl text-fuchsia-600 dark:text-fuchsia-400">
@@ -491,10 +494,10 @@ export default function HealthCampsCMS() {
                         <div>
                             <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-800 dark:text-slate-100">
                                 <HeartPulse className="h-4 w-4 text-rose-600" />
-                                Health Camps List
+                                {t("camps.listTitle")}
                             </CardTitle>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                Manage the health camps that appear on the public website.
+                                {t("camps.listSubtitle")}
                             </p>
                         </div>
                         <Button
@@ -502,7 +505,7 @@ export default function HealthCampsCMS() {
                             size="sm"
                             className="bg-rose-600 hover:bg-rose-700 text-white font-semibold self-start sm:self-auto"
                         >
-                            <Plus className="h-4 w-4 mr-1.5" /> Add Health Camp
+                            <Plus className="h-4 w-4 mr-1.5" /> {t("camps.addCamp")}
                         </Button>
                     </div>
                 </CardHeader>
@@ -511,12 +514,12 @@ export default function HealthCampsCMS() {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                         <Select value={filterStatus} onValueChange={setFilterStatus}>
                             <SelectTrigger className="w-full sm:w-44">
-                                <SelectValue placeholder="Filter by status" />
+                                <SelectValue placeholder={t("camps.filterByStatus")} />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All Statuses</SelectItem>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive">Inactive</SelectItem>
+                                <SelectItem value="all">{t("camps.allStatuses")}</SelectItem>
+                                <SelectItem value="active">{t("camps.active")}</SelectItem>
+                                <SelectItem value="inactive">{t("camps.inactive")}</SelectItem>
                             </SelectContent>
                         </Select>
                         <div className="flex items-center gap-2">
@@ -532,7 +535,7 @@ export default function HealthCampsCMS() {
                                     onClick={() => setFilterDate("")}
                                     className="text-xs font-semibold text-rose-600 hover:text-rose-700"
                                 >
-                                    Clear
+                                    {t("camps.clear")}
                                 </button>
                             )}
                         </div>
@@ -542,7 +545,7 @@ export default function HealthCampsCMS() {
                         headers={headers}
                         data={filteredCamps}
                         loading={loading}
-                        Search="Search by camp name, venue, or city..."
+                        Search={t("camps.searchPlaceholder")}
                     />
                 </CardContent>
             </Card>
@@ -560,12 +563,12 @@ export default function HealthCampsCMS() {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                                        {editingCamp ? "Edit Health Camp" : "Create Health Camp"}
+                                        {editingCamp ? t("camps.modalEditTitle") : t("camps.modalCreateTitle")}
                                     </h3>
                                     <p className="text-xs text-slate-500">
                                         {editingCamp
-                                            ? "Update camp details and active status"
-                                            : "Add a new health camp for the public website"}
+                                            ? t("camps.modalEditSubtitle")
+                                            : t("camps.modalCreateSubtitle")}
                                     </p>
                                 </div>
                             </div>
@@ -584,12 +587,12 @@ export default function HealthCampsCMS() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="sm:col-span-2">
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        Camp Name <span className="text-rose-500">*</span>
+                                        {t("camps.campName")} <span className="text-rose-500">*</span>
                                     </label>
                                     <input
                                         type="text"
                                         required
-                                        placeholder="e.g. Free Health Checkup Camp"
+                                        placeholder={t("camps.phName")}
                                         value={form.name}
                                         onChange={(e) => setForm({ ...form, name: e.target.value })}
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -598,11 +601,11 @@ export default function HealthCampsCMS() {
 
                                 <div className="sm:col-span-2">
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        Description
+                                        {t("camps.description")}
                                     </label>
                                     <textarea
                                         rows={2}
-                                        placeholder="Brief description of the camp and what it offers..."
+                                        placeholder={t("camps.phDescription")}
                                         value={form.description}
                                         onChange={(e) => setForm({ ...form, description: e.target.value })}
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -611,7 +614,7 @@ export default function HealthCampsCMS() {
 
                                 <div>
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        Camp Date <span className="text-rose-500">*</span>
+                                        {t("camps.campDate")} <span className="text-rose-500">*</span>
                                     </label>
                                     <input
                                         type="date"
@@ -623,19 +626,19 @@ export default function HealthCampsCMS() {
                                 </div>
                                 <div className="sm:col-span-2">
                                     <MediaUploader
-                                        label="Camp Image / Banner"
+                                        label={t("camps.campImage")}
                                         value={form.image}
                                         onUploaded={(ref) => setForm({ ...form, image: ref })}
                                         onClear={() => setForm({ ...form, image: "" })}
                                         folder="health-camps"
                                         accept="image"
-                                        helpText="JPG, JPEG, PNG or WebP (max 5MB) — upload from your device"
+                                        helpText={t("camps.uploadHelp")}
                                     />
                                 </div>
 
                                 <div>
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        Start Time
+                                        {t("camps.startTime")}
                                     </label>
                                     <input
                                         type="time"
@@ -646,7 +649,7 @@ export default function HealthCampsCMS() {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        End Time
+                                        {t("camps.endTime")}
                                     </label>
                                     <input
                                         type="time"
@@ -658,11 +661,11 @@ export default function HealthCampsCMS() {
 
                                 <div className="sm:col-span-2">
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        Venue
+                                        {t("camps.venue")}
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder="e.g. Community Hall, Main Road"
+                                        placeholder={t("camps.phVenue")}
                                         value={form.venue}
                                         onChange={(e) => setForm({ ...form, venue: e.target.value })}
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -671,11 +674,11 @@ export default function HealthCampsCMS() {
 
                                 <div className="sm:col-span-2">
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        Full Address
+                                        {t("camps.fullAddress")}
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder="Street, area, landmark..."
+                                        placeholder={t("camps.phAddress")}
                                         value={form.address}
                                         onChange={(e) => setForm({ ...form, address: e.target.value })}
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -684,11 +687,11 @@ export default function HealthCampsCMS() {
 
                                 <div>
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        City
+                                        {t("camps.city")}
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder="e.g. Ahmedabad"
+                                        placeholder={t("camps.phCity")}
                                         value={form.city}
                                         onChange={(e) => setForm({ ...form, city: e.target.value })}
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -696,11 +699,11 @@ export default function HealthCampsCMS() {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        State
+                                        {t("camps.state")}
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder="e.g. Gujarat"
+                                        placeholder={t("camps.phState")}
                                         value={form.state}
                                         onChange={(e) => setForm({ ...form, state: e.target.value })}
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -709,11 +712,11 @@ export default function HealthCampsCMS() {
 
                                 <div>
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        Pincode
+                                        {t("camps.pincode")}
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder="e.g. 380001"
+                                        placeholder={t("camps.phPincode")}
                                         value={form.pincode}
                                         onChange={(e) => setForm({ ...form, pincode: e.target.value })}
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -721,12 +724,12 @@ export default function HealthCampsCMS() {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                        Registration Limit (Optional)
+                                        {t("camps.registrationLimit")}
                                     </label>
                                     <input
                                         type="number"
                                         min="0"
-                                        placeholder="e.g. 100"
+                                        placeholder={t("camps.phRegistrationLimit")}
                                         value={form.registration_limit}
                                         onChange={(e) => setForm({ ...form, registration_limit: e.target.value })}
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -735,16 +738,16 @@ export default function HealthCampsCMS() {
 
                                 <div className="sm:col-span-2 border-t border-slate-100 dark:border-slate-800 pt-4">
                                     <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
-                                        Contact Information
+                                        {t("camps.contactInformation")}
                                     </p>
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                         <div>
                                             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">
-                                                Contact Person
+                                                {t("camps.contactPerson")}
                                             </label>
                                             <input
                                                 type="text"
-                                                placeholder="Name of contact person"
+                                                placeholder={t("camps.phContactPerson")}
                                                 value={form.contact_person}
                                                 onChange={(e) => setForm({ ...form, contact_person: e.target.value })}
                                                 className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -752,11 +755,11 @@ export default function HealthCampsCMS() {
                                         </div>
                                         <div>
                                             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">
-                                                Contact Number
+                                                {t("camps.contactNumber")}
                                             </label>
                                             <input
                                                 type="text"
-                                                placeholder="e.g. +91 98765 43210"
+                                                placeholder={t("camps.phContactNumber")}
                                                 value={form.contact_number}
                                                 onChange={(e) => setForm({ ...form, contact_number: e.target.value })}
                                                 className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -764,11 +767,11 @@ export default function HealthCampsCMS() {
                                         </div>
                                         <div>
                                             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">
-                                                Contact Email
+                                                {t("camps.contactEmail")}
                                             </label>
                                             <input
                                                 type="email"
-                                                placeholder="contact@example.com"
+                                                placeholder={t("camps.phContactEmail")}
                                                 value={form.contact_email}
                                                 onChange={(e) => setForm({ ...form, contact_email: e.target.value })}
                                                 className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -779,11 +782,11 @@ export default function HealthCampsCMS() {
 
                                 <div className="sm:col-span-2 border-t border-slate-100 dark:border-slate-800 pt-4">
                                     <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
-                                        Additional Notes
+                                        {t("camps.additionalNotes")}
                                     </p>
                                     <textarea
                                         rows={2}
-                                        placeholder="Any other instructions for attendees..."
+                                        placeholder={t("camps.phNotes")}
                                         value={form.additional_notes}
                                         onChange={(e) => setForm({ ...form, additional_notes: e.target.value })}
                                         className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
@@ -796,10 +799,10 @@ export default function HealthCampsCMS() {
                                 <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                            Camp Active
+                                            {t("camps.campActive")}
                                         </p>
                                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                                            Active camps are shown on the public website
+                                            {t("camps.campActiveHelp")}
                                         </p>
                                     </div>
                                     <label className="relative inline-flex items-center cursor-pointer">
@@ -816,10 +819,10 @@ export default function HealthCampsCMS() {
                                 <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                            Registration Required
+                                            {t("camps.registrationRequired")}
                                         </p>
                                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                                            Visitors can register for this camp online
+                                            {t("camps.registrationHelp")}
                                         </p>
                                     </div>
                                     <label className="relative inline-flex items-center cursor-pointer">
@@ -844,7 +847,7 @@ export default function HealthCampsCMS() {
                                     }}
                                     disabled={submitting}
                                 >
-                                    Cancel
+                                    {t("camps.cancel")}
                                 </Button>
                                 <Button
                                     type="submit"
@@ -852,10 +855,10 @@ export default function HealthCampsCMS() {
                                     className="bg-rose-600 hover:bg-rose-700 text-white font-semibold px-5"
                                 >
                                     {submitting
-                                        ? "Saving..."
+                                        ? t("camps.saving")
                                         : editingCamp
-                                            ? "Update Health Camp"
-                                            : "Create Health Camp"}
+                                            ? t("camps.updateCamp")
+                                            : t("camps.createCamp")}
                                 </Button>
                             </div>
                         </form>
@@ -875,14 +878,14 @@ export default function HealthCampsCMS() {
                             </div>
                             <div>
                                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                                    Delete Health Camp?
+                                    {t("camps.deleteQuestion")}
                                 </h3>
-                                <p className="text-xs text-slate-500">This action cannot be undone.</p>
+                                <p className="text-xs text-slate-500">{t("camps.deleteWarning")}</p>
                             </div>
                         </div>
 
                         <p className="text-sm text-slate-600 dark:text-slate-300">
-                            {`Are you sure you want to delete health camp "${deletingCamp.name}"?`}
+                            {t("camps.deleteConfirmText", { name: deletingCamp.name })}
                         </p>
 
                         <div className="flex items-center justify-end gap-3 pt-2">
@@ -891,14 +894,14 @@ export default function HealthCampsCMS() {
                                 onClick={() => setDeletingCamp(null)}
                                 disabled={submitting}
                             >
-                                Cancel
+                                {t("camps.cancel")}
                             </Button>
                             <Button
                                 onClick={handleDelete}
                                 disabled={submitting}
                                 className="bg-rose-600 hover:bg-rose-700 text-white font-semibold"
                             >
-                                {submitting ? "Deleting..." : "Are you sure you want to delete this item? This action cannot be undone."}
+                                {submitting ? t("camps.deleting") : t("camps.deleteBtn")}
                             </Button>
                         </div>
                     </div>

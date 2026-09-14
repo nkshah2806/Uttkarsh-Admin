@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import axiosInstance from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Printer, Download, Share2, Loader2 } from "lucide-react";
+import { PageLoader } from "@/components/Loader";
 import { toast } from "sonner";
 import {
   openReportForPdfSave,
@@ -11,6 +13,8 @@ import {
 
 export default function PDFReportViewer() {
   const { visitId } = useParams();
+  const { t, i18n } = useTranslation();
+  const reportLang = (i18n.resolvedLanguage || i18n.language || "en").split("-")[0];
 
   const [reportHtml, setReportHtml] = useState("");
   const [reportId, setReportId] = useState(null);
@@ -32,7 +36,7 @@ export default function PDFReportViewer() {
         const res = await axiosInstance.post(
           `v1/visits/${visitId}/generate-pdf`,
           {
-            lang: "en",
+            lang: reportLang,
           }
         );
         if (!isMountedRef.current) return;
@@ -40,7 +44,7 @@ export default function PDFReportViewer() {
         setReportId(res.data.report_id);
       } catch (err) {
         if (isMountedRef.current) {
-          toast.error("Failed to compile PDF report");
+          toast.error(t("healthAnalysis.compileFailed"));
         }
       } finally {
         if (isMountedRef.current) {
@@ -48,7 +52,7 @@ export default function PDFReportViewer() {
         }
       }
     },
-    [visitId]
+    [visitId, reportLang, t]
   );
 
   useEffect(() => {
@@ -75,19 +79,19 @@ export default function PDFReportViewer() {
   const handleDownloadPdf = async () => {
     if (pdfBusy) return; // prevent duplicate clicks while generating
     if (loading || !reportHtml) {
-      toast.error("Report is not ready yet. Please wait for it to compile.");
+      toast.error(t("healthAnalysis.reportNotReady"));
       return;
     }
     setPdfBusy(true);
     try {
       const win = openReportForPdfSave(reportHtml, reportTitle);
       if (!win) {
-        toast.error("Could not open the print window. Please allow pop-ups for this site and try again.");
+        toast.error(t("healthAnalysis.popupBlocked"));
       } else {
-        toast.success("Choose \u201CSave as PDF\u201D as the destination to download the report.");
+        toast.success(t("healthAnalysis.saveAsPdf"));
       }
     } catch (err) {
-      toast.error("Failed to open PDF download. Please try again.");
+      toast.error(t("healthAnalysis.pdfOpenFailed"));
     } finally {
       setPdfBusy(false);
     }
@@ -97,7 +101,7 @@ export default function PDFReportViewer() {
   const handleWhatsAppShare = async () => {
     if (pdfBusy) return; // prevent duplicate clicks while generating
     if (loading || !reportId || !reportHtml) {
-      toast.error("Report is not ready yet. Please wait for it to compile.");
+      toast.error(t("healthAnalysis.reportNotReady"));
       return;
     }
     setPdfBusy(true);
@@ -113,12 +117,12 @@ export default function PDFReportViewer() {
         },
       });
       if (started) {
-        toast.success("PDF generated. Save it, attach it to the WhatsApp chat, and send it with the message.");
+        toast.success(t("healthAnalysis.whatsappGenerated"));
       } else {
-        toast.error("Could not open the print window. Please allow pop-ups for this site and try again.");
+        toast.error(t("healthAnalysis.popupBlocked"));
       }
     } catch (err) {
-      toast.error("Failed to generate WhatsApp share link");
+      toast.error(t("healthAnalysis.whatsappFailed"));
     } finally {
       setPdfBusy(false);
     }
@@ -129,12 +133,12 @@ export default function PDFReportViewer() {
       {/* Top Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border shadow-sm sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <span className="font-bold text-slate-800 dark:text-white">PDF Report Document</span>
+          <span className="font-bold text-slate-800 dark:text-white">{t("healthAnalysis.pdfTitle")}</span>
         </div>
 
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={handlePrint}>
-            <Printer className="mr-2 h-4 w-4" /> Print Report
+            <Printer className="mr-2 h-4 w-4" /> {t("healthAnalysis.printReport")}
           </Button>
           <Button
             variant="outline"
@@ -146,7 +150,7 @@ export default function PDFReportViewer() {
             ) : (
               <Download className="mr-2 h-4 w-4" />
             )}
-            Download PDF
+            {t("healthAnalysis.downloadPdf")}
           </Button>
           <Button
             onClick={handleWhatsAppShare}
@@ -158,15 +162,15 @@ export default function PDFReportViewer() {
             ) : (
               <Share2 className="mr-2 h-4 w-4" />
             )}
-            Share via WhatsApp
+            {t("healthAnalysis.shareWhatsapp")}
           </Button>
         </div>
       </div>
 
       {/* HTML Report Document Viewer Container */}
       {loading ? (
-        <div className="p-12 text-center text-muted-foreground bg-white rounded-xl shadow">
-          Compiling multi-language PDF layout...
+        <div className="bg-white rounded-xl shadow">
+          <PageLoader label={t("healthAnalysis.compiling")} minHeight="14rem" />
         </div>
       ) : (
         <div className="bg-white p-4 rounded-xl shadow-lg border max-w-4xl mx-auto overflow-hidden">

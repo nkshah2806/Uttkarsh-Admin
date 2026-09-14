@@ -18,9 +18,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import ReusableTable from "@/components/ReusableTable";
+import LocalizedText from "@/components/LocalizedText";
 import { scanPricingService } from "@/services/scanPricingService";
+import { useTranslation } from "react-i18next";
 
 export default function ScanPricingManagement() {
+    const { t } = useTranslation();
 
     const [pricings, setPricings] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -47,7 +50,10 @@ export default function ScanPricingManagement() {
             const res = await scanPricingService.getScanPricings();
             setPricings(res || []);
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to load scan pricings");
+            toast.error(
+                err.response?.data?.message ||
+                t("healthAnalysis.scanPricing.loadFailed"),
+            );
         } finally {
             setLoading(false);
         }
@@ -78,11 +84,11 @@ export default function ScanPricingManagement() {
     const handleSave = async (e) => {
         e.preventDefault();
         if (!form.name.trim()) {
-            toast.error("Please enter the scan price name");
+            toast.error(t("healthAnalysis.scanPricing.enterName"));
             return;
         }
         if (form.amount === "" || isNaN(Number(form.amount)) || Number(form.amount) < 0) {
-            toast.error("Please enter a valid scan price amount");
+            toast.error(t("healthAnalysis.scanPricing.enterValidAmount"));
             return;
         }
 
@@ -98,17 +104,20 @@ export default function ScanPricingManagement() {
 
             if (editingPricing) {
                 await scanPricingService.updateScanPricing(editingPricing._id, payload);
-                toast.success("Scan pricing updated successfully");
+                toast.success(t("healthAnalysis.scanPricing.updatedSuccess"));
                 setEditingPricing(null);
             } else {
                 await scanPricingService.createScanPricing(payload);
-                toast.success("Scan pricing created successfully");
+                toast.success(t("healthAnalysis.scanPricing.createdSuccess"));
             }
 
             setShowCreateModal(false);
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to save scan pricing");
+            toast.error(
+                err.response?.data?.message ||
+                t("healthAnalysis.scanPricing.saveFailed"),
+            );
         } finally {
             setSubmitting(false);
         }
@@ -119,20 +128,26 @@ export default function ScanPricingManagement() {
             await scanPricingService.updateScanPricing(item._id, {
                 is_active: item.is_active !== false ? false : true,
             });
-            toast.success("Scan pricing status updated successfully");
+            toast.success(t("healthAnalysis.scanPricing.statusUpdated"));
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to toggle status");
+            toast.error(
+                err.response?.data?.message ||
+                t("healthAnalysis.scanPricing.statusFailed"),
+            );
         }
     };
 
     const handleSetDefault = async (item) => {
         try {
             await scanPricingService.updateScanPricing(item._id, { is_default: true });
-            toast.success("Default scan pricing set successfully");
+            toast.success(t("healthAnalysis.scanPricing.defaultSet"));
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to set default scan pricing");
+            toast.error(
+                err.response?.data?.message ||
+                t("healthAnalysis.scanPricing.defaultFailed"),
+            );
         }
     };
 
@@ -142,14 +157,19 @@ export default function ScanPricingManagement() {
             setSubmitting(true);
             const res = await scanPricingService.deleteScanPricing(deletingPricing._id);
             if (res?.data?.deactivated) {
-                toast.success("Scan pricing cannot be deleted as it is used in scans. It has been deactivated instead.");
+                toast.success(
+                    t("healthAnalysis.scanPricing.deactivatedInstead"),
+                );
             } else {
-                toast.success("Scan pricing deleted successfully");
+                toast.success(t("healthAnalysis.scanPricing.deletedSuccess"));
             }
             setDeletingPricing(null);
             fetchData();
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to delete scan pricing");
+            toast.error(
+                err.response?.data?.message ||
+                t("healthAnalysis.scanPricing.deleteFailed"),
+            );
         } finally {
             setSubmitting(false);
         }
@@ -164,7 +184,7 @@ export default function ScanPricingManagement() {
     const headers = [
         {
             key: "name",
-            label: "Scan Price Name",
+            label: t("healthAnalysis.scanPricing.colName"),
             render: (row) => (
                 <div className="flex items-center gap-2.5">
                     <div className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
@@ -172,10 +192,10 @@ export default function ScanPricingManagement() {
                     </div>
                     <div className="min-w-0">
                         <span className="block font-bold text-slate-900 dark:text-slate-100 text-sm truncate">
-                            {row.name}
+                            <LocalizedText value={row.name} />
                         </span>
                         <span className="block text-[11px] text-slate-400 truncate max-w-xs">
-                            {row.description || "—"}
+                            <LocalizedText value={row.description} fallback="—" />
                         </span>
                     </div>
                 </div>
@@ -183,7 +203,7 @@ export default function ScanPricingManagement() {
         },
         {
             key: "amount",
-            label: "Scan Price (₹)",
+            label: t("healthAnalysis.scanPricing.colAmount"),
             render: (row) => (
                 <div className="flex items-center gap-1.5">
                     <IndianRupee className="h-4 w-4 text-emerald-500" />
@@ -195,7 +215,7 @@ export default function ScanPricingManagement() {
         },
         {
             key: "is_active",
-            label: "Status",
+            label: t("healthAnalysis.scanPricing.colStatus"),
             render: (row) => (
                 <button
                     onClick={() => handleToggleStatus(row)}
@@ -203,15 +223,17 @@ export default function ScanPricingManagement() {
                         ? "bg-emerald-500 text-white hover:bg-emerald-600 shadow-xs"
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
                         }`}
-                    title="Click to toggle active status"
+                    title={t("healthAnalysis.scanPricing.toggleTitle")}
                 >
                     {row.is_active !== false ? (
                         <>
-                            <Power className="h-3 w-3" /> Active
+                            <Power className="h-3 w-3" />{" "}
+                            {t("healthAnalysis.scanPricing.active")}
                         </>
                     ) : (
                         <>
-                            <X className="h-3 w-3" /> Inactive
+                            <X className="h-3 w-3" />{" "}
+                            {t("healthAnalysis.scanPricing.inactive")}
                         </>
                     )}
                 </button>
@@ -219,12 +241,12 @@ export default function ScanPricingManagement() {
         },
         {
             key: "is_default",
-            label: "Default Price",
+            label: t("healthAnalysis.scanPricing.colDefault"),
             render: (row) =>
                 row.is_active !== false && row.is_default ? (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 dark:bg-amber-950/50 text-xs font-bold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
                         <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                        Default
+                        {t("healthAnalysis.scanPricing.defaultBadge")}
                     </span>
                 ) : row.is_active !== false ? (
                     <Button
@@ -234,7 +256,7 @@ export default function ScanPricingManagement() {
                         className="h-7 px-2 text-xs font-semibold text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/50"
                     >
                         <Star className="h-3 w-3 mr-1" />
-                        Set as Default
+                        {t("healthAnalysis.scanPricing.setAsDefault")}
                     </Button>
                 ) : (
                     <span className="text-xs text-slate-400">—</span>
@@ -242,7 +264,7 @@ export default function ScanPricingManagement() {
         },
         {
             key: "updatedAt",
-            label: "Last Updated",
+            label: t("healthAnalysis.scanPricing.colLastUpdated"),
             render: (row) => (
                 <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
                     <Clock className="h-3.5 w-3.5 text-slate-400" />
@@ -258,7 +280,7 @@ export default function ScanPricingManagement() {
         },
         {
             key: "actions",
-            label: "Actions",
+            label: t("healthAnalysis.scanPricing.colActions"),
             filterable: false,
             render: (row) => (
                 <div className="flex items-center justify-end gap-1.5">
@@ -267,7 +289,7 @@ export default function ScanPricingManagement() {
                         variant="ghost"
                         onClick={() => openEditModal(row)}
                         className="h-8 w-8 p-0 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/50"
-                        title="Edit Scan Pricing"
+                        title={t("healthAnalysis.scanPricing.editTitle")}
                     >
                         <Pencil className="h-3.5 w-3.5" />
                     </Button>
@@ -276,7 +298,7 @@ export default function ScanPricingManagement() {
                         variant="ghost"
                         onClick={() => setDeletingPricing(row)}
                         className="h-8 w-8 p-0 text-slate-500 hover:text-rose-600 hover:bg-rose-50/50"
-                        title="Delete Scan Pricing"
+                        title={t("healthAnalysis.scanPricing.deleteTitle")}
                     >
                         <Trash2 className="h-3.5 w-3.5 text-rose-500" />
                     </Button>
@@ -292,13 +314,15 @@ export default function ScanPricingManagement() {
                 <div>
                     <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-amber-100">
                         <Sparkles className="h-4 w-4" />
-                        <span>Quantum Health Analysis</span>
+                        <span>
+                            {t("healthAnalysis.scanPricing.bannerEyebrow")}
+                        </span>
                     </div>
                     <h1 className="text-2xl font-bold mt-1 tracking-tight">
-                        Scan Pricing Management
+                        {t("healthAnalysis.scanPricing.bannerTitle")}
                     </h1>
                     <p className="text-sm text-amber-100 mt-1 max-w-2xl">
-                        Configure the scan prices available when a new scan is created. The default price is applied automatically.
+                        {t("healthAnalysis.scanPricing.bannerDesc")}
                     </p>
                 </div>
                 <Button
@@ -306,7 +330,7 @@ export default function ScanPricingManagement() {
                     className="bg-white text-orange-700 hover:bg-orange-50 font-bold px-5 py-2.5 rounded-xl shadow-md shrink-0 flex items-center gap-2 self-start sm:self-auto"
                 >
                     <Plus className="h-5 w-5" />
-                    <span>Add New Scan Pricing</span>
+                    <span>{t("healthAnalysis.scanPricing.addNew")}</span>
                 </Button>
             </div>
 
@@ -316,13 +340,13 @@ export default function ScanPricingManagement() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Total Scan Pricings
+                                {t("healthAnalysis.scanPricing.cardTotal")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {totalCount}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                Pricing configurations
+                                {t("healthAnalysis.scanPricing.cardTotalHint")}
                             </p>
                         </div>
                         <div className="p-3 bg-amber-50 dark:bg-amber-950/60 rounded-xl text-amber-600 dark:text-amber-400">
@@ -335,13 +359,13 @@ export default function ScanPricingManagement() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                                Active Scan Pricings
+                                {t("healthAnalysis.scanPricing.cardActive")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {activeCount}
                             </p>
                             <p className="text-[11px] text-slate-500 mt-0.5">
-                                Shown when creating a new scan
+                                {t("healthAnalysis.scanPricing.cardActiveHint")}
                             </p>
                         </div>
                         <div className="p-3 bg-emerald-100 dark:bg-emerald-950/60 rounded-xl text-emerald-600 dark:text-emerald-400">
@@ -354,13 +378,13 @@ export default function ScanPricingManagement() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                Inactive Scan Pricings
+                                {t("healthAnalysis.scanPricing.cardInactive")}
                             </p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                                 {inactiveCount}
                             </p>
                             <p className="text-[11px] text-slate-400 mt-0.5">
-                                Hidden from new scan creation
+                                {t("healthAnalysis.scanPricing.cardInactiveHint")}
                             </p>
                         </div>
                         <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500">
@@ -373,7 +397,7 @@ export default function ScanPricingManagement() {
                     <CardContent className="p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
-                                Default Scan Price
+                                {t("healthAnalysis.scanPricing.cardDefault")}
                             </p>
                             {defaultPricing ? (
                                 <>
@@ -384,7 +408,7 @@ export default function ScanPricingManagement() {
                                         </span>
                                     </p>
                                     <p className="text-[11px] text-slate-400 mt-0.5">
-                                        {defaultPricing.name}
+                                        <LocalizedText value={defaultPricing.name} />
                                     </p>
                                 </>
                             ) : (
@@ -405,10 +429,10 @@ export default function ScanPricingManagement() {
                         <div>
                             <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-800 dark:text-slate-100">
                                 <IndianRupee className="h-4 w-4 text-amber-600" />
-                                Scan Pricing Management
+                                {t("healthAnalysis.scanPricing.tableTitle")}
                             </CardTitle>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                These prices are shown when creating a new client scan.
+                                {t("healthAnalysis.scanPricing.tableDesc")}
                             </p>
                         </div>
                         <Button
@@ -416,7 +440,8 @@ export default function ScanPricingManagement() {
                             size="sm"
                             className="bg-amber-600 hover:bg-amber-700 text-white font-semibold self-start sm:self-auto"
                         >
-                            <Plus className="h-4 w-4 mr-1.5" /> Add Scan Pricing
+                            <Plus className="h-4 w-4 mr-1.5" />{" "}
+                            {t("healthAnalysis.scanPricing.addPricing")}
                         </Button>
                     </div>
                 </CardHeader>
@@ -425,7 +450,7 @@ export default function ScanPricingManagement() {
                         headers={headers}
                         data={pricings}
                         loading={loading}
-                        Search="Search by scan price name..."
+                        Search={t("healthAnalysis.scanPricing.searchPlaceholder")}
                     />
                 </CardContent>
             </Card>
@@ -443,12 +468,14 @@ export default function ScanPricingManagement() {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                                        {editingPricing ? "Edit Scan Pricing" : "Create Scan Pricing"}
+                                        {editingPricing
+                                            ? t("healthAnalysis.scanPricing.modalEditTitle")
+                                            : t("healthAnalysis.scanPricing.modalCreateTitle")}
                                     </h3>
                                     <p className="text-xs text-slate-500">
                                         {editingPricing
-                                            ? "Update pricing details and active status"
-                                            : "Add a new scan price configuration"}
+                                            ? t("healthAnalysis.scanPricing.modalEditSubtitle")
+                                            : t("healthAnalysis.scanPricing.modalCreateSubtitle")}
                                     </p>
                                 </div>
                             </div>
@@ -466,12 +493,13 @@ export default function ScanPricingManagement() {
                         <form onSubmit={handleSave} className="space-y-4">
                             <div>
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                    Scan Price Name <span className="text-rose-500">*</span>
+                                    {t("healthAnalysis.scanPricing.nameLabel")}{" "}
+                                    <span className="text-rose-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     required
-                                    placeholder="e.g. New Scan Price"
+                                    placeholder={t("healthAnalysis.scanPricing.namePlaceholder")}
                                     value={form.name}
                                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                                     className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
@@ -480,7 +508,8 @@ export default function ScanPricingManagement() {
 
                             <div>
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                    Scan Price (₹) <span className="text-rose-500">*</span>
+                                    {t("healthAnalysis.scanPricing.amountLabel")}{" "}
+                                    <span className="text-rose-500">*</span>
                                 </label>
                                 <div className="relative">
                                     <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -489,7 +518,7 @@ export default function ScanPricingManagement() {
                                         min="0"
                                         step="0.01"
                                         required
-                                        placeholder="e.g. 500"
+                                        placeholder={t("healthAnalysis.scanPricing.amountPlaceholder")}
                                         value={form.amount}
                                         onChange={(e) => setForm({ ...form, amount: e.target.value })}
                                         className="w-full text-sm pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
@@ -499,11 +528,11 @@ export default function ScanPricingManagement() {
 
                             <div>
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                                    Description
+                                    {t("healthAnalysis.scanPricing.descriptionLabel")}
                                 </label>
                                 <textarea
                                     rows={2}
-                                    placeholder="Optional description for this pricing..."
+                                    placeholder={t("healthAnalysis.scanPricing.descriptionPlaceholder")}
                                     value={form.description}
                                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                                     className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
@@ -514,10 +543,10 @@ export default function ScanPricingManagement() {
                                 <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                            Pricing Active
+                                            {t("healthAnalysis.scanPricing.activeLabel")}
                                         </p>
                                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                                            Active pricing is shown when creating a new scan
+                                            {t("healthAnalysis.scanPricing.activeHint")}
                                         </p>
                                     </div>
                                     <label className="relative inline-flex items-center cursor-pointer">
@@ -534,10 +563,10 @@ export default function ScanPricingManagement() {
                                 <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                            Default Pricing
+                                            {t("healthAnalysis.scanPricing.defaultLabel")}
                                         </p>
                                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                                            The default pricing is auto-selected when creating a new scan
+                                            {t("healthAnalysis.scanPricing.defaultHint")}
                                         </p>
                                     </div>
                                     <label className="relative inline-flex items-center cursor-pointer">
@@ -562,7 +591,7 @@ export default function ScanPricingManagement() {
                                     }}
                                     disabled={submitting}
                                 >
-                                    Cancel
+                                    {t("healthAnalysis.scanPricing.cancel")}
                                 </Button>
                                 <Button
                                     type="submit"
@@ -570,10 +599,10 @@ export default function ScanPricingManagement() {
                                     className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-5"
                                 >
                                     {submitting
-                                        ? "Saving..."
+                                        ? t("healthAnalysis.scanPricing.saving")
                                         : editingPricing
-                                            ? "Update Scan Pricing"
-                                            : "Create Scan Pricing"}
+                                            ? t("healthAnalysis.scanPricing.updateBtn")
+                                            : t("healthAnalysis.scanPricing.createBtn")}
                                 </Button>
                             </div>
                         </form>
@@ -593,14 +622,18 @@ export default function ScanPricingManagement() {
                             </div>
                             <div>
                                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                                    Delete Scan Pricing?
+                                    {t("healthAnalysis.scanPricing.deleteConfirmTitle")}
                                 </h3>
-                                <p className="text-xs text-slate-500">This action cannot be undone.</p>
+                                <p className="text-xs text-slate-500">
+                                    {t("healthAnalysis.scanPricing.deleteCannotUndo")}
+                                </p>
                             </div>
                         </div>
 
                         <p className="text-sm text-slate-600 dark:text-slate-300">
-                            {`Are you sure you want to delete scan pricing "${deletingPricing.name}"?`}
+                            {t("healthAnalysis.scanPricing.deleteConfirm", {
+                                name: deletingPricing.name,
+                            })}
                         </p>
 
                         <div className="flex items-center justify-end gap-3 pt-2">
@@ -609,14 +642,16 @@ export default function ScanPricingManagement() {
                                 onClick={() => setDeletingPricing(null)}
                                 disabled={submitting}
                             >
-                                Cancel
+                                {t("healthAnalysis.scanPricing.cancel")}
                             </Button>
                             <Button
                                 onClick={handleDelete}
                                 disabled={submitting}
                                 className="bg-rose-600 hover:bg-rose-700 text-white font-semibold"
                             >
-                                {submitting ? "Deleting..." : "Are you sure you want to delete this item? This action cannot be undone."}
+                                {submitting
+                                    ? t("healthAnalysis.scanPricing.deleting")
+                                    : t("healthAnalysis.scanPricing.deleteConfirmTitle")}
                             </Button>
                         </div>
                     </div>

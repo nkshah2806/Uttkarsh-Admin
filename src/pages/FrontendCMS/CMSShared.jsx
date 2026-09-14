@@ -1,6 +1,8 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Save, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageLoader } from "@/components/Loader";
 
 /* ─────────────────────────────────────────
    Tiny reusable field components
@@ -44,6 +46,8 @@ export function CMSTextarea({ value, onChange, rows = 3, placeholder }) {
  * Reusable page header for CMS pages with Save & Reset buttons.
  */
 export function CMSPageHeader({ icon: Icon, title, description, onSave, onReset, saving }) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex items-center gap-3">
@@ -58,7 +62,7 @@ export function CMSPageHeader({ icon: Icon, title, description, onSave, onReset,
       <div className="flex gap-3 shrink-0">
         {onReset && (
           <Button variant="outline" size="sm" onClick={onReset} className="gap-2">
-            <RotateCcw className="h-4 w-4" /> Reset Defaults
+            <RotateCcw className="h-4 w-4" /> {t("cms.resetDefaults")}
           </Button>
         )}
         <Button
@@ -68,7 +72,7 @@ export function CMSPageHeader({ icon: Icon, title, description, onSave, onReset,
           className="gap-2 bg-violet-600 hover:bg-violet-700 text-white"
         >
           <Save className="h-4 w-4" />
-          {saving ? "Publishing…" : "Publish Live"}
+          {saving ? t("cms.publishing") : t("cms.publishLive")}
         </Button>
       </div>
     </div>
@@ -79,6 +83,8 @@ export function CMSPageHeader({ icon: Icon, title, description, onSave, onReset,
  * Sticky save bar pinned to the bottom of the page.
  */
 export function StickyBar({ onSave, saving }) {
+  const { t } = useTranslation();
+
   return (
     <div className="sticky bottom-4 flex justify-end pt-2">
       <Button
@@ -87,7 +93,7 @@ export function StickyBar({ onSave, saving }) {
         className="shadow-lg gap-2 bg-violet-600 hover:bg-violet-700 text-white px-8 py-5 rounded-2xl"
       >
         <Save className="h-5 w-5" />
-        {saving ? "Publishing Changes…" : "Publish Live Changes"}
+        {saving ? t("cms.publishingChanges") : t("cms.publishLiveChanges")}
       </Button>
     </div>
   );
@@ -97,10 +103,13 @@ export function StickyBar({ onSave, saving }) {
  * Standard loading screen for all CMS pages.
  */
 export function CMSLoader({ label }) {
+  const { t } = useTranslation();
+
   return (
-    <div className="flex h-96 items-center justify-center text-muted-foreground">
-      {label ? label : "Loading content…"}
-    </div>
+    <PageLoader
+      label={label ? label : t("cms.loadingContent")}
+      minHeight="20rem"
+    />
   );
 }
 
@@ -108,6 +117,7 @@ export function CMSLoader({ label }) {
  * Hook: load content, provide set/save/reset helpers.
  */
 export function useCMSContent(getContent, saveContent, resetContentToDefaults, DEFAULT_CONTENT) {
+  const { t } = useTranslation();
   const [data, setData] = React.useState(DEFAULT_CONTENT);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
@@ -134,19 +144,19 @@ export function useCMSContent(getContent, saveContent, resetContentToDefaults, D
     setSaving(true);
     try {
       await saveContent(data);
-      toast.success("✅ Live site content updated!");
+      toast.success(`✅ ${t("cms.liveSiteUpdated")}`);
     } catch {
-      toast.error("Failed to save content. Please try again.");
+      toast.error(t("cms.saveContentFailed"));
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async (toast) => {
-    if (!window.confirm("Reset ALL content to factory defaults? This cannot be undone.")) return;
+    if (!window.confirm(t("cms.resetConfirm"))) return;
     const d = await resetContentToDefaults();
     setData(d);
-    toast.success("Content reset to defaults.");
+    toast.success(t("cms.contentReset"));
   };
 
   return { data, setData, loading, saving, set, handleSave, handleReset };

@@ -1,4 +1,5 @@
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { useTranslation } from "react-i18next";
 
 import {
   ChartContainer,
@@ -23,14 +24,14 @@ const chartData = [
   { month: "Jan", totalAmount: 0 },
 ];
 
-const chartConfig = {
-  totalAmount: {
-    label: "Monthly Revenue",
-    color: "#7648B2",
-  },
-};
-
 export function Chart({ monthlyBookings }) {
+  const { t } = useTranslation();
+  const chartConfig = {
+    totalAmount: {
+      label: t("components.monthlyRevenue"),
+      color: "#7648B2",
+    },
+  };
   return (
     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
       <BarChart data={monthlyBookings || chartData}>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { PageLoader } from "@/components/Loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     HeartPulse,
@@ -23,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import ReusableTable from "@/components/ReusableTable";
+import LocalizedText from "@/components/LocalizedText";
 import { healthCampService } from "@/services/healthCampService";
 import { Config } from "@/lib/Config";
 
@@ -58,6 +61,7 @@ const formatDateTime = (iso) => {
 const shortId = (id) => (id ? String(id).slice(-8).toUpperCase() : "—");
 
 export default function HealthCampDetails() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { campId } = useParams();
 
@@ -71,13 +75,13 @@ export default function HealthCampDetails() {
             setError("");
             const res = await healthCampService.getHealthCampById(campId);
             if (!res) {
-                setError("Health camp not found.");
+                setError(t("campDetails.notFound"));
                 setCamp(null);
                 return;
             }
             setCamp(res);
         } catch (err) {
-            setError(err?.response?.data?.message || "Failed to load health camp details");
+            setError(err?.response?.data?.message || t("campDetails.loadFailed"));
             setCamp(null);
         } finally {
             setLoading(false);
@@ -103,22 +107,22 @@ export default function HealthCampDetails() {
     const renderStatusBadge = (active) =>
         active ? (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500 text-white shadow-xs">
-                <Check className="h-3 w-3" /> Active
+                <Check className="h-3 w-3" /> {t("campDetails.active")}
             </span>
         ) : (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                <X className="h-3 w-3" /> Inactive
+                <X className="h-3 w-3" /> {t("campDetails.inactive")}
             </span>
         );
 
     const renderRegistrationRequired = (required) =>
         required ? (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 text-xs font-semibold">
-                <Users className="h-3 w-3" /> Required
+                <Users className="h-3 w-3" /> {t("campDetails.required")}
             </span>
         ) : (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-xs font-semibold">
-                Not Required
+                {t("campDetails.notRequired")}
             </span>
         );
 
@@ -128,7 +132,7 @@ export default function HealthCampDetails() {
     const regHeaders = [
         {
             key: "_id",
-            label: "Registration ID",
+            label: t("campDetails.colRegId"),
             filterable: false,
             render: (row) => (
                 <span className="font-mono text-[11px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
@@ -138,7 +142,7 @@ export default function HealthCampDetails() {
         },
         {
             key: "name",
-            label: "Person Name",
+            label: t("campDetails.colPersonName"),
             render: (row) => (
                 <div className="flex items-center gap-2 min-w-0">
                     <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 shrink-0">
@@ -146,11 +150,11 @@ export default function HealthCampDetails() {
                     </div>
                     <div className="min-w-0">
                         <span className="block text-sm font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[220px]">
-                            {row.name}
+                            <LocalizedText value={row.name} />
                         </span>
                         {row.age != null && row.age !== "" && (
                             <span className="block text-[11px] text-slate-400">
-                                Age: {row.age} yrs
+                                {t("campDetails.age", { age: row.age })}
                             </span>
                         )}
                     </div>
@@ -159,7 +163,7 @@ export default function HealthCampDetails() {
         },
         {
             key: "phone",
-            label: "Mobile Number",
+            label: t("campDetails.colMobile"),
             render: (row) =>
                 row.phone ? (
                     <span className="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
@@ -172,7 +176,7 @@ export default function HealthCampDetails() {
         },
         {
             key: "email",
-            label: "Email",
+            label: t("campDetails.colEmail"),
             render: (row) =>
                 row.email ? (
                     <span className="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
@@ -185,13 +189,13 @@ export default function HealthCampDetails() {
         },
         {
             key: "notes",
-            label: "Notes",
+            label: t("campDetails.colNotes"),
             filterable: false,
             render: (row) =>
                 row.notes ? (
                     <span className="inline-flex items-start gap-1.5 text-xs text-slate-500 max-w-[200px] truncate" title={row.notes}>
                         <StickyNote className="h-3 w-3 text-slate-400 shrink-0 mt-0.5" />
-                        {row.notes}
+                        <LocalizedText value={row.notes} />
                     </span>
                 ) : (
                     <span className="text-xs text-slate-400">—</span>
@@ -199,7 +203,7 @@ export default function HealthCampDetails() {
         },
         {
             key: "createdAt",
-            label: "Registration Date",
+            label: t("campDetails.colRegDate"),
             filterable: false,
             render: (row) => (
                 <div className="flex flex-col text-xs">
@@ -212,11 +216,11 @@ export default function HealthCampDetails() {
         },
         {
             key: "status",
-            label: "Status",
+            label: t("campDetails.colStatus"),
             filterable: false,
             render: () => (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900">
-                    <Check className="h-3 w-3" /> Registered
+                    <Check className="h-3 w-3" /> {t("campDetails.registered")}
                 </span>
             ),
         },
@@ -227,10 +231,7 @@ export default function HealthCampDetails() {
     // ------------------------------------------------------------------
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[450px] space-y-4">
-                <div className="h-10 w-10 rounded-full border-4 border-rose-500 border-t-transparent animate-spin" />
-                <p className="text-sm font-medium text-slate-500">Loading health camp details...</p>
-            </div>
+            <PageLoader label={t("campDetails.loading")} minHeight="28rem" />
         );
     }
 
@@ -238,10 +239,10 @@ export default function HealthCampDetails() {
         return (
             <div className="text-center py-16 space-y-4">
                 <AlertCircle className="h-12 w-12 text-rose-500 mx-auto" />
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Health Camp Not Found</h2>
-                <p className="text-sm text-slate-500 max-w-md mx-auto">{error || "The requested health camp could not be found."}</p>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">{t("campDetails.notFoundTitle")}</h2>
+                <p className="text-sm text-slate-500 max-w-md mx-auto">{error || t("campDetails.notFoundDesc")}</p>
                 <Button onClick={() => navigate("/frontend-cms/health-camps")} variant="outline">
-                    <ArrowLeft className="h-4 w-4 mr-2" /> Back to Health Camps
+                    <ArrowLeft className="h-4 w-4 mr-2" /> {t("campDetails.backToCamps")}
                 </Button>
             </div>
         );
@@ -259,20 +260,20 @@ export default function HealthCampDetails() {
                         size="icon"
                         onClick={() => navigate("/frontend-cms/health-camps")}
                         className="rounded-xl bg-white/10 hover:bg-white/20 text-white shrink-0"
-                        title="Back to Health Camps"
+                        title={t("campDetails.backToCampsTitle")}
                     >
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div className="min-w-0">
                         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-rose-100">
                             <Eye className="h-4 w-4" />
-                            <span>Camp Details & Registrations</span>
+                            <span>{t("campDetails.eyebrow")}</span>
                         </div>
                         <h1 className="text-2xl font-bold mt-1 tracking-tight truncate">
-                            {camp.name}
+                            <LocalizedText value={camp.name} />
                         </h1>
                         <p className="text-sm text-rose-100 mt-1 max-w-2xl">
-                            Complete information for this health camp along with the list of people who registered for it.
+                            {t("campDetails.bannerDesc")}
                         </p>
                     </div>
                 </div>
@@ -280,7 +281,7 @@ export default function HealthCampDetails() {
                     {renderStatusBadge(isActive)}
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 text-white backdrop-blur-sm">
                         <Users className="h-3 w-3" />
-                        {registrations.length} Registered
+                        {t("campDetails.registeredCount", { count: registrations.length })}
                     </span>
                 </div>
             </div>
@@ -314,10 +315,10 @@ export default function HealthCampDetails() {
                                 </div>
                                 <div>
                                     <CardTitle className="text-base font-bold text-slate-800 dark:text-slate-100">
-                                        Camp Information
+                                        {t("campDetails.campInfoTitle")}
                                     </CardTitle>
                                     <p className="text-xs text-slate-500 mt-0.5">
-                                        General details of the health camp
+                                        {t("campDetails.campInfoDesc")}
                                     </p>
                                 </div>
                             </div>
@@ -327,7 +328,7 @@ export default function HealthCampDetails() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40">
                                     <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                                        Camp Date
+                                        {t("campDetails.campDate")}
                                     </p>
                                     <p className="text-sm font-bold text-slate-800 dark:text-slate-200 inline-flex items-center gap-2">
                                         <Calendar className="h-4 w-4 text-rose-500" />
@@ -336,7 +337,7 @@ export default function HealthCampDetails() {
                                 </div>
                                 <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40">
                                     <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                                        Camp Timing
+                                        {t("campDetails.campTiming")}
                                     </p>
                                     <p className="text-sm font-bold text-slate-800 dark:text-slate-200 inline-flex items-center gap-2">
                                         <Clock className="h-4 w-4 text-rose-500" />
@@ -349,10 +350,10 @@ export default function HealthCampDetails() {
                             {camp.description && (
                                 <div>
                                     <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                                        Description
+                                        {t("campDetails.description")}
                                     </p>
                                     <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
-                                        {camp.description}
+                                        <LocalizedText value={camp.description} />
                                     </p>
                                 </div>
                             )}
@@ -363,7 +364,7 @@ export default function HealthCampDetails() {
                                     <MapPin className="h-4 w-4 text-indigo-500 mt-0.5 shrink-0" />
                                     <div className="min-w-0">
                                         <p className="text-[11px] font-semibold uppercase tracking-wider text-indigo-400 mb-0.5">
-                                            Venue / Location
+                                            {t("campDetails.venue")}
                                         </p>
                                         <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                                             {locationLine}
@@ -378,7 +379,7 @@ export default function HealthCampDetails() {
                                     <ClipboardList className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
                                     <div className="min-w-0">
                                         <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-500 mb-0.5">
-                                            Additional Notes
+                                            {t("campDetails.additionalNotes")}
                                         </p>
                                         <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">
                                             {camp.additional_notes}
@@ -391,14 +392,14 @@ export default function HealthCampDetails() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                                 <div>
                                     <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                                        Registration
+                                        {t("campDetails.registration")}
                                     </p>
                                     {renderRegistrationRequired(camp.registration_required)}
                                 </div>
                                 {camp.registration_limit != null && (
                                     <div>
                                         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                                            Registration Limit
+                                            {t("campDetails.registrationLimit")}
                                         </p>
                                         <p className="text-sm font-bold text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
                                             <Hash className="h-3.5 w-3.5 text-slate-400" />
@@ -408,7 +409,7 @@ export default function HealthCampDetails() {
                                 )}
                                 <div>
                                     <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                                        Registrations
+                                        {t("campDetails.registrations")}
                                     </p>
                                     <p className="text-sm font-bold text-slate-700 dark:text-slate-300 inline-flex items-center gap-1.5">
                                         <Users className="h-3.5 w-3.5 text-rose-400" />
@@ -427,14 +428,14 @@ export default function HealthCampDetails() {
                             <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
                                 <CardTitle className="text-base font-bold text-slate-800 dark:text-slate-100 inline-flex items-center gap-2">
                                     <Phone className="h-4 w-4 text-rose-600" />
-                                    Contact Information
+                                    {t("campDetails.contactInfo")}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 {camp.contact_person && (
                                     <div>
                                         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                                            Contact Person
+                                            {t("campDetails.contactPerson")}
                                         </p>
                                         <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                             {camp.contact_person}
@@ -444,7 +445,7 @@ export default function HealthCampDetails() {
                                 {camp.contact_number && (
                                     <div>
                                         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                                            Contact Number
+                                            {t("campDetails.contactNumber")}
                                         </p>
                                         <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                             {camp.contact_number}
@@ -454,7 +455,7 @@ export default function HealthCampDetails() {
                                 {camp.contact_email && (
                                     <div>
                                         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                                            Contact Email
+                                            {t("campDetails.contactEmail")}
                                         </p>
                                         <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 break-all">
                                             {camp.contact_email}
@@ -474,13 +475,13 @@ export default function HealthCampDetails() {
                         <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
                             <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-100 inline-flex items-center gap-2">
                                 <FileText className="h-4 w-4 text-rose-600" />
-                                Record Information
+                                {t("campDetails.recordInfo")}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-5 space-y-4 text-sm">
                             <div>
                                 <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                                    Created On
+                                    {t("campDetails.createdOn")}
                                 </p>
                                 <p className="text-slate-700 dark:text-slate-300">
                                     {formatDateTime(camp.createdAt)}
@@ -488,7 +489,7 @@ export default function HealthCampDetails() {
                             </div>
                             <div>
                                 <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                                    Last Updated On
+                                    {t("campDetails.lastUpdatedOn")}
                                 </p>
                                 <p className="text-slate-700 dark:text-slate-300">
                                     {formatDateTime(camp.updatedAt)}
@@ -500,7 +501,7 @@ export default function HealthCampDetails() {
                                     variant="outline"
                                     onClick={() => navigate(`/frontend-cms/health-camps`)}
                                 >
-                                    <ArrowLeft className="h-3.5 w-3.5 mr-1.5" /> Back to List
+                                    <ArrowLeft className="h-3.5 w-3.5 mr-1.5" /> {t("campDetails.backToList")}
                                 </Button>
                             </div>
                         </CardContent>
@@ -517,14 +518,14 @@ export default function HealthCampDetails() {
                         <div>
                             <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-800 dark:text-slate-100">
                                 <Users className="h-4 w-4 text-emerald-600" />
-                                Registered People / Camp Registrations
+                                {t("campDetails.registrationsTitle")}
                             </CardTitle>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                Showing {registrations.length} registration{registrations.length === 1 ? "" : "s"} for this camp only.
+                                {t("campDetails.registrationsCount", { count: registrations.length })}
                             </p>
                         </div>
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900 w-fit">
-                            <Check className="h-3 w-3" /> {registrations.length} Total
+                            <Check className="h-3 w-3" /> {t("campDetails.total", { count: registrations.length })}
                         </span>
                     </div>
                 </CardHeader>
@@ -533,7 +534,7 @@ export default function HealthCampDetails() {
                         headers={regHeaders}
                         data={registrations}
                         loading={loading}
-                        Search="Search registered people by name, phone, or email..."
+                        Search={t("campDetails.searchPlaceholder")}
                         pagination={registrations.length > 5}
                     />
                     {!loading && registrations.length === 0 && (
@@ -542,11 +543,10 @@ export default function HealthCampDetails() {
                                 <Users className="h-8 w-8" />
                             </div>
                             <p className="text-sm font-semibold text-slate-500">
-                                No registrations yet
+                                {t("campDetails.noRegistrations")}
                             </p>
                             <p className="text-xs text-slate-400 max-w-md">
-                                Nobody has registered for this camp so far. Registrations made from the public
-                                website for this camp will appear here automatically.
+                                {t("campDetails.noRegistrationsDesc")}
                             </p>
                         </div>
                     )}

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import {
   ImageIcon,
@@ -20,96 +21,96 @@ import { Card, CardContent } from "@/components/ui/card";
 
 const CMS_SECTIONS = [
   {
-    title: "Hero Banner",
-    desc: "Edit the main headline, background image and CTA buttons.",
+    titleKey: "cms.secHeroBanner",
+    descKey: "cms.secHeroBannerDesc",
     icon: ImageIcon,
     href: "/frontend-cms/hero",
     color: "from-violet-500/10 to-violet-600/5",
     iconColor: "text-violet-500",
   },
   {
-    title: "Shop Categories",
-    desc: "Add, edit or delete product categories and their images.",
+    titleKey: "cms.secShopCategories",
+    descKey: "cms.secShopCategoriesDesc",
     icon: Grid,
     href: "/frontend-cms/categories",
     color: "from-blue-500/10 to-blue-600/5",
     iconColor: "text-blue-500",
   },
   {
-    title: "Shop Products",
-    desc: "Manage products: pricing, stock, images and bestseller flags.",
+    titleKey: "cms.secShopProducts",
+    descKey: "cms.secShopProductsDesc",
     icon: ShoppingBag,
     href: "/frontend-cms/products",
     color: "from-emerald-500/10 to-emerald-600/5",
     iconColor: "text-emerald-500",
   },
   {
-    title: "Trust Badges",
-    desc: "Edit the 4 trust badge labels shown below the hero section.",
+    titleKey: "cms.secTrustBadges",
+    descKey: "cms.secTrustBadgesDesc",
     icon: Shield,
     href: "/frontend-cms/trust-badges",
     color: "from-amber-500/10 to-amber-600/5",
     iconColor: "text-amber-500",
   },
   {
-    title: "Mission & Stats",
-    desc: "Update the mission story, image and impact counter metrics.",
+    titleKey: "cms.secMissionStats",
+    descKey: "cms.secMissionStatsDesc",
     icon: BarChart3,
     href: "/frontend-cms/mission",
     color: "from-teal-500/10 to-teal-600/5",
     iconColor: "text-teal-500",
   },
   {
-    title: "Testimonials",
-    desc: "Add or remove customer reviews shown on the Home page.",
+    titleKey: "cms.secTestimonials",
+    descKey: "cms.secTestimonialsDesc",
     icon: Quote,
     href: "/frontend-cms/testimonials",
     color: "from-pink-500/10 to-pink-600/5",
     iconColor: "text-pink-500",
   },
   {
-    title: "Distributor Banner",
-    desc: "Edit the distributor CTA banner headline and action button.",
+    titleKey: "cms.secDistributorBanner",
+    descKey: "cms.secDistributorBannerDesc",
     icon: Tag,
     href: "/frontend-cms/distributor-banner",
     color: "from-orange-500/10 to-orange-600/5",
     iconColor: "text-orange-500",
   },
   {
-    title: "Header & Footer",
-    desc: "Update the announcement bar text and footer brand description.",
+    titleKey: "cms.secHeaderFooter",
+    descKey: "cms.secHeaderFooterDesc",
     icon: Megaphone,
     href: "/frontend-cms/header-footer",
     color: "from-indigo-500/10 to-indigo-600/5",
     iconColor: "text-indigo-500",
   },
   {
-    title: "Contact & Social",
-    desc: "Edit phone, email, address and social media profile URLs.",
+    titleKey: "cms.secContactSocial",
+    descKey: "cms.secContactSocialDesc",
     icon: PhoneCall,
     href: "/frontend-cms/contact",
     color: "from-rose-500/10 to-rose-600/5",
     iconColor: "text-rose-500",
   },
   {
-    title: "Health Camps Management",
-    desc: "Create and manage health camps shown on the public website.",
+    titleKey: "cms.secHealthCamps",
+    descKey: "cms.secHealthCampsDesc",
     icon: HeartPulse,
     href: "/frontend-cms/health-camps",
     color: "from-red-500/10 to-red-600/5",
     iconColor: "text-red-500",
   },
   {
-    title: "Photo / Video Gallery",
-    desc: "Add photos and videos shown on the public Gallery page.",
+    titleKey: "cms.secPhotoVideoGallery",
+    descKey: "cms.secPhotoVideoGalleryDesc",
     icon: Images,
     href: "/frontend-cms/gallery",
     color: "from-violet-500/10 to-fuchsia-600/5",
     iconColor: "text-violet-500",
   },
   {
-    title: "Legal Content",
-    desc: "Manage Privacy Policy & Terms and Conditions shown on the website.",
+    titleKey: "cms.secLegalContent",
+    descKey: "cms.secLegalContentDesc",
     icon: Scale,
     href: "/frontend-cms/legal-content",
     color: "from-indigo-500/10 to-indigo-600/5",
@@ -118,6 +119,7 @@ const CMS_SECTIONS = [
 ];
 
 export default function FrontendCMS() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-8">
       {/* Page Header */}
@@ -126,9 +128,9 @@ export default function FrontendCMS() {
           <LayoutTemplate className="h-7 w-7 text-violet-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-semibold">Frontend CMS</h1>
+          <h1 className="text-2xl font-semibold">{t("cms.frontendCmsTitle")}</h1>
           <p className="mt-1 text-sm text-muted-foreground max-w-xl">
-            Manage every section of the live website. Click a card below to open the dedicated editor for that section.
+            {t("cms.frontendCmsSubtitle")}
           </p>
         </div>
       </div>
@@ -147,15 +149,15 @@ export default function FrontendCMS() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-base group-hover:text-violet-600 transition-colors">
-                        {section.title}
+                        {t(section.titleKey)}
                       </h3>
                       <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-                        {section.desc}
+                        {t(section.descKey)}
                       </p>
                     </div>
                   </div>
                   <div className="absolute bottom-5 right-5 flex items-center justify-end gap-1 text-xs font-medium text-violet-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Open editor <ArrowRight className="h-3.5 w-3.5" />
+                    {t("cms.openEditor")} <ArrowRight className="h-3.5 w-3.5" />
                   </div>
                 </CardContent>
               </Card>

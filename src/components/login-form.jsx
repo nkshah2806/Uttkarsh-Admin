@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export function LoginForm({ className, ...props }) {
   const {
@@ -19,6 +20,7 @@ export function LoginForm({ className, ...props }) {
   const [passVisible, setPassVisible] = useState(true);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handlePasswordVisible = () => {
     setPassVisible((prev) => !prev);
@@ -34,16 +36,16 @@ export function LoginForm({ className, ...props }) {
       const userData = response.data.data;
 
       if (!userData.isAdmin) {
-        toast.error("Access denied. Admins only.");
+        toast.error(t("auth.accessDenied"));
         return;
       }
       localStorage.setItem("token", response.data.data.jwtToken);
       localStorage.setItem("UserDetails", JSON.stringify(response.data.data));
       localStorage.setItem("isAuthenticated", "true");
-      toast.success("Login successful! Redirecting to dashboard...");
+      toast.success(t("auth.loginSuccess"));
       navigate("/dashboard");
     } catch (error) {
-      toast.error(error?.response?.data?.meta?.message || "Login failed. Please try again.");
+      toast.error(error?.response?.data?.meta?.message || t("auth.loginFailed"));
     } finally {
       setLoading(false);
     }
@@ -56,19 +58,19 @@ export function LoginForm({ className, ...props }) {
       {...props}
     >
       <div className="flex flex-col items-center gap-2 text-center mb-5">
-        <h1 className="text-3xl font-bold">Admin Login</h1>
+        <h1 className="text-3xl font-bold">{t("auth.adminLogin")}</h1>
         <p className="text-muted-foreground text-sm text-balance">
-          Enter email
+          {t("auth.enterEmail")}
         </p>
       </div>
       <div className="grid gap-6">
         <div className="grid gap-3">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("auth.email")}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="m@example.com"
-            {...register("email", { required: "Email is required" })}
+            placeholder={t("auth.emailPlaceholder")}
+            {...register("email", { required: t("auth.emailRequired") })}
           />
           {errors.email && (
             <p className="text-red-500 text-sm">{errors.email.message}</p>
@@ -76,19 +78,19 @@ export function LoginForm({ className, ...props }) {
         </div>
 
         <div className="grid gap-3">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t("auth.password")}</Label>
           <div className="flex items-center justify-between relative">
             <Input
               id="password"
               type={passVisible ? "password" : "text"}
-              placeholder="Enter password"
-              {...register("password", { required: "Password is required" })}
+              placeholder={t("auth.passwordPlaceholder")}
+              {...register("password", { required: t("auth.passwordRequired") })}
             />
             <button
               type="button"
               onClick={handlePasswordVisible}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label="Toggle password visibility"
+              aria-label={t("auth.togglePasswordVisibility")}
             >
               {passVisible ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
@@ -107,13 +109,13 @@ export function LoginForm({ className, ...props }) {
           size="lg"
           disabled={loading}
         >
-          {loading ? "Logging in..." : "Login"}
+          {loading ? t("auth.loggingIn") : t("auth.login")}
         </Button>
         <Link
           to="/forgot-password"
           className="text-[14px] font-medium hover:text-gray-500 duration-300 transition-all"
         >
-          Forgot your password?
+          {t("auth.forgotYourPassword")}
         </Link>
       </div>
     </form>

@@ -35,8 +35,10 @@ import {
 } from "@/components/ui/sidebar";
 import { DashboardIcon } from "@radix-ui/react-icons";
 import { Config } from "@/lib/Config";
+import { useTranslation } from "react-i18next";
 
 export function AppSidebar({ ...props }) {
+  const { t } = useTranslation();
   const [userDetails, setUserDetails] = React.useState(() => {
     const data = localStorage.getItem("UserDetails");
     return data ? JSON.parse(data) : null;
@@ -66,40 +68,40 @@ export function AppSidebar({ ...props }) {
       initials: initials,
     },
     navMain: [
-      { title: "Dashboard", url: "/dashboard", icon: DashboardIcon },
+      { title: t("nav.dashboard"), url: "/dashboard", icon: DashboardIcon },
       {
-        title: "Quantum Health Analysis",
+        title: t("nav.healthAnalysis"),
         url: "/quantum/patients",
         icon: Stethoscope,
         items: [
-          { title: "Client Directory", url: "/quantum/patients", icon: Users },
-          { title: "Master Data Library", url: "/quantum/master-data", icon: Database },
-          { title: "Disclaimer Content", url: "/quantum/disclaimers", icon: FileText },
-          { title: "Parameter Categories", url: "/quantum/categories", icon: Tags },
-          { title: "Medicine Management", url: "/quantum/medicines", icon: Pill },
-          { title: "Scan Pricing Management", url: "/quantum/scan-pricing", icon: IndianRupee },
+          { title: t("nav.clientDirectory"), url: "/quantum/patients", icon: Users },
+          { title: t("nav.masterDataLibrary"), url: "/quantum/master-data", icon: Database },
+          { title: t("nav.disclaimerContent"), url: "/quantum/disclaimers", icon: FileText },
+          { title: t("nav.parameterCategories"), url: "/quantum/categories", icon: Tags },
+          { title: t("nav.medicineManagement"), url: "/quantum/medicines", icon: Pill },
+          { title: t("nav.scanPricingManagement"), url: "/quantum/scan-pricing", icon: IndianRupee },
         ],
       },
       {
-        title: "Frontend CMS",
+        title: t("nav.frontendCms"),
         url: "/frontend-cms",
         icon: LayoutTemplate,
         items: [
-          { title: "Hero Banner", url: "/frontend-cms/hero", icon: ImageIcon },
-          { title: "Shop Categories", url: "/frontend-cms/categories", icon: Grid },
-          { title: "Shop Products", url: "/frontend-cms/products", icon: ShoppingBag },
-          { title: "Trust Badges", url: "/frontend-cms/trust-badges", icon: Shield },
-          { title: "Mission & Stats", url: "/frontend-cms/mission", icon: BarChart3 },
-          { title: "Testimonials", url: "/frontend-cms/testimonials", icon: Quote },
-          { title: "Distributor Banner", url: "/frontend-cms/distributor-banner", icon: Tag },
-          { title: "Header & Footer", url: "/frontend-cms/header-footer", icon: Megaphone },
-          { title: "Contact & Social", url: "/frontend-cms/contact", icon: PhoneCall },
-          { title: "Health Camps", url: "/frontend-cms/health-camps", icon: HeartPulse },
-          { title: "Photo / Video Gallery", url: "/frontend-cms/gallery", icon: ImageIcon },
-          { title: "Legal Content", url: "/frontend-cms/legal-content", icon: Scale },
+          { title: t("nav.heroBanner"), url: "/frontend-cms/hero", icon: ImageIcon },
+          { title: t("nav.shopCategories"), url: "/frontend-cms/categories", icon: Grid },
+          { title: t("nav.shopProducts"), url: "/frontend-cms/products", icon: ShoppingBag },
+          { title: t("nav.trustBadges"), url: "/frontend-cms/trust-badges", icon: Shield },
+          { title: t("nav.missionStats"), url: "/frontend-cms/mission", icon: BarChart3 },
+          { title: t("nav.testimonials"), url: "/frontend-cms/testimonials", icon: Quote },
+          { title: t("nav.distributorBanner"), url: "/frontend-cms/distributor-banner", icon: Tag },
+          { title: t("nav.headerFooter"), url: "/frontend-cms/header-footer", icon: Megaphone },
+          { title: t("nav.contactSocial"), url: "/frontend-cms/contact", icon: PhoneCall },
+          { title: t("nav.healthCamps"), url: "/frontend-cms/health-camps", icon: HeartPulse },
+          { title: t("nav.photoVideoGallery"), url: "/frontend-cms/gallery", icon: ImageIcon },
+          { title: t("nav.legalContent"), url: "/frontend-cms/legal-content", icon: Scale },
         ],
       },
-      { title: "User Management", url: "/user", icon: User2Icon },
+      { title: t("nav.userManagement"), url: "/user", icon: User2Icon },
     ],
   };
 
