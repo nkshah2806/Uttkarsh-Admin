@@ -144,12 +144,24 @@ export default function User() {
             <Eye className="h-4 w-4" />
           </Button>
           {!row.isAdmin && row.approval_status === "pending" && (
+            // Approving requires a fully completed member profile. The backend
+            // enforces the same rule, so an incomplete profile cannot be
+            // approved even by calling the API directly.
             <Button
               size="sm"
               variant="outline"
-              className="h-8 w-8 p-0 text-slate-600 hover:text-indigo-600 border-indigo-600/40 hover:bg-indigo-50"
+              className={
+                row.profile_completed
+                  ? "h-8 w-8 p-0 text-slate-600 hover:text-indigo-600 border-indigo-600/40 hover:bg-indigo-50"
+                  : "h-8 w-8 p-0 text-slate-400 border-slate-300 cursor-not-allowed"
+              }
               onClick={() => handleApprove(row)}
-              title={t("user.approveUser")}
+              disabled={!row.profile_completed}
+              title={
+                row.profile_completed
+                  ? t("user.approveUser")
+                  : `${t("user.profileIncomplete")} — ${t("user.approveDisabledHint")}`
+              }
             >
               <CheckCircle2 className="h-4 w-4" />
             </Button>
@@ -175,6 +187,11 @@ export default function User() {
   );
 
   const handleApprove = (user) => {
+    // Defensive guard so the mutation is never fired for an incomplete profile.
+    if (!user?.profile_completed) {
+      toast.error(t("user.approveDisabledHint"));
+      return;
+    }
     approveUserMutation.mutate(user._id);
   };
 

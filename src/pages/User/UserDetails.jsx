@@ -169,6 +169,14 @@ export default function UserDetails() {
     // Normalize franchise fields (model uses snake_case).
     const fp = franchiseProfile || {};
 
+    // Profile picture resolution order: the member-profile document is the
+    // primary source, with the User record as a fallback for older records
+    // captured before the member profile picture existed.
+    const memberPicture = fp.profile_picture || userDetails.image || "";
+    const memberPictureSrc = memberPicture
+        ? `${Config.API_URL}${memberPicture}`
+        : user;
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -186,11 +194,7 @@ export default function UserDetails() {
                         <CardHeader className="flex flex-col items-center text-center gap-4">
                             <img
                                 className="w-24 h-24 rounded-full object-cover flex-none"
-                                src={
-                                    userDetails.image
-                                        ? `${Config.API_URL}${userDetails.image}`
-                                        : user
-                                }
+                                src={memberPictureSrc}
                                 alt={t("user.profileAlt", { name: fullName })}
                                 onError={({ currentTarget }) => {
                                     currentTarget.onerror = null;
@@ -386,6 +390,28 @@ export default function UserDetails() {
                             </p>
                         )}
                     </SectionCard>
+
+                    {/* Member Profile Picture */}
+                    {!userDetails.isAdmin && (
+                        <SectionCard title={t("user.memberProfilePicture")} icon={() => <span>🖼️</span>}>
+                            <div className="flex items-center gap-4 py-2">
+                                <img
+                                    className="w-20 h-20 rounded-full object-cover border border-border bg-muted flex-none"
+                                    src={memberPictureSrc}
+                                    alt={t("user.profileAlt", { name: fullName })}
+                                    onError={({ currentTarget }) => {
+                                        currentTarget.onerror = null;
+                                        currentTarget.src = user;
+                                    }}
+                                />
+                                {memberPicture ? (
+                                    <Badge variant="completed">{t("user.yes")}</Badge>
+                                ) : (
+                                    <Badge variant="secondary">{t("user.no")}</Badge>
+                                )}
+                            </div>
+                        </SectionCard>
+                    )}
 
                     {/* Other Information */}
                     <SectionCard title={t("user.otherInformation")} icon={() => <span>ℹ️</span>}>
