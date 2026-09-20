@@ -110,9 +110,11 @@ export function MediaUploader({
             formData.append("file", file);
             if (isVideo) formData.append("kind", "video");
 
-            const res = await axiosInstance.post(`upload/${folder}`, formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
+            // No manual "Content-Type" here: a boundary-less multipart header
+            // prevents multer from parsing the body (the file then arrives as an
+            // empty object / NO_FILE). Axios writes the header with the correct
+            // boundary for FormData automatically.
+            const res = await axiosInstance.post(`upload/${folder}`, formData);
 
             const fileRef = res.data?.data?.url || res.data?.data?.path;
             if (!fileRef) {
