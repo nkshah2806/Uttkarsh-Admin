@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import axiosInstance from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Printer, Download, Share2, Loader2 } from "lucide-react";
-import { PageLoader } from "@/components/Loader";
+import { ReportSkeleton } from "@/components/ui/skeleton-loaders";
 import { toast } from "sonner";
 import {
   openReportForPdfSave,
@@ -169,9 +169,7 @@ export default function PDFReportViewer() {
 
       {/* HTML Report Document Viewer Container */}
       {loading ? (
-        <div className="bg-white rounded-xl shadow">
-          <PageLoader label={t("healthAnalysis.compiling")} minHeight="14rem" />
-        </div>
+        <ReportSkeleton />
       ) : (
         <div className="bg-white p-4 rounded-xl shadow-lg border max-w-4xl mx-auto overflow-hidden">
           <iframe

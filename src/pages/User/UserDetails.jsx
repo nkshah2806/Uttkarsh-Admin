@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getUserById, getMemberPortalPassword } from "@/services/userService";
-import { PageLoader } from "@/components/Loader";
+import { ProfileSkeleton, ErrorState } from "@/components/ui/skeleton-loaders";
 import { memberApprovalService } from "@/services/memberApprovalService";
 import {
     Card,
@@ -134,7 +134,7 @@ export default function UserDetails() {
         }
     };
 
-    if (loading) return <PageLoader label={t("user.loading")} minHeight="50vh" />;
+    if (loading) return <ProfileSkeleton />;
 
     if (loadError) {
         return (

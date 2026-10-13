@@ -25,7 +25,7 @@ import {
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import LocalizedText from "@/components/LocalizedText";
-import { PageLoader } from "@/components/Loader";
+import { ReportSkeleton } from "@/components/ui/skeleton-loaders";
 
 export default function ReportReviewOverride() {
   const { t } = useTranslation();
@@ -573,12 +573,7 @@ export default function ReportReviewOverride() {
   }, [analysisData, selections]);
 
   if (loading) {
-    return (
-      <PageLoader
-        label={t("healthAnalysis.reportReviewOverride.loadingEngine")}
-        minHeight="60vh"
-      />
-    );
+    return <ReportSkeleton />;
   }
 
   return (

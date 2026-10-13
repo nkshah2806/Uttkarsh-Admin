@@ -7,7 +7,7 @@ import { Activity, ChevronDown, FileSpreadsheet, ListFilter, Search, X } from "l
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import LocalizedText from "@/components/LocalizedText";
-import { Loader } from "@/components/Loader";
+import { FormSkeleton } from "@/components/ui/skeleton-loaders";
 
 export default function QuantumDataEntry() {
   const { t } = useTranslation();
@@ -170,8 +170,8 @@ export default function QuantumDataEntry() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-16">
-        <Loader size={36} label={t("healthAnalysis.quantumDataEntry.loading")} />
+      <div className="space-y-5">
+        <FormSkeleton fields={6} columns={2} hasSubmit={false} />
       </div>
     );
   }

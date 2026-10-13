@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import ReusableTable from "@/components/ReusableTable";
 import LocalizedText from "@/components/LocalizedText";
-import { Loader, PageLoader } from "@/components/Loader";
+import { ProfileSkeleton, ReportSkeleton } from "@/components/ui/skeleton-loaders";
 import {
   ArrowLeft,
   User,
@@ -155,9 +155,7 @@ export default function PatientDetails() {
   const bmiInfo = patientData ? calculateBMI(patientData.weight, patientData.height) : null;
 
   if (loading) {
-    return (
-      <PageLoader label={t("healthAnalysis.patientDetails.loading")} minHeight="28rem" />
-    );
+    return <ProfileSkeleton />;
   }
 
   if (!patientData) {

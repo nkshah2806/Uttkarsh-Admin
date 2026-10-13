@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { PageLoader } from "@/components/Loader";
+import { PageSkeleton } from "@/components/ui/skeleton-loaders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     HeartPulse,
@@ -230,9 +230,7 @@ export default function HealthCampDetails() {
     // Loading / error / not-found states
     // ------------------------------------------------------------------
     if (loading) {
-        return (
-            <PageLoader label={t("campDetails.loading")} minHeight="28rem" />
-        );
+        return <PageSkeleton hasHeader blocks={3} />;
     }
 
     if (!camp || error) {

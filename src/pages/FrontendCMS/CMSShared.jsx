@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Save, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PageLoader } from "@/components/Loader";
+import { PageSkeleton } from "@/components/ui/skeleton-loaders";
 
 /* ─────────────────────────────────────────
    Tiny reusable field components
@@ -103,14 +103,7 @@ export function StickyBar({ onSave, saving }) {
  * Standard loading screen for all CMS pages.
  */
 export function CMSLoader({ label }) {
-  const { t } = useTranslation();
-
-  return (
-    <PageLoader
-      label={label ? label : t("cms.loadingContent")}
-      minHeight="20rem"
-    />
-  );
+  return <PageSkeleton hasHeader blocks={3} className="py-4" />;
 }
 
 /**

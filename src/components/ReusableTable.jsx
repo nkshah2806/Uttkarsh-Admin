@@ -36,6 +36,7 @@ import {
 import DateRangeFilter from "./DateRangeFilter";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
+import { TableSkeletonRows, ErrorState } from "./ui/skeleton";
 const defaultLimitOptions = [5, 10, 25, 50, 100];
 
 const ReusableTable = forwardRef(
@@ -93,7 +94,7 @@ const ReusableTable = forwardRef(
       }
     }, [fetchData, apiPagination]);
 
-    const { data: apiData, isLoading: apiLoading, isError, error, refetch } = useApiQuery({
+    const { data: apiData, isLoading: apiLoading, isFetching, isError, error, refetch } = useApiQuery({
       queryKey: [
         "table-data",
         routeType,
@@ -113,6 +114,10 @@ const ReusableTable = forwardRef(
       enabled: apiPagination,
       refetchOnMount: true,
     });
+
+    const effectiveLoading = apiPagination ? apiLoading : isLoading;
+    const isInitialLoading = effectiveLoading && localData.length === 0;
+    const isBackgroundFetching = (apiPagination ? isFetching : false) && localData.length > 0;
 
     useQueryEffect({
       data: apiData,
@@ -362,10 +367,21 @@ const ReusableTable = forwardRef(
           </div>
         )}
 
-        <div className="w-full rounded-lg border">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-48">
-              <Loader2 className="animate-spin size-10 text-indigo-600" />
+        <div className="w-full rounded-lg border relative overflow-hidden bg-card" aria-busy={effectiveLoading || isBackgroundFetching}>
+          {/* Subtle background refetch indicator */}
+          {isBackgroundFetching && (
+            <div className="absolute top-0 left-0 right-0 h-0.5 z-20 overflow-hidden bg-indigo-100 dark:bg-indigo-950">
+              <div className="h-full w-full bg-indigo-600 animate-pulse" />
+            </div>
+          )}
+
+          {isError && localData.length === 0 ? (
+            <div className="p-8 text-center">
+              <ErrorState
+                title={t("table.somethingWentWrong")}
+                message={error?.response?.data?.message || error?.message || t("table.somethingWentWrong")}
+                onRetry={apiPagination ? () => refetch() : undefined}
+              />
             </div>
           ) : (
             <Table>
@@ -376,6 +392,7 @@ const ReusableTable = forwardRef(
                       <Checkbox
                         checked={localData.length > 0 && selectedRows.length === localData.length}
                         onCheckedChange={toggleSelectAll}
+                        disabled={isInitialLoading}
                       />
                     </TableHead>
                   )}
@@ -383,9 +400,9 @@ const ReusableTable = forwardRef(
                     <TableHead
                       key={header.key}
                       onClick={() => {
-                        if (header.filterable !== false) handleSort(header.key);
+                        if (!isInitialLoading && header.filterable !== false) handleSort(header.key);
                       }}
-                      className={header.filterable !== false ? "cursor-pointer select-none" : ""}
+                      className={header.filterable !== false && !isInitialLoading ? "cursor-pointer select-none" : ""}
                     >
                       <div className="flex items-center gap-2">
                         <span>{header.label}</span>
@@ -396,11 +413,18 @@ const ReusableTable = forwardRef(
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {localData.length === 0 ? (
+                {isInitialLoading ? (
+                  <TableSkeletonRows
+                    columns={headers.length}
+                    rows={limit || 5}
+                    hasCheckbox={selectable}
+                    hasActions={false}
+                  />
+                ) : localData.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={headers.length + (selectable ? 1 : 0)}
-                      className="text-center py-8 text-gray-400"
+                      className="text-center py-12 text-muted-foreground"
                     >
                       {t("table.noDataFound")}
                     </TableCell>

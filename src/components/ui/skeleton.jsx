@@ -1,15 +1,18 @@
-import { cn } from "@/lib/utils"
-
-function Skeleton({
-  className,
-  ...props
-}) {
-  return (
-    <div
-      data-slot="skeleton"
-      className={cn("bg-accent animate-pulse rounded-md", className)}
-      {...props} />
-  );
-}
-
-export { Skeleton }
+export {
+  Skeleton,
+  ImageWithSkeleton,
+  ErrorState,
+  EmptyState,
+  TableSkeleton,
+  TableSkeletonRows,
+  StatCardSkeleton,
+  ChartSkeleton,
+  ListSkeleton,
+  DashboardSkeleton,
+  ProfileSkeleton,
+  ReportSkeleton,
+  FormSkeleton,
+  DropdownSkeleton,
+  ModalSkeleton,
+  PageSkeleton,
+} from "./skeleton-loaders";
