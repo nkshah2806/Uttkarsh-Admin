@@ -10,7 +10,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import PrivateRoute from "./routes/private-route";
 import User from "./pages/User";
 import UserDetails from "./pages/User/UserDetails";
-import { DashboardOverview } from "./pages/HealthAnalysis";
+import DashboardOverview from "./pages/HealthAnalysis/DashboardOverview";
 import MasterDataManagement from "./pages/HealthAnalysis/MasterDataManagement";
 import PatientRegistration from "./pages/HealthAnalysis/PatientRegistration";
 import PatientDetails from "./pages/HealthAnalysis/PatientDetails";

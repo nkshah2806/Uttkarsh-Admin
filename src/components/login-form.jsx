@@ -45,7 +45,11 @@ export function LoginForm({ className, ...props }) {
       toast.success(t("auth.loginSuccess"));
       navigate("/dashboard");
     } catch (error) {
-      toast.error(error?.response?.data?.meta?.message || t("auth.loginFailed"));
+      toast.error(
+        error?.response?.data?.message ||
+        error?.response?.data?.meta?.message ||
+        t("auth.loginFailed")
+      );
     } finally {
       setLoading(false);
     }
@@ -68,7 +72,7 @@ export function LoginForm({ className, ...props }) {
           <Label htmlFor="email">{t("auth.email")}</Label>
           <Input
             id="email"
-            type="email"
+            type="text"
             placeholder={t("auth.emailPlaceholder")}
             {...register("email", { required: t("auth.emailRequired") })}
           />

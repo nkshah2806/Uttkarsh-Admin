@@ -23,9 +23,13 @@ import {
     EyeOff,
     Copy,
     Check,
+    Pencil,
+    Trash2,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import LocalizedText from "@/components/LocalizedText";
+import EditUserModal from "./EditUserModal";
+import DeleteUserDialog from "./DeleteUserDialog";
 
 const ApprovalBadge = ({ status }) => {
     const { t } = useTranslation();
@@ -92,8 +96,20 @@ export default function UserDetails() {
     const [portalPassword, setPortalPassword] = useState("");
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [passwordCopied, setPasswordCopied] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-    useEffect(() => {
+    const currentAdmin = (() => {
+        try {
+            return JSON.parse(localStorage.getItem("UserDetails") || "{}");
+        } catch {
+            return {};
+        }
+    })();
+
+    const isCurrentAdmin = String(id) === String(currentAdmin?._id || currentAdmin?.id);
+
+    const loadUserData = () => {
         if (!id) return;
         setLoading(true);
         setLoadError("");
@@ -121,6 +137,10 @@ export default function UserDetails() {
                 setLoadError(err?.message || "Failed to fetch user details.");
             })
             .finally(() => setLoading(false));
+    };
+
+    useEffect(() => {
+        loadUserData();
     }, [id]);
 
     const handleCopyPassword = async () => {
@@ -179,12 +199,32 @@ export default function UserDetails() {
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
                 <h1 className="text-2xl font-bold">{t("user.detailsTitle")}</h1>
-                <Button onClick={() => navigate(-1)} variant="outline">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    {t("user.back")}
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={() => setEditModalOpen(true)}
+                        className="gap-2 text-amber-600 border-amber-600/40 hover:bg-amber-50"
+                    >
+                        <Pencil className="w-4 h-4" />
+                        {t("user.editUser")}
+                    </Button>
+                    <Button
+                        variant="destructive"
+                        onClick={() => setDeleteDialogOpen(true)}
+                        disabled={isCurrentAdmin}
+                        className="gap-2 bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-40"
+                        title={isCurrentAdmin ? t("user.cannotDeleteSelf") : t("user.deletePermanently")}
+                    >
+                        <Trash2 className="w-4 h-4" />
+                        {t("user.deletePermanently")}
+                    </Button>
+                    <Button onClick={() => navigate(-1)} variant="outline">
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        {t("user.back")}
+                    </Button>
+                </div>
             </div>
 
             <div className="grid grid-cols-12 gap-4">
@@ -422,6 +462,22 @@ export default function UserDetails() {
                     </SectionCard>
                 </div>
             </div>
+
+            {/* Edit User Modal */}
+            <EditUserModal
+                open={editModalOpen}
+                onOpenChange={setEditModalOpen}
+                user={userDetails}
+                onSuccess={() => loadUserData()}
+            />
+
+            {/* Delete User Permanently Dialog */}
+            <DeleteUserDialog
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                user={userDetails}
+                onSuccess={() => navigate("/user")}
+            />
         </div>
     );
 }

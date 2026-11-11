@@ -82,9 +82,15 @@ export const getMemberPortalPassword = async (id) => {
   return response.data.data;
 };
 
-// UPDATE USER
+// UPDATE USER - PUT /user/:id
 export const updateUser = async (userId, data) => {
   const payload = { userId, ...data };
-  const response = await axiosInstance.put("auth/update", payload);
+  const response = await axiosInstance.put(`${ENDPOINT}/${userId}`, payload);
+  return response.data;
+};
+
+// DELETE USER PERMANENTLY (Admin-only) - DELETE /user/:id
+export const deleteUserPermanently = async (id) => {
+  const response = await axiosInstance.delete(`${ENDPOINT}/${id}`);
   return response.data;
 };

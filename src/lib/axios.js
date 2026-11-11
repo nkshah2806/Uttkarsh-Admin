@@ -70,10 +70,12 @@ axiosInstance.interceptors.response.use(
     }
     // Global error handling
     if (error.response?.status === 401) {
-      // e.g., redirect to login or logout
-      console.warn("Unauthorized, logging out...");
-      localStorage.removeItem("token");
-      window.location.href = "/";
+      const isLoginRequest = error.config?.url?.includes("login");
+      if (!isLoginRequest && window.location.pathname !== "/") {
+        console.warn("Unauthorized, logging out...");
+        localStorage.removeItem("token");
+        window.location.href = "/";
+      }
     }
     return Promise.reject(error);
   }

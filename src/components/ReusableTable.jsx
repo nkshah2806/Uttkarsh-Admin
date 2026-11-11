@@ -115,7 +115,7 @@ const ReusableTable = forwardRef(
       refetchOnMount: true,
     });
 
-    const effectiveLoading = apiPagination ? apiLoading : isLoading;
+    const effectiveLoading = apiPagination ? apiLoading : externalLoading;
     const isInitialLoading = effectiveLoading && localData.length === 0;
     const isBackgroundFetching = (apiPagination ? isFetching : false) && localData.length > 0;
 
@@ -179,7 +179,6 @@ const ReusableTable = forwardRef(
     }, [apiPagination, clientData, page, limit, search, sort, isActive, status, pagination]);
 
     const totalPages = Math.ceil(total / limit) || 1;
-    const isLoading = apiPagination ? apiLoading : externalLoading;
 
     const handleSearchChange = (e) => {
       setSearch(e.target.value);
