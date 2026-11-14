@@ -33,6 +33,7 @@ import {
   Sparkles,
   Building2,
   Tag,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -579,42 +580,90 @@ export default function PatientDetails() {
                 label: t("healthAnalysis.patientDetails.colActions"),
                 render: (v) => (
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openReportModal(v._id)}
-                      className="h-8 px-2.5 text-xs font-semibold text-indigo-600 border-indigo-200 hover:bg-indigo-50 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-950"
-                      title={t("healthAnalysis.patientDetails.viewFullReport")}
-                    >
-                      <Eye className="h-3.5 w-3.5 mr-1" /> {t("healthAnalysis.patientDetails.viewReport")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => navigate(`/report-pdf/${v._id}`)}
-                      className="h-8 w-8 p-0 text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
-                      title={t("healthAnalysis.patientDetails.openPdfPreview")}
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleDownloadReport(v._id)}
-                      className="h-8 w-8 p-0 text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
-                      title={t("healthAnalysis.patientDetails.downloadReportFile")}
-                    >
-                      <Download className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handlePrintReport(v._id)}
-                      className="h-8 w-8 p-0 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-                      title={t("healthAnalysis.patientDetails.printReport")}
-                    >
-                      <Printer className="h-4 w-4" />
-                    </Button>
+                    {/* Status-aware primary action */}
+                    {v.status === "DATA_ENTRY" ? (
+                      <Button
+                        size="sm"
+                        onClick={() => navigate(`/quantum-scan/${v._id}`)}
+                        className="h-8 px-2.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white"
+                        title="Resume data entry for this scan session"
+                      >
+                        <Clock className="h-3.5 w-3.5 mr-1" /> Continue Scan
+                      </Button>
+                    ) : v.status === "REPORT_READY" ? (
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={() => navigate(`/report-review/${v._id}`)}
+                          className="h-8 px-2.5 text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white"
+                          title="Resume report review and content selection"
+                        >
+                          <FileText className="h-3.5 w-3.5 mr-1" /> Continue Review
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigate(`/quantum-scan/${v._id}`)}
+                          className="h-8 px-2.5 text-xs font-semibold text-slate-600 border-slate-300 hover:bg-slate-50"
+                          title="Go back to edit parameter values"
+                        >
+                          Edit Readings
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openReportModal(v._id)}
+                          className="h-8 px-2.5 text-xs font-semibold text-indigo-600 border-indigo-200 hover:bg-indigo-50 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-950"
+                          title={t("healthAnalysis.patientDetails.viewFullReport")}
+                        >
+                          <Eye className="h-3.5 w-3.5 mr-1" /> {t("healthAnalysis.patientDetails.viewReport")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigate(`/report-review/${v._id}`)}
+                          className="h-8 px-2.5 text-xs font-semibold text-teal-700 border-teal-200 hover:bg-teal-50 dark:text-teal-300 dark:border-teal-800 dark:hover:bg-teal-950"
+                          title="Open report in Review Studio to modify and re-generate"
+                        >
+                          <Pencil className="h-3.5 w-3.5 mr-1" /> Edit Report
+                        </Button>
+                      </>
+                    )}
+                    {/* PDF / Download / Print — only for SHARED */}
+                    {v.status === "SHARED" && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => navigate(`/report-pdf/${v._id}`)}
+                          className="h-8 w-8 p-0 text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+                          title={t("healthAnalysis.patientDetails.openPdfPreview")}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDownloadReport(v._id)}
+                          className="h-8 w-8 p-0 text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
+                          title={t("healthAnalysis.patientDetails.downloadReportFile")}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handlePrintReport(v._id)}
+                          className="h-8 w-8 p-0 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                          title={t("healthAnalysis.patientDetails.printReport")}
+                        >
+                          <Printer className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 ),
               },
@@ -673,6 +722,16 @@ export default function PatientDetails() {
                   className="hidden sm:flex items-center gap-1 text-xs"
                 >
                   <Printer className="h-3.5 w-3.5" /> {t("healthAnalysis.patientDetails.print")}
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => { setReportModalOpen(false); navigate(`/report-review/${selectedVisitId}`); }}
+                  className="hidden sm:flex items-center gap-1 text-xs text-teal-700 border-teal-200 hover:bg-teal-50 dark:text-teal-300 dark:border-teal-800"
+                  title="Edit and re-generate this report"
+                >
+                  <Pencil className="h-3.5 w-3.5" /> Edit Report
                 </Button>
 
                 <Button

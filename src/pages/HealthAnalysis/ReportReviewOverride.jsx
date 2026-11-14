@@ -9,6 +9,7 @@ import {
   Square,
   MinusSquare,
   ArrowRight,
+  ArrowLeft,
   ChevronDown,
   ChevronUp,
   Search,
@@ -21,11 +22,14 @@ import {
   Pill,
   X,
   Check,
+  Save,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import LocalizedText from "@/components/LocalizedText";
 import { ReportSkeleton } from "@/components/ui/skeleton-loaders";
+import AnalysisStepper from "./AnalysisStepper";
 
 export default function ReportReviewOverride() {
   const { t } = useTranslation();
@@ -34,6 +38,7 @@ export default function ReportReviewOverride() {
 
   const [analysisData, setAnalysisData] = useState(null);
   const [patient, setPatient] = useState(null);
+  const [visit, setVisit] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -107,6 +112,7 @@ export default function ReportReviewOverride() {
 
       const visitData = vRes.data.data?.visit;
       setPatient(visitData?.patient_id);
+      setVisit(visitData);
 
       // Pre-fill the report price asked at the "Generate Final Report" step
       // from the visit's scan pricing snapshot (amount + payment status).
@@ -461,7 +467,11 @@ export default function ReportReviewOverride() {
       toast.success(t("healthAnalysis.reportReviewOverride.saveSuccess"));
       navigate(`/report-pdf/${visitId}`);
     } catch (err) {
-      toast.error(t("healthAnalysis.reportReviewOverride.saveFailed"));
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        t("healthAnalysis.reportReviewOverride.saveFailed");
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -578,6 +588,33 @@ export default function ReportReviewOverride() {
 
   return (
     <div className="space-y-5">
+      {/* Workflow Stepper */}
+      <AnalysisStepper
+        currentStep={2}
+        visitId={visitId}
+        patient={patient}
+        visitStatus={visit?.status}
+        hasResults={!!(analysisData?.analysis?.length)}
+        hasReport={visit?.status === "SHARED"}
+      />
+
+      {/* Editing Banner for SHARED visits */}
+      {visit?.status === "SHARED" && (
+        <div className="rounded-xl border border-teal-200 bg-teal-50 dark:bg-teal-950/30 dark:border-teal-800 px-4 py-3 flex flex-wrap items-center gap-3">
+          <Pencil className="h-4 w-4 text-teal-600 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-teal-800 dark:text-teal-200">Editing Generated Report</p>
+            <p className="text-xs text-teal-700 dark:text-teal-300">This report has already been shared. Changes will update and re-generate the existing report.</p>
+          </div>
+          <button
+            onClick={() => navigate(`/report-pdf/${visitId}`)}
+            className="text-xs font-semibold text-teal-700 dark:text-teal-300 underline hover:no-underline"
+          >
+            View Current PDF
+          </button>
+        </div>
+      )}
+
       {/* Top Patient & Session Header */}
       <div className="rounded-2xl bg-gradient-to-r from-indigo-700 via-indigo-800 to-violet-800 p-5 text-white shadow-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
